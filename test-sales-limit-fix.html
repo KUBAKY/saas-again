@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小组等级销售员限制修复测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #17a2b8;
+            background: #d1ecf1;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .team-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .member-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .member-card {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .role-leader {
+            background: #ffc107;
+            color: #212529;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .role-sales {
+            background: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 小组等级销售员限制修复测试</h1>
+        <p>测试修复后的小组等级限制逻辑：小组等级限制只针对销售员数量，组长不计入限制。</p>
+    </div>
+
+    <div class="container">
+        <h2>📊 当前团队状态</h2>
+        <button class="test-button" onclick="loadTeamStatus()">刷新团队状态</button>
+        <div id="teamStatus"></div>
+    </div>
+
+    <div class="container">
+        <h2>🧪 测试用例</h2>
+        
+        <div class="test-section">
+            <h3>测试1: 向销售员已满的团队添加销售员（应该失败）</h3>
+            <p>选择一个销售员数量接近限制的团队，尝试添加新的销售员</p>
+            <button class="test-button" onclick="testAddSalesToFullTeam()">执行测试</button>
+            <div id="test1Result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>测试2: 向销售员已满的团队添加组长（应该成功）</h3>
+            <p>向同一个团队添加组长，应该成功（组长不受销售员数量限制）</p>
+            <button class="test-button" onclick="testAddLeaderToFullTeam()">执行测试</button>
+            <div id="test2Result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>测试3: 创建销售员到已满团队（应该失败）</h3>
+            <p>尝试创建新的销售员用户并分配到销售员已满的团队</p>
+            <button class="test-button" onclick="testCreateSalesInFullTeam()">执行测试</button>
+            <div id="test3Result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>测试4: 批量转移销售员到已满团队（应该失败）</h3>
+            <p>尝试批量转移销售员到销售员数量已满的团队</p>
+            <button class="test-button" onclick="testBatchTransferToFullTeam()">执行测试</button>
+            <div id="test4Result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>测试5: 验证团队成员数量统计</h3>
+            <p>验证团队的member_count字段是否正确记录总成员数</p>
+            <button class="test-button" onclick="testMemberCountAccuracy()">执行测试</button>
+            <div id="test5Result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+        let authToken = '';
+
+        // 登录获取token
+        async function login() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone: '13800000001',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                if (data.code === 200) {
+                    authToken = data.data.token;
+                    return true;
+                } else {
+                    console.error('登录失败:', data.message);
+                    return false;
+                }
+            } catch (error) {
+                console.error('登录错误:', error);
+                return false;
+            }
+        }
+
+        // API请求封装
+        async function apiRequest(url, options = {}) {
+            if (!authToken) {
+                const loginSuccess = await login();
+                if (!loginSuccess) {
+                    throw new Error('登录失败');
+                }
+            }
+
+            const response = await fetch(`${API_BASE}${url}`, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`,
+                    ...options.headers
+                }
+            });
+
+            return await response.json();
+        }
+
+        // 加载团队状态
+        async function loadTeamStatus() {
+            try {
+                const teamsData = await apiRequest('/teams');
+                const usersData = await apiRequest('/users');
+
+                let html = '<div class="team-info">';
+                
+                if (teamsData.code === 200 && usersData.code === 200) {
+                    const teams = teamsData.data.list;
+                    const users = usersData.data.list;
+
+                    html += '<h4>团队详细信息:</h4>';
+                    
+                    for (const team of teams) {
+                        const teamMembers = users.filter(user => user.teamId === team.id);
+                        const salesMembers = teamMembers.filter(user => user.role === 'sales');
+                        const leaderMembers = teamMembers.filter(user => user.role === 'leader');
+
+                        const salesStatus = salesMembers.length >= team.maxMembers ? '🔴 已满' : 
+                                          salesMembers.length === team.maxMembers - 1 ? '🟡 接近满' : '🟢 正常';
+
+                        html += `
+                            <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px;">
+                                <h5>${team.name} (等级: ${team.level})</h5>
+                                <p><strong>销售员限制:</strong> ${salesMembers.length}/${team.maxMembers} ${salesStatus}</p>
+                                <p><strong>组长数量:</strong> ${leaderMembers.length}/1</p>
+                                <p><strong>总成员数:</strong> ${teamMembers.length} (记录: ${team.memberCount})</p>
+                                
+                                <div class="member-list">
+                        `;
+
+                        teamMembers.forEach(member => {
+                            const roleClass = member.role === 'leader' ? 'role-leader' : 'role-sales';
+                            const roleText = member.role === 'leader' ? '组长' : '销售员';
+                            html += `
+                                <div class="member-card">
+                                    <strong>${member.name}</strong><br>
+                                    <span class="${roleClass}">${roleText}</span><br>
+                                    <small>${member.phone}</small>
+                                </div>
+                            `;
+                        });
+
+                        html += `
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    html += '<div class="error">获取团队数据失败</div>';
+                }
+
+                html += '</div>';
+                document.getElementById('teamStatus').innerHTML = html;
+
+            } catch (error) {
+                document.getElementById('teamStatus').innerHTML = 
+                    `<div class="error">加载团队状态失败: ${error.message}</div>`;
+            }
+        }
+
+        // 测试1: 向销售员已满的团队添加销售员
+        async function testAddSalesToFullTeam() {
+            const resultDiv = document.getElementById('test1Result');
+            resultDiv.innerHTML = '<div class="info">正在执行测试...</div>';
+
+            try {
+                // 先获取团队和用户数据
+                const teamsData = await apiRequest('/teams');
+                const usersData = await apiRequest('/users');
+
+                if (teamsData.code !== 200 || usersData.code !== 200) {
+                    throw new Error('获取数据失败');
+                }
+
+                const teams = teamsData.data.list;
+                const users = usersData.data.list;
+
+                // 找到一个可以测试的团队（销售员数量接近限制）
+                let targetTeam = null;
+                let unassignedSales = users.find(user => user.role === 'sales' && !user.teamId);
+
+                for (const team of teams) {
+                    const teamSales = users.filter(user => user.teamId === team.id && user.role === 'sales');
+                    if (teamSales.length < team.maxMembers) {
+                        // 先填满这个团队的销售员
+                        targetTeam = team;
+                        break;
+                    }
+                }
+
+                if (!targetTeam || !unassignedSales) {
+                    resultDiv.innerHTML = '<div class="info">没有合适的测试条件（需要未满的团队和未分配的销售员）</div>';
+                    return;
+                }
+
+                // 先尝试填满团队
+                const response = await apiRequest(`/teams/${targetTeam.id}/members`, {
+                    method: 'POST',
+                    body: JSON.stringify({ userId: unassignedSales.id })
+                });
+
+                if (response.code === 200) {
+                    resultDiv.innerHTML = '<div class="success">✅ 测试准备：成功添加销售员到团队</div>';
+                    
+                    // 现在尝试再添加一个销售员（应该失败）
+                    const anotherSales = users.find(user => 
+                        user.role === 'sales' && 
+                        !user.teamId && 
+                        user.id !== unassignedSales.id
+                    );
+
+                    if (anotherSales) {
+                        const failResponse = await apiRequest(`/teams/${targetTeam.id}/members`, {
+                            method: 'POST',
+                            body: JSON.stringify({ userId: anotherSales.id })
+                        });
+
+                        if (failResponse.code !== 200) {
+                            resultDiv.innerHTML += `<div class="success">✅ 测试通过：向销售员已满的团队添加销售员被正确拒绝<br>错误信息: ${failResponse.message}</div>`;
+                        } else {
+                            resultDiv.innerHTML += '<div class="error">❌ 测试失败：应该拒绝添加销售员到已满团队</div>';
+                        }
+                    } else {
+                        resultDiv.innerHTML += '<div class="info">没有更多未分配的销售员进行测试</div>';
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div class="error">测试准备失败: ${response.message}</div>`;
+                }
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">测试执行失败: ${error.message}</div>`;
+            }
+        }
+
+        // 测试2: 向销售员已满的团队添加组长
+        async function testAddLeaderToFullTeam() {
+            const resultDiv = document.getElementById('test2Result');
+            resultDiv.innerHTML = '<div class="info">正在执行测试...</div>';
+
+            try {
+                const teamsData = await apiRequest('/teams');
+                const usersData = await apiRequest('/users');
+
+                if (teamsData.code !== 200 || usersData.code !== 200) {
+                    throw new Error('获取数据失败');
+                }
+
+                const teams = teamsData.data.list;
+                const users = usersData.data.list;
+
+                // 找到一个没有组长的团队
+                let targetTeam = null;
+                let unassignedLeader = users.find(user => user.role === 'leader' && !user.teamId);
+
+                for (const team of teams) {
+                    const teamLeaders = users.filter(user => user.teamId === team.id && user.role === 'leader');
+                    if (teamLeaders.length === 0) {
+                        targetTeam = team;
+                        break;
+                    }
+                }
+
+                if (!targetTeam || !unassignedLeader) {
+                    resultDiv.innerHTML = '<div class="info">没有合适的测试条件（需要没有组长的团队和未分配的组长）</div>';
+                    return;
+                }
+
+                // 尝试添加组长到团队
+                const response = await apiRequest(`/teams/${targetTeam.id}/members`, {
+                    method: 'POST',
+                    body: JSON.stringify({ userId: unassignedLeader.id })
+                });
+
+                if (response.code === 200) {
+                    resultDiv.innerHTML = '<div class="success">✅ 测试通过：成功向团队添加组长（不受销售员数量限制影响）</div>';
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ 测试失败：添加组长被拒绝 - ${response.message}</div>`;
+                }
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">测试执行失败: ${error.message}</div>`;
+            }
+        }
+
+        // 测试3: 创建销售员到已满团队
+        async function testCreateSalesInFullTeam() {
+            const resultDiv = document.getElementById('test3Result');
+            resultDiv.innerHTML = '<div class="info">正在执行测试...</div>';
+
+            try {
+                const teamsData = await apiRequest('/teams');
+                const usersData = await apiRequest('/users');
+
+                if (teamsData.code !== 200 || usersData.code !== 200) {
+                    throw new Error('获取数据失败');
+                }
+
+                const teams = teamsData.data.list;
+                const users = usersData.data.list;
+
+                // 找到一个销售员已满的团队
+                let fullTeam = null;
+                for (const team of teams) {
+                    const teamSales = users.filter(user => user.teamId === team.id && user.role === 'sales');
+                    if (teamSales.length >= team.maxMembers) {
+                        fullTeam = team;
+                        break;
+                    }
+                }
+
+                if (!fullTeam) {
+                    resultDiv.innerHTML = '<div class="info">没有销售员已满的团队进行测试</div>';
+                    return;
+                }
+
+                // 尝试创建新的销售员用户并分配到已满团队
+                const timestamp = Date.now();
+                const response = await apiRequest('/users', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        phone: `138${timestamp.toString().slice(-8)}`,
+                        name: `测试销售员${timestamp}`,
+                        role: 'sales',
+                        teamId: fullTeam.id,
+                        joinDate: '2024-01-01'
+                    })
+                });
+
+                if (response.code !== 200) {
+                    resultDiv.innerHTML = `<div class="success">✅ 测试通过：创建销售员到已满团队被正确拒绝<br>错误信息: ${response.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ 测试失败：应该拒绝创建销售员到已满团队</div>';
+                }
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">测试执行失败: ${error.message}</div>`;
+            }
+        }
+
+        // 测试4: 批量转移销售员到已满团队
+        async function testBatchTransferToFullTeam() {
+            const resultDiv = document.getElementById('test4Result');
+            resultDiv.innerHTML = '<div class="info">正在执行测试...</div>';
+
+            try {
+                const teamsData = await apiRequest('/teams');
+                const usersData = await apiRequest('/users');
+
+                if (teamsData.code !== 200 || usersData.code !== 200) {
+                    throw new Error('获取数据失败');
+                }
+
+                const teams = teamsData.data.list;
+                const users = usersData.data.list;
+
+                // 找到一个销售员已满的团队
+                let fullTeam = null;
+                for (const team of teams) {
+                    const teamSales = users.filter(user => user.teamId === team.id && user.role === 'sales');
+                    if (teamSales.length >= team.maxMembers) {
+                        fullTeam = team;
+                        break;
+                    }
+                }
+
+                // 找到一些其他团队的销售员
+                const otherSales = users.filter(user => 
+                    user.role === 'sales' && 
+                    user.teamId && 
+                    user.teamId !== fullTeam?.id
+                ).slice(0, 2);
+
+                if (!fullTeam || otherSales.length === 0) {
+                    resultDiv.innerHTML = '<div class="info">没有合适的测试条件</div>';
+                    return;
+                }
+
+                // 尝试批量转移销售员到已满团队
+                const response = await apiRequest('/users/batch-update-team', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        userIds: otherSales.map(user => user.id),
+                        teamId: fullTeam.id
+                    })
+                });
+
+                if (response.code !== 200) {
+                    resultDiv.innerHTML = `<div class="success">✅ 测试通过：批量转移销售员到已满团队被正确拒绝<br>错误信息: ${response.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ 测试失败：应该拒绝批量转移销售员到已满团队</div>';
+                }
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">测试执行失败: ${error.message}</div>`;
+            }
+        }
+
+        // 测试5: 验证团队成员数量统计
+        async function testMemberCountAccuracy() {
+            const resultDiv = document.getElementById('test5Result');
+            resultDiv.innerHTML = '<div class="info">正在执行测试...</div>';
+
+            try {
+                const teamsData = await apiRequest('/teams');
+                const usersData = await apiRequest('/users');
+
+                if (teamsData.code !== 200 || usersData.code !== 200) {
+                    throw new Error('获取数据失败');
+                }
+
+                const teams = teamsData.data.list;
+                const users = usersData.data.list;
+
+                let html = '<div class="success">✅ 团队成员数量统计验证:</div>';
+                let allCorrect = true;
+
+                for (const team of teams) {
+                    const actualMembers = users.filter(user => user.teamId === team.id);
+                    const actualCount = actualMembers.length;
+                    const recordedCount = team.memberCount;
+
+                    const salesCount = actualMembers.filter(user => user.role === 'sales').length;
+                    const leaderCount = actualMembers.filter(user => user.role === 'leader').length;
+
+                    const isCorrect = actualCount === recordedCount;
+                    if (!isCorrect) allCorrect = false;
+
+                    const status = isCorrect ? '✅' : '❌';
+                    html += `
+                        <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <strong>${team.name}</strong> ${status}<br>
+                            实际成员数: ${actualCount} (${salesCount}销售员 + ${leaderCount}组长)<br>
+                            记录成员数: ${recordedCount}<br>
+                            销售员限制: ${salesCount}/${team.maxMembers}
+                        </div>
+                    `;
+                }
+
+                if (allCorrect) {
+                    html += '<div class="success">🎉 所有团队的成员数量统计都正确！</div>';
+                } else {
+                    html += '<div class="error">⚠️ 发现成员数量统计不一致的团队</div>';
+                }
+
+                resultDiv.innerHTML = html;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">测试执行失败: ${error.message}</div>`;
+            }
+        }
+
+        // 页面加载时自动加载团队状态
+        window.onload = function() {
+            loadTeamStatus();
+        };
+    </script>
+</body>
+</html> 

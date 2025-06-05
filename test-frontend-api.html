@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端API测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>前端API测试</h1>
+    
+    <div class="section">
+        <h2>1. 登录测试</h2>
+        <button onclick="testLogin()">测试登录</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. 获取客户详情</h2>
+        <button onclick="testGetCustomer()">获取客户1详情</button>
+        <div id="customerResult"></div>
+    </div>
+    
+    <div class="section">
+        <h2>3. 编辑客户测试</h2>
+        <button onclick="testEditCustomer()">测试编辑客户</button>
+        <div id="editResult"></div>
+    </div>
+
+    <script>
+        let token = '';
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            try {
+                const response = await fetch('http://localhost:3001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone: '13800000000',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.code === 200) {
+                    token = data.data.token;
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ 登录成功</div>
+                        <pre>${JSON.stringify(data.data.user, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ 登录失败: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 请求失败: ${error.message}</div>`;
+            }
+        }
+        
+        async function testGetCustomer() {
+            const resultDiv = document.getElementById('customerResult');
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error">❌ 请先登录</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/customers/1', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                if (data.code === 200) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ 获取客户详情成功</div>
+                        <h3>客户信息（驼峰格式）:</h3>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ 获取失败: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 请求失败: ${error.message}</div>`;
+            }
+        }
+        
+        async function testEditCustomer() {
+            const resultDiv = document.getElementById('editResult');
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error">❌ 请先登录</div>';
+                return;
+            }
+            
+            try {
+                // 先获取当前客户信息
+                const getResponse = await fetch('http://localhost:3001/api/customers/1', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const customerData = await getResponse.json();
+                if (customerData.code !== 200) {
+                    resultDiv.innerHTML = `<div class="error">❌ 获取客户信息失败: ${customerData.message}</div>`;
+                    return;
+                }
+                
+                const customer = customerData.data;
+                
+                // 模拟表单数据（驼峰格式）
+                const updateData = {
+                    starLevel: customer.starLevel,
+                    name: customer.name + '(前端测试)',
+                    phone: customer.phone,
+                    gender: customer.gender,
+                    age: customer.age,
+                    qualification: customer.qualification + ' - 前端编辑测试',
+                    ownerId: customer.ownerId,
+                    teamId: customer.teamId
+                };
+                
+                // 发送更新请求
+                const updateResponse = await fetch('http://localhost:3001/api/customers/1', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const updateResult = await updateResponse.json();
+                
+                if (updateResult.code === 200) {
+                    // 获取更新后的数据验证
+                    const verifyResponse = await fetch('http://localhost:3001/api/customers/1', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    const verifyData = await verifyResponse.json();
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ 客户编辑成功</div>
+                        <h3>更新前数据:</h3>
+                        <pre>${JSON.stringify(customer, null, 2)}</pre>
+                        <h3>发送的更新数据:</h3>
+                        <pre>${JSON.stringify(updateData, null, 2)}</pre>
+                        <h3>更新后数据:</h3>
+                        <pre>${JSON.stringify(verifyData.data, null, 2)}</pre>
+                    `;
+                    
+                    // 恢复原始数据
+                    setTimeout(async () => {
+                        await fetch('http://localhost:3001/api/customers/1', {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                starLevel: customer.starLevel,
+                                name: customer.name,
+                                phone: customer.phone,
+                                gender: customer.gender,
+                                age: customer.age,
+                                qualification: customer.qualification,
+                                ownerId: customer.ownerId,
+                                teamId: customer.teamId
+                            })
+                        });
+                        console.log('数据已恢复');
+                    }, 2000);
+                    
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ 更新失败: ${updateResult.message}</div>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 请求失败: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户需求功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-result {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
+        button {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #40a9ff;
+        }
+        .success {
+            color: #52c41a;
+        }
+        .error {
+            color: #ff4d4f;
+        }
+    </style>
+</head>
+<body>
+    <h1>客户需求功能测试</h1>
+    
+    <div class="test-section">
+        <h2>1. 测试获取客户列表（包含客户需求字段）</h2>
+        <button onclick="testGetCustomers()">获取客户列表</button>
+        <div id="customers-result" class="test-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. 测试创建客户（包含客户需求）</h2>
+        <button onclick="testCreateCustomer()">创建测试客户</button>
+        <div id="create-result" class="test-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 测试更新客户需求</h2>
+        <button onclick="testUpdateCustomer()">更新客户需求</button>
+        <div id="update-result" class="test-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+        let authToken = '';
+
+        // 先登录获取token
+        async function login() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone: '13800000000',
+                        password: 'admin123'
+                    })
+                });
+                const data = await response.json();
+                if (data.code === 200) {
+                    authToken = data.data.token;
+                    console.log('登录成功');
+                    return true;
+                }
+            } catch (error) {
+                console.error('登录失败:', error);
+                return false;
+            }
+        }
+
+        async function testGetCustomers() {
+            const resultDiv = document.getElementById('customers-result');
+            
+            if (!authToken) {
+                await login();
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/customers?page=1&pageSize=5`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    const customers = data.data.list;
+                    let html = '<div class="success">✅ 获取客户列表成功</div>';
+                    html += '<h4>客户列表（显示前5个）：</h4>';
+                    
+                    customers.forEach(customer => {
+                        html += `
+                            <div style="border: 1px solid #eee; padding: 10px; margin: 5px 0;">
+                                <strong>${customer.name}</strong> (${customer.phone})<br>
+                                <strong>客户资质:</strong> ${customer.qualification || '无'}<br>
+                                <strong>客户需求:</strong> ${customer.requirements || '无'}
+                            </div>
+                        `;
+                    });
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ 获取失败: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 请求失败: ${error.message}</div>`;
+            }
+        }
+
+        async function testCreateCustomer() {
+            const resultDiv = document.getElementById('create-result');
+            
+            if (!authToken) {
+                await login();
+            }
+            
+            const customerData = {
+                starLevel: 4,
+                name: '测试客户需求',
+                phone: '13900000888',
+                gender: 'male',
+                age: 35,
+                qualification: '重要客户，有长期合作意向',
+                requirements: '需要全套解决方案，包括售后服务，预算100万以上',
+                ownerId: 3,
+                teamId: 1
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/customers`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(customerData)
+                });
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ 创建客户成功</div>
+                        <div>客户ID: ${data.data.id || '已创建'}</div>
+                        <div>客户需求: ${customerData.requirements}</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ 创建失败: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 请求失败: ${error.message}</div>`;
+            }
+        }
+
+        async function testUpdateCustomer() {
+            const resultDiv = document.getElementById('update-result');
+            
+            if (!authToken) {
+                await login();
+            }
+            
+            // 先获取一个客户ID
+            try {
+                const listResponse = await fetch(`${API_BASE}/customers?page=1&pageSize=1`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const listData = await listResponse.json();
+                
+                if (listData.code === 200 && listData.data.list.length > 0) {
+                    const customerId = listData.data.list[0].id;
+                    
+                    const updateData = {
+                        requirements: '更新后的客户需求：需要定制化产品，对交付时间有严格要求'
+                    };
+                    
+                    const updateResponse = await fetch(`${API_BASE}/customers/${customerId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify(updateData)
+                    });
+                    const updateResult = await updateResponse.json();
+                    
+                    if (updateResult.code === 200) {
+                        resultDiv.innerHTML = `
+                            <div class="success">✅ 更新客户需求成功</div>
+                            <div>客户ID: ${customerId}</div>
+                            <div>新的客户需求: ${updateData.requirements}</div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `<div class="error">❌ 更新失败: ${updateResult.message}</div>`;
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ 没有找到可更新的客户</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 请求失败: ${error.message}</div>`;
+            }
+        }
+
+        // 页面加载时自动登录
+        window.onload = function() {
+            login();
+        };
+    </script>
+</body>
+</html> 

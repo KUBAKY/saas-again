@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户Excel导入功能测试</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1890ff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #1890ff;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #40a9ff;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        .error {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+        .info {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #1890ff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        .login-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .login-form input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+        .status.error {
+            background: #fff2f0;
+            color: #ff4d4f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 客户Excel导入功能测试</h1>
+        
+        <!-- 登录区域 -->
+        <div class="section">
+            <h3>🔐 用户登录</h3>
+            <div class="login-form">
+                <input type="text" id="username" placeholder="用户名" value="admin">
+                <input type="password" id="password" placeholder="密码" value="123456">
+                <button onclick="login()">登录</button>
+                <span id="loginStatus" class="status"></span>
+            </div>
+        </div>
+
+        <!-- 模板下载区域 -->
+        <div class="section">
+            <h3>📥 下载导入模板</h3>
+            <button onclick="downloadTemplate()">下载Excel模板</button>
+            <div id="templateResult" class="result"></div>
+        </div>
+
+        <!-- 文件选择和预览区域 -->
+        <div class="section">
+            <h3>📁 选择Excel文件</h3>
+            <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="previewFile()">
+            <div id="previewResult" class="result"></div>
+        </div>
+
+        <!-- 导入执行区域 -->
+        <div class="section">
+            <h3>🚀 执行导入</h3>
+            <button id="importBtn" onclick="importCustomers()" disabled>开始导入</button>
+            <div id="importResult" class="result"></div>
+        </div>
+
+        <!-- 验证结果区域 -->
+        <div class="section">
+            <h3>✅ 验证导入结果</h3>
+            <button onclick="verifyImport()">查看客户列表</button>
+            <div id="verifyResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let token = '';
+        let previewData = [];
+
+        // 登录功能
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const statusEl = document.getElementById('loginStatus');
+
+            try {
+                const response = await fetch('http://localhost:3001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    token = data.data.token;
+                    statusEl.textContent = '✅ 登录成功';
+                    statusEl.className = 'status success';
+                    console.log('登录成功，Token:', token);
+                } else {
+                    statusEl.textContent = '❌ 登录失败: ' + data.message;
+                    statusEl.className = 'status error';
+                }
+            } catch (error) {
+                statusEl.textContent = '❌ 登录错误: ' + error.message;
+                statusEl.className = 'status error';
+                console.error('登录错误:', error);
+            }
+        }
+
+        // 下载模板
+        function downloadTemplate() {
+            const templateData = [
+                {
+                    '客户星级': 5,
+                    '客户姓名': '张三',
+                    '客户电话': '13800138000',
+                    '性别': '男',
+                    '年龄': 30,
+                    '客户资质': '高级客户',
+                    '客户需求': '需要高端产品服务'
+                },
+                {
+                    '客户星级': 3,
+                    '客户姓名': '李四',
+                    '客户电话': '13800138001',
+                    '性别': '女',
+                    '年龄': 25,
+                    '客户资质': '普通客户',
+                    '客户需求': '价格敏感型客户'
+                },
+                {
+                    '客户星级': 4,
+                    '客户姓名': '王五',
+                    '客户电话': '13800138002',
+                    '性别': '男',
+                    '年龄': 35,
+                    '客户资质': '企业客户',
+                    '客户需求': '批量采购需求'
+                }
+            ];
+
+            const worksheet = XLSX.utils.json_to_sheet(templateData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, '客户数据模板');
+
+            // 设置列宽
+            worksheet['!cols'] = [
+                { wch: 10 }, // 客户星级
+                { wch: 15 }, // 客户姓名
+                { wch: 15 }, // 客户电话
+                { wch: 8 },  // 性别
+                { wch: 8 },  // 年龄
+                { wch: 20 }, // 客户资质
+                { wch: 30 }  // 客户需求
+            ];
+
+            const fileName = `客户数据导入模板_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            
+            document.getElementById('templateResult').innerHTML = 
+                `<div class="success">✅ 模板下载成功: ${fileName}</div>`;
+        }
+
+        // 预览文件
+        function previewFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            const resultEl = document.getElementById('previewResult');
+            const importBtn = document.getElementById('importBtn');
+
+            if (!file) {
+                resultEl.innerHTML = '';
+                importBtn.disabled = true;
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                    // 转换数据格式
+                    previewData = jsonData.map((row, index) => ({
+                        rowIndex: index + 2,
+                        starLevel: row['客户星级'] || row['星级'] || 1,
+                        name: row['客户姓名'] || row['姓名'] || '',
+                        phone: row['客户电话'] || row['电话'] || '',
+                        gender: row['性别'] === '女' ? 'female' : 'male',
+                        age: row['年龄'] || null,
+                        qualification: row['客户资质'] || row['资质'] || '',
+                        requirements: row['客户需求'] || row['需求'] || ''
+                    }));
+
+                    // 显示预览
+                    let html = `<div class="info">📋 文件解析成功，共 ${previewData.length} 条记录</div>`;
+                    
+                    if (previewData.length > 0) {
+                        html += '<table><tr><th>行号</th><th>星级</th><th>姓名</th><th>电话</th><th>性别</th><th>年龄</th><th>资质</th><th>需求</th></tr>';
+                        
+                        // 只显示前5条数据
+                        const displayData = previewData.slice(0, 5);
+                        displayData.forEach(row => {
+                            html += `<tr>
+                                <td>${row.rowIndex}</td>
+                                <td>${row.starLevel}</td>
+                                <td>${row.name}</td>
+                                <td>${row.phone}</td>
+                                <td>${row.gender === 'female' ? '女' : '男'}</td>
+                                <td>${row.age || ''}</td>
+                                <td>${row.qualification}</td>
+                                <td>${row.requirements}</td>
+                            </tr>`;
+                        });
+                        
+                        html += '</table>';
+                        
+                        if (previewData.length > 5) {
+                            html += `<div class="info">... 还有 ${previewData.length - 5} 条记录未显示</div>`;
+                        }
+                    }
+
+                    resultEl.innerHTML = html;
+                    importBtn.disabled = false;
+
+                } catch (error) {
+                    resultEl.innerHTML = `<div class="error">❌ 文件解析失败: ${error.message}</div>`;
+                    importBtn.disabled = true;
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 执行导入
+        async function importCustomers() {
+            if (!token) {
+                alert('请先登录');
+                return;
+            }
+
+            if (previewData.length === 0) {
+                alert('请先选择文件');
+                return;
+            }
+
+            const resultEl = document.getElementById('importResult');
+            resultEl.innerHTML = '<div class="info">🔄 正在导入中...</div>';
+
+            try {
+                const response = await fetch('http://localhost:3001/api/customers/import', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        customers: previewData.map(row => ({
+                            starLevel: row.starLevel,
+                            name: row.name,
+                            phone: row.phone,
+                            gender: row.gender,
+                            age: row.age,
+                            qualification: row.qualification,
+                            requirements: row.requirements
+                        }))
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const result = data.data;
+                    let html = `<div class="success">✅ 导入完成！</div>`;
+                    html += `<div class="info">📊 统计信息：
+总记录数: ${result.total}
+成功导入: ${result.success}
+失败记录: ${result.failed}</div>`;
+                    
+                    if (result.errors && result.errors.length > 0) {
+                        html += '<div class="error">❌ 错误详情：\n' + result.errors.join('\n') + '</div>';
+                    }
+                    
+                    resultEl.innerHTML = html;
+                } else {
+                    resultEl.innerHTML = `<div class="error">❌ 导入失败: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<div class="error">❌ 导入错误: ${error.message}</div>`;
+                console.error('导入错误:', error);
+            }
+        }
+
+        // 验证导入结果
+        async function verifyImport() {
+            if (!token) {
+                alert('请先登录');
+                return;
+            }
+
+            const resultEl = document.getElementById('verifyResult');
+            resultEl.innerHTML = '<div class="info">🔄 正在查询客户列表...</div>';
+
+            try {
+                const response = await fetch('http://localhost:3001/api/customers?page=1&pageSize=10', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const customers = data.data.list;
+                    let html = `<div class="success">✅ 查询成功，共 ${data.data.total} 个客户</div>`;
+                    
+                    if (customers.length > 0) {
+                        html += '<table><tr><th>ID</th><th>星级</th><th>姓名</th><th>电话</th><th>性别</th><th>年龄</th><th>资质</th><th>需求</th><th>创建时间</th></tr>';
+                        
+                        customers.forEach(customer => {
+                            html += `<tr>
+                                <td>${customer.id}</td>
+                                <td>${customer.star_level || customer.level}</td>
+                                <td>${customer.name}</td>
+                                <td>${customer.phone}</td>
+                                <td>${customer.gender === 'female' ? '女' : '男'}</td>
+                                <td>${customer.age || ''}</td>
+                                <td>${customer.qualification || ''}</td>
+                                <td>${customer.requirements || ''}</td>
+                                <td>${new Date(customer.created_at).toLocaleString()}</td>
+                            </tr>`;
+                        });
+                        
+                        html += '</table>';
+                    }
+                    
+                    resultEl.innerHTML = html;
+                } else {
+                    resultEl.innerHTML = `<div class="error">❌ 查询失败: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<div class="error">❌ 查询错误: ${error.message}</div>`;
+                console.error('查询错误:', error);
+            }
+        }
+
+        // 页面加载完成后自动尝试登录
+        window.onload = function() {
+            console.log('页面加载完成，准备测试客户导入功能');
+        };
+    </script>
+</body>
+</html> 

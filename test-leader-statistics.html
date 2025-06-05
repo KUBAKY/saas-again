@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组长小组成员统计测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #1890ff, #096dd9);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #1890ff;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1890ff;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .members-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .members-table th,
+        .members-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .members-table th {
+            background-color: #fafafa;
+            font-weight: 600;
+        }
+        .role-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .role-leader {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+        }
+        .role-sales {
+            background-color: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+        .login-section {
+            background: #fff7e6;
+            border: 1px solid #ffd591;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background: #40a9ff;
+        }
+        .error {
+            color: #ff4d4f;
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #52c41a;
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏢 组长小组成员统计测试</h1>
+        <p>测试组长登录后查看小组成员统计功能，验证是否包含组长在内的所有成员数据</p>
+    </div>
+
+    <div class="login-section">
+        <h3>🔐 组长登录测试</h3>
+        <p>选择一个组长账号进行登录测试：</p>
+        <button class="btn" onclick="loginAsLeader('13800000002')">李组长 (华东销售组7091)</button>
+        <button class="btn" onclick="loginAsLeader('13884449278')">测试组长 (测试小组)</button>
+        <div id="loginStatus"></div>
+    </div>
+
+    <div class="container">
+        <h3>📊 小组成员统计数据</h3>
+        <div id="statisticsData">
+            <p>请先登录组长账号...</p>
+        </div>
+    </div>
+
+    <script>
+        let currentToken = null;
+        let currentUser = null;
+
+        // 组长登录
+        async function loginAsLeader(phone) {
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone: phone,
+                        password: '123456'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    currentToken = result.data.token;
+                    currentUser = result.data.user;
+                    
+                    document.getElementById('loginStatus').innerHTML = `
+                        <div class="success">
+                            ✅ 登录成功！当前用户: ${currentUser.name} (${currentUser.role === 'leader' ? '组长' : currentUser.role})
+                            <br>所属小组: ${currentUser.teamName || '未分配'}
+                        </div>
+                    `;
+                    
+                    // 获取统计数据
+                    await loadStatistics();
+                } else {
+                    document.getElementById('loginStatus').innerHTML = `
+                        <div class="error">❌ 登录失败: ${result.message}</div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('loginStatus').innerHTML = `
+                    <div class="error">❌ 登录错误: ${error.message}</div>
+                `;
+            }
+        }
+
+        // 加载统计数据
+        async function loadStatistics() {
+            if (!currentToken) {
+                document.getElementById('statisticsData').innerHTML = '<p>请先登录...</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/statistics', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    displayStatistics(result.data);
+                } else {
+                    document.getElementById('statisticsData').innerHTML = `
+                        <div class="error">❌ 获取统计数据失败: ${result.message}</div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('statisticsData').innerHTML = `
+                    <div class="error">❌ 请求错误: ${error.message}</div>
+                `;
+            }
+        }
+
+        // 显示统计数据
+        function displayStatistics(data) {
+            const { totalCustomers, totalFollowRecords, todayFollowCount, activeUsers, userStats } = data;
+            
+            let html = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${totalCustomers || 0}</div>
+                        <div class="stat-label">总客户数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totalFollowRecords || 0}</div>
+                        <div class="stat-label">总跟进次数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${todayFollowCount || 0}</div>
+                        <div class="stat-label">今日跟进</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${activeUsers || 0}</div>
+                        <div class="stat-label">活跃用户</div>
+                    </div>
+                </div>
+
+                <h4>🧑‍🤝‍🧑 小组成员详细统计</h4>
+                <p><strong>成员总数:</strong> ${userStats ? userStats.length : 0} 人</p>
+                
+                <table class="members-table">
+                    <thead>
+                        <tr>
+                            <th>成员姓名</th>
+                            <th>角色</th>
+                            <th>所属小组</th>
+                            <th>客户数量</th>
+                            <th>跟进次数</th>
+                            <th>跟进率</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            if (userStats && userStats.length > 0) {
+                userStats.forEach(member => {
+                    const followRate = member.customerCount > 0 
+                        ? ((member.followCount / member.customerCount) * 100).toFixed(1)
+                        : '0';
+                    
+                    const roleTag = member.userRole === 'leader' 
+                        ? '<span class="role-tag role-leader">组长</span>'
+                        : '<span class="role-tag role-sales">销售员</span>';
+                    
+                    html += `
+                        <tr>
+                            <td>${member.userName}</td>
+                            <td>${roleTag}</td>
+                            <td>${member.teamName || '-'}</td>
+                            <td>${member.customerCount || 0}</td>
+                            <td>${member.followCount || 0}</td>
+                            <td>${followRate}%</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                html += `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #999;">暂无成员数据</td>
+                    </tr>
+                `;
+            }
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            // 验证结果
+            const leaderCount = userStats ? userStats.filter(u => u.userRole === 'leader').length : 0;
+            const salesCount = userStats ? userStats.filter(u => u.userRole === 'sales').length : 0;
+            
+            html += `
+                <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 6px;">
+                    <h4>✅ 验证结果</h4>
+                    <ul>
+                        <li><strong>组长数量:</strong> ${leaderCount} 人</li>
+                        <li><strong>销售员数量:</strong> ${salesCount} 人</li>
+                        <li><strong>总成员数:</strong> ${userStats ? userStats.length : 0} 人</li>
+                        <li><strong>是否包含组长:</strong> ${leaderCount > 0 ? '✅ 是' : '❌ 否'}</li>
+                        <li><strong>功能状态:</strong> ${leaderCount > 0 ? '✅ 正常 - 小组成员统计包含组长' : '❌ 异常 - 缺少组长数据'}</li>
+                    </ul>
+                </div>
+            `;
+
+            document.getElementById('statisticsData').innerHTML = html;
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('组长小组成员统计测试页面已加载');
+        });
+    </script>
+</body>
+</html> 

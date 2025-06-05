@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户星级排序功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+        }
+        .test-result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        .error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+        .info {
+            background-color: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #1890ff;
+        }
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #40a9ff;
+        }
+        .star-display {
+            color: #faad14;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #e8e8e8;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #fafafa;
+            font-weight: 600;
+        }
+        .sort-button {
+            background: #52c41a;
+            font-size: 12px;
+            padding: 4px 8px;
+        }
+        .sort-button.desc {
+            background: #ff7875;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌟 客户星级排序功能测试</h1>
+    
+    <div class="test-container">
+        <h2>测试说明</h2>
+        <p>本页面用于测试客户管理页面的星级排序功能，包括：</p>
+        <ul>
+            <li>✅ 星级升序排序（1星 → 5星）</li>
+            <li>✅ 星级降序排序（5星 → 1星）</li>
+            <li>✅ 最新跟进时间排序</li>
+            <li>✅ 排序状态保持</li>
+            <li>✅ API参数传递验证</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>1. 测试客户星级排序API</h2>
+        <p>测试后端API是否正确处理排序参数</p>
+        <button onclick="testStarSortingAPI('descend')">测试星级降序</button>
+        <button onclick="testStarSortingAPI('ascend')">测试星级升序</button>
+        <button onclick="testFollowTimeSorting('descend')">测试跟进时间降序</button>
+        <button onclick="testFollowTimeSorting('ascend')">测试跟进时间升序</button>
+        <div id="api-test-result" class="test-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. 模拟前端排序功能</h2>
+        <p>模拟前端表格排序交互</p>
+        <button onclick="simulateFrontendSorting()">模拟前端排序</button>
+        <div id="frontend-test-result" class="test-result"></div>
+        
+        <div id="mock-table-container"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 排序参数验证</h2>
+        <p>验证排序参数的正确传递</p>
+        <button onclick="validateSortParams()">验证排序参数</button>
+        <div id="params-test-result" class="test-result"></div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:3001/api';
+        let authToken = null;
+
+        // 模拟客户数据
+        const mockCustomers = [
+            { id: 1, name: '客户A', starLevel: 5, lastFollowTime: '2025-06-04 10:00:00' },
+            { id: 2, name: '客户B', starLevel: 3, lastFollowTime: '2025-06-03 15:30:00' },
+            { id: 3, name: '客户C', starLevel: 1, lastFollowTime: '2025-06-04 09:15:00' },
+            { id: 4, name: '客户D', starLevel: 4, lastFollowTime: '2025-06-02 14:20:00' },
+            { id: 5, name: '客户E', starLevel: 2, lastFollowTime: '2025-06-04 11:45:00' },
+        ];
+
+        // 渲染星级
+        function renderStars(level) {
+            return '★'.repeat(level) + '☆'.repeat(5 - level);
+        }
+
+        // 登录获取token
+        async function getAuthToken() {
+            if (authToken) return authToken;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: '13800000001', password: '123456' })
+                });
+                const data = await response.json();
+                authToken = data.data?.token;
+                return authToken;
+            } catch (error) {
+                console.error('登录失败:', error);
+                return null;
+            }
+        }
+
+        // 测试星级排序API
+        async function testStarSortingAPI(sortOrder) {
+            const resultDiv = document.getElementById('api-test-result');
+            resultDiv.innerHTML = '<div class="info">正在测试星级排序API...</div>';
+            
+            try {
+                const token = await getAuthToken();
+                if (!token) {
+                    resultDiv.innerHTML = '<div class="error">❌ 无法获取认证token</div>';
+                    return;
+                }
+
+                const params = new URLSearchParams({
+                    page: '1',
+                    pageSize: '10',
+                    sortField: 'starLevel',
+                    sortOrder: sortOrder
+                });
+
+                const response = await fetch(`${BASE_URL}/customers?${params}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.code === 200 && data.data?.list) {
+                    const customers = data.data.list;
+                    const starLevels = customers.map(c => c.starLevel);
+                    
+                    // 验证排序是否正确
+                    let isCorrectlySorted = true;
+                    for (let i = 1; i < starLevels.length; i++) {
+                        if (sortOrder === 'ascend') {
+                            if (starLevels[i] < starLevels[i-1]) {
+                                isCorrectlySorted = false;
+                                break;
+                            }
+                        } else {
+                            if (starLevels[i] > starLevels[i-1]) {
+                                isCorrectlySorted = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    let result = `<h3>星级${sortOrder === 'ascend' ? '升序' : '降序'}排序测试结果:</h3>`;
+                    result += `<div class="${isCorrectlySorted ? 'success' : 'error'}">`;
+                    result += `${isCorrectlySorted ? '✅' : '❌'} 排序${isCorrectlySorted ? '正确' : '错误'}</div>`;
+                    result += `<p>返回客户数量: ${customers.length}</p>`;
+                    result += `<p>星级序列: ${starLevels.join(' → ')}</p>`;
+                    
+                    // 显示前5个客户
+                    result += '<table><tr><th>客户名称</th><th>星级</th><th>最新跟进</th></tr>';
+                    customers.slice(0, 5).forEach(customer => {
+                        result += `<tr>
+                            <td>${customer.name}</td>
+                            <td class="star-display">${renderStars(customer.starLevel)} (${customer.starLevel}星)</td>
+                            <td>${customer.lastFollowTime || '-'}</td>
+                        </tr>`;
+                    });
+                    result += '</table>';
+                    
+                    resultDiv.innerHTML = result;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ API返回错误: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 请求失败: ${error.message}</div>`;
+            }
+        }
+
+        // 测试跟进时间排序
+        async function testFollowTimeSorting(sortOrder) {
+            const resultDiv = document.getElementById('api-test-result');
+            resultDiv.innerHTML = '<div class="info">正在测试跟进时间排序API...</div>';
+            
+            try {
+                const token = await getAuthToken();
+                if (!token) {
+                    resultDiv.innerHTML = '<div class="error">❌ 无法获取认证token</div>';
+                    return;
+                }
+
+                const params = new URLSearchParams({
+                    page: '1',
+                    pageSize: '10',
+                    sortField: 'lastFollowTime',
+                    sortOrder: sortOrder
+                });
+
+                const response = await fetch(`${BASE_URL}/customers?${params}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    resultDiv.innerHTML = `<div class="success">✅ 跟进时间${sortOrder === 'ascend' ? '升序' : '降序'}排序API调用成功</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ API返回错误: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 请求失败: ${error.message}</div>`;
+            }
+        }
+
+        // 模拟前端排序功能
+        function simulateFrontendSorting() {
+            const resultDiv = document.getElementById('frontend-test-result');
+            const tableContainer = document.getElementById('mock-table-container');
+            
+            let currentSort = { field: null, order: null };
+            
+            function renderTable(data, sortField, sortOrder) {
+                let sortedData = [...data];
+                
+                if (sortField && sortOrder) {
+                    sortedData.sort((a, b) => {
+                        let aVal = a[sortField];
+                        let bVal = b[sortField];
+                        
+                        if (sortField === 'lastFollowTime') {
+                            aVal = new Date(aVal).getTime();
+                            bVal = new Date(bVal).getTime();
+                        }
+                        
+                        if (sortOrder === 'ascend') {
+                            return aVal - bVal;
+                        } else {
+                            return bVal - aVal;
+                        }
+                    });
+                }
+                
+                let table = '<table><tr>';
+                table += '<th>客户名称</th>';
+                table += `<th>星级 <button class="sort-button ${currentSort.field === 'starLevel' && currentSort.order === 'descend' ? 'desc' : ''}" onclick="sortTable('starLevel', '${currentSort.field === 'starLevel' && currentSort.order === 'descend' ? 'ascend' : 'descend'}')">排序</button></th>`;
+                table += `<th>最新跟进 <button class="sort-button ${currentSort.field === 'lastFollowTime' && currentSort.order === 'descend' ? 'desc' : ''}" onclick="sortTable('lastFollowTime', '${currentSort.field === 'lastFollowTime' && currentSort.order === 'descend' ? 'ascend' : 'descend'}')">排序</button></th>`;
+                table += '</tr>';
+                
+                sortedData.forEach(customer => {
+                    table += `<tr>
+                        <td>${customer.name}</td>
+                        <td class="star-display">${renderStars(customer.starLevel)} (${customer.starLevel}星)</td>
+                        <td>${customer.lastFollowTime}</td>
+                    </tr>`;
+                });
+                table += '</table>';
+                
+                tableContainer.innerHTML = table;
+            }
+            
+            window.sortTable = function(field, order) {
+                currentSort = { field, order };
+                renderTable(mockCustomers, field, order);
+                
+                resultDiv.innerHTML = `<div class="success">✅ 模拟排序: ${field} ${order === 'ascend' ? '升序' : '降序'}</div>`;
+            };
+            
+            renderTable(mockCustomers);
+            resultDiv.innerHTML = '<div class="success">✅ 前端排序模拟已加载，点击表格标题进行排序</div>';
+        }
+
+        // 验证排序参数
+        function validateSortParams() {
+            const resultDiv = document.getElementById('params-test-result');
+            
+            // 模拟前端参数构建
+            const testCases = [
+                { sortField: 'starLevel', sortOrder: 'ascend' },
+                { sortField: 'starLevel', sortOrder: 'descend' },
+                { sortField: 'lastFollowTime', sortOrder: 'ascend' },
+                { sortField: 'lastFollowTime', sortOrder: 'descend' },
+                { sortField: null, sortOrder: null }
+            ];
+            
+            let result = '<h3>排序参数验证结果:</h3>';
+            
+            testCases.forEach((testCase, index) => {
+                const params = new URLSearchParams({
+                    page: '1',
+                    pageSize: '20'
+                });
+                
+                if (testCase.sortField && testCase.sortOrder) {
+                    params.append('sortField', testCase.sortField);
+                    params.append('sortOrder', testCase.sortOrder);
+                }
+                
+                const url = `${BASE_URL}/customers?${params.toString()}`;
+                const isValid = testCase.sortField ? 
+                    ['starLevel', 'lastFollowTime'].includes(testCase.sortField) && 
+                    ['ascend', 'descend'].includes(testCase.sortOrder) : true;
+                
+                result += `<div class="${isValid ? 'success' : 'error'}">`;
+                result += `测试 ${index + 1}: ${isValid ? '✅' : '❌'} `;
+                result += `sortField=${testCase.sortField || 'null'}, sortOrder=${testCase.sortOrder || 'null'}`;
+                result += `<br>URL: ${url}`;
+                result += '</div><br>';
+            });
+            
+            resultDiv.innerHTML = result;
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('客户星级排序功能测试页面已加载');
+        });
+    </script>
+</body>
+</html> 
