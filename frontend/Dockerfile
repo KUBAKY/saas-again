@@ -20,7 +20,8 @@ CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 # 构建阶段
 FROM base AS build
 ENV NODE_ENV=production
-RUN npm ci --only=production --silent
+# 安装所有依赖（包括开发依赖）用于构建
+RUN npm ci --silent
 COPY . .
 RUN npm run build
 
