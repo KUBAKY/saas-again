@@ -76,7 +76,11 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 200, description: '获取成功' }),
     (0, swagger_1.ApiQuery)({ name: 'page', required: false, description: '页码' }),
     (0, swagger_1.ApiQuery)({ name: 'limit', required: false, description: '每页数量' }),
-    (0, swagger_1.ApiQuery)({ name: 'search', required: false, description: '搜索关键字(课程名称/教练姓名)' }),
+    (0, swagger_1.ApiQuery)({
+        name: 'search',
+        required: false,
+        description: '搜索关键字(课程名称/教练姓名)',
+    }),
     (0, swagger_1.ApiQuery)({ name: 'status', required: false, description: '排课状态' }),
     (0, swagger_1.ApiQuery)({ name: 'courseId', required: false, description: '课程ID' }),
     (0, swagger_1.ApiQuery)({ name: 'coachId', required: false, description: '教练ID' }),
@@ -88,7 +92,8 @@ __decorate([
     __param(0, (0, common_1.Query)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.QueryCourseScheduleDto, user_entity_1.User]),
+    __metadata("design:paramtypes", [dto_1.QueryCourseScheduleDto,
+        user_entity_1.User]),
     __metadata("design:returntype", void 0)
 ], CourseSchedulesController.prototype, "findAll", null);
 __decorate([

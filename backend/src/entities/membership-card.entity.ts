@@ -1,4 +1,11 @@
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  Index,
+} from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Member } from './member.entity';
 import { GroupClassCard } from './group-class-card.entity';
@@ -104,6 +111,21 @@ export class MembershipCard extends BaseEntity {
     comment: '卡片配置',
   })
   settings?: Record<string, any>;
+
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+    comment: '会员权益配置',
+  })
+  benefits?: {
+    discountRate: number; // 折扣率 (0-1)
+    freeServices: string[]; // 免费服务列表
+    priorityBooking: boolean; // 优先预约权
+    guestPasses: number; // 访客通行证数量
+    personalTrainingDiscount: number; // 私教课折扣
+    groupClassDiscount: number; // 团课折扣
+    additionalBenefits: Record<string, any>; // 其他权益
+  };
 
   // 外键关联
   @Column({

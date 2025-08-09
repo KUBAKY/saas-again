@@ -1,4 +1,13 @@
-import { IsString, IsEnum, IsNumber, IsOptional, IsDateString, IsUUID, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsDateString,
+  IsUUID,
+  Min,
+  Max,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -11,7 +20,10 @@ export class CreateMembershipCardDto {
   @IsString()
   type: string;
 
-  @ApiProperty({ description: '计费方式', enum: ['times', 'period', 'unlimited'] })
+  @ApiProperty({
+    description: '计费方式',
+    enum: ['times', 'period', 'unlimited'],
+  })
   @IsEnum(['times', 'period', 'unlimited'])
   billingType: 'times' | 'period' | 'unlimited';
 
@@ -50,7 +62,10 @@ export class CreateMembershipCardDto {
   @IsDateString()
   activationDate?: string;
 
-  @ApiPropertyOptional({ description: '卡状态', enum: ['active', 'inactive', 'expired', 'frozen', 'refunded'] })
+  @ApiPropertyOptional({
+    description: '卡状态',
+    enum: ['active', 'inactive', 'expired', 'frozen', 'refunded'],
+  })
   @IsOptional()
   @IsEnum(['active', 'inactive', 'expired', 'frozen', 'refunded'])
   status?: 'active' | 'inactive' | 'expired' | 'frozen' | 'refunded';

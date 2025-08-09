@@ -88,25 +88,37 @@ let PersonalTrainingCardsService = class PersonalTrainingCardsService {
             .leftJoinAndSelect('member.store', 'store')
             .where('store.id = :storeId', { storeId: user.storeId });
         if (filters.memberId) {
-            queryBuilder.andWhere('member.id = :memberId', { memberId: filters.memberId });
+            queryBuilder.andWhere('member.id = :memberId', {
+                memberId: filters.memberId,
+            });
         }
         if (filters.membershipCardId) {
-            queryBuilder.andWhere('membershipCard.id = :membershipCardId', { membershipCardId: filters.membershipCardId });
+            queryBuilder.andWhere('membershipCard.id = :membershipCardId', {
+                membershipCardId: filters.membershipCardId,
+            });
         }
         if (filters.coachId) {
-            queryBuilder.andWhere('coach.id = :coachId', { coachId: filters.coachId });
+            queryBuilder.andWhere('coach.id = :coachId', {
+                coachId: filters.coachId,
+            });
         }
         if (filters.type) {
             queryBuilder.andWhere('card.type = :type', { type: filters.type });
         }
         if (filters.status) {
-            queryBuilder.andWhere('card.status = :status', { status: filters.status });
+            queryBuilder.andWhere('card.status = :status', {
+                status: filters.status,
+            });
         }
         if (filters.purchaseDateStart) {
-            queryBuilder.andWhere('card.purchaseDate >= :purchaseDateStart', { purchaseDateStart: filters.purchaseDateStart });
+            queryBuilder.andWhere('card.purchaseDate >= :purchaseDateStart', {
+                purchaseDateStart: filters.purchaseDateStart,
+            });
         }
         if (filters.purchaseDateEnd) {
-            queryBuilder.andWhere('card.purchaseDate <= :purchaseDateEnd', { purchaseDateEnd: filters.purchaseDateEnd });
+            queryBuilder.andWhere('card.purchaseDate <= :purchaseDateEnd', {
+                purchaseDateEnd: filters.purchaseDateEnd,
+            });
         }
         if (filters.search) {
             queryBuilder.andWhere('(card.cardNumber LIKE :search OR member.name LIKE :search OR coach.name LIKE :search)', { search: `%${filters.search}%` });
@@ -153,7 +165,8 @@ let PersonalTrainingCardsService = class PersonalTrainingCardsService {
             }
             card.member = member;
         }
-        if (updateDto.membershipCardId && updateDto.membershipCardId !== card.membershipCard.id) {
+        if (updateDto.membershipCardId &&
+            updateDto.membershipCardId !== card.membershipCard.id) {
             const membershipCard = await this.membershipCardRepository.findOne({
                 where: { id: updateDto.membershipCardId },
                 relations: ['member', 'member.store'],
@@ -220,7 +233,9 @@ let PersonalTrainingCardsService = class PersonalTrainingCardsService {
     async generateCardNumber() {
         const prefix = 'PT';
         const timestamp = Date.now().toString().slice(-8);
-        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        const random = Math.floor(Math.random() * 1000)
+            .toString()
+            .padStart(3, '0');
         return `${prefix}${timestamp}${random}`;
     }
 };

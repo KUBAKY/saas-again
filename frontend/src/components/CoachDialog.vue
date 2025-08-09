@@ -266,4 +266,146 @@ const form = reactive<CreateCoachRequest>({
   emergencyPhone: '',
   notes: '',
   storeId: ''
-})\n\n// 表单验证规则\nconst formRules = {\n  employeeNumber: [\n    { required: true, message: '请输入工号', trigger: 'blur' },\n    { min: 2, max: 20, message: '工号长度在2-20个字符', trigger: 'blur' }\n  ],\n  name: [\n    { required: true, message: '请输入姓名', trigger: 'blur' },\n    { min: 2, max: 10, message: '姓名长度在2-10个字符', trigger: 'blur' }\n  ],\n  phone: [\n    { required: true, message: '请输入手机号', trigger: 'blur' },\n    { pattern: /^1[3-9]\\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }\n  ],\n  experienceYears: [\n    { required: true, message: '请输入从业年限', trigger: 'change' }\n  ],\n  hourlyRate: [\n    { required: true, message: '请输入课时费', trigger: 'change' }\n  ],\n  joinDate: [\n    { required: true, message: '请选择入职日期', trigger: 'change' }\n  ],\n  storeId: [\n    { required: true, message: '请选择门店', trigger: 'change' }\n  ]\n}\n\n// 计算属性\nconst dialogVisible = computed({\n  get: () => props.modelValue,\n  set: (value) => emit('update:modelValue', value)\n})\n\n// 监听教练数据变化\nwatch(\n  () => props.coach,\n  (newCoach) => {\n    if (newCoach) {\n      Object.assign(form, {\n        employeeNumber: newCoach.employeeNumber,\n        name: newCoach.name,\n        phone: newCoach.phone,\n        email: newCoach.email || '',\n        gender: newCoach.gender,\n        birthday: newCoach.birthday || '',\n        introduction: newCoach.introduction || '',\n        specialties: newCoach.specialties || [],\n        experienceYears: newCoach.experienceYears,\n        hourlyRate: newCoach.hourlyRate,\n        joinDate: newCoach.joinDate,\n        bankAccount: newCoach.bankAccount || '',\n        emergencyContact: newCoach.emergencyContact || '',\n        emergencyPhone: newCoach.emergencyPhone || '',\n        notes: newCoach.notes || '',\n        storeId: newCoach.storeId\n      })\n    } else {\n      resetForm()\n    }\n  },\n  { immediate: true }\n)\n\n// 重置表单\nconst resetForm = () => {\n  Object.assign(form, {\n    employeeNumber: '',\n    name: '',\n    phone: '',\n    email: '',\n    gender: undefined,\n    birthday: '',\n    introduction: '',\n    specialties: [],\n    experienceYears: 0,\n    hourlyRate: 0,\n    joinDate: '',\n    bankAccount: '',\n    emergencyContact: '',\n    emergencyPhone: '',\n    notes: '',\n    storeId: ''\n  })\n  \n  nextTick(() => {\n    formRef.value?.clearValidate()\n  })\n}\n\n// 关闭对话框\nconst handleClose = () => {\n  dialogVisible.value = false\n  resetForm()\n}\n\n// 提交表单\nconst handleSubmit = async () => {\n  if (!formRef.value) return\n  \n  try {\n    await formRef.value.validate()\n    loading.value = true\n    \n    if (props.isEdit && props.coach) {\n      await coachesApi.updateCoach(props.coach.id, form)\n      ElMessage.success('教练信息更新成功')\n    } else {\n      await coachesApi.createCoach(form)\n      ElMessage.success('教练创建成功')\n    }\n    \n    emit('success')\n    handleClose()\n  } catch (error) {\n    console.error('提交失败:', error)\n    ElMessage.error('操作失败，请重试')\n  } finally {\n    loading.value = false\n  }\n}\n\n// 获取门店列表（这里应该从 API 获取）\nconst fetchStores = async () => {\n  // 临时模拟数据，实际应该调用 API\n  stores.value = [\n    { id: '1', name: '总店' },\n    { id: '2', name: '分店A' },\n    { id: '3', name: '分店B' }\n  ]\n}\n\n// 组件挂载时获取门店列表\nfetchStores()\n</script>\n\n<style scoped lang=\"scss\">\n.dialog-footer {\n  text-align: right;\n}\n</style>"
+})
+
+// 表单验证规则
+const formRules = {
+  employeeNumber: [
+    { required: true, message: '请输入工号', trigger: 'blur' },
+    { min: 2, max: 20, message: '工号长度在2-20个字符', trigger: 'blur' }
+  ],
+  name: [
+    { required: true, message: '请输入姓名', trigger: 'blur' },
+    { min: 2, max: 10, message: '姓名长度在2-10个字符', trigger: 'blur' }
+  ],
+  phone: [
+    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
+  ],
+  experienceYears: [
+    { required: true, message: '请输入从业年限', trigger: 'change' }
+  ],
+  hourlyRate: [
+    { required: true, message: '请输入课时费', trigger: 'change' }
+  ],
+  joinDate: [
+    { required: true, message: '请选择入职日期', trigger: 'change' }
+  ],
+  storeId: [
+    { required: true, message: '请选择门店', trigger: 'change' }
+  ]
+}
+
+// 计算属性
+const dialogVisible = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value)
+})
+
+// 监听教练数据变化
+watch(
+  () => props.coach,
+  (newCoach) => {
+    if (newCoach) {
+      Object.assign(form, {
+        employeeNumber: newCoach.employeeNumber,
+        name: newCoach.name,
+        phone: newCoach.phone,
+        email: newCoach.email || '',
+        gender: newCoach.gender,
+        birthday: newCoach.birthday || '',
+        introduction: newCoach.introduction || '',
+        specialties: newCoach.specialties || [],
+        experienceYears: newCoach.experienceYears,
+        hourlyRate: newCoach.hourlyRate,
+        joinDate: newCoach.joinDate,
+        bankAccount: newCoach.bankAccount || '',
+        emergencyContact: newCoach.emergencyContact || '',
+        emergencyPhone: newCoach.emergencyPhone || '',
+        notes: newCoach.notes || '',
+        storeId: newCoach.storeId
+      })
+    } else {
+      resetForm()
+    }
+  },
+  { immediate: true }
+)
+
+// 重置表单
+const resetForm = () => {
+  Object.assign(form, {
+    employeeNumber: '',
+    name: '',
+    phone: '',
+    email: '',
+    gender: undefined,
+    birthday: '',
+    introduction: '',
+    specialties: [],
+    experienceYears: 0,
+    hourlyRate: 0,
+    joinDate: '',
+    bankAccount: '',
+    emergencyContact: '',
+    emergencyPhone: '',
+    notes: '',
+    storeId: ''
+  })
+  
+  nextTick(() => {
+    formRef.value?.clearValidate()
+  })
+}
+
+// 关闭对话框
+const handleClose = () => {
+  dialogVisible.value = false
+  resetForm()
+}
+
+// 提交表单
+const handleSubmit = async () => {
+  if (!formRef.value) return
+  
+  try {
+    await formRef.value.validate()
+    loading.value = true
+    
+    if (props.isEdit && props.coach) {
+      await coachesApi.updateCoach(props.coach.id, form)
+      ElMessage.success('教练信息更新成功')
+    } else {
+      await coachesApi.createCoach(form)
+      ElMessage.success('教练创建成功')
+    }
+    
+    emit('success')
+    handleClose()
+  } catch (error) {
+    console.error('提交失败:', error)
+    ElMessage.error('操作失败，请重试')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 获取门店列表（这里应该从 API 获取）
+const fetchStores = async () => {
+  // 临时模拟数据，实际应该调用 API
+  stores.value = [
+    { id: '1', name: '总店' },
+    { id: '2', name: '分店A' },
+    { id: '3', name: '分店B' }
+  ]
+}
+
+// 组件挂载时获取门店列表
+fetchStores()
+</script>
+
+<style scoped lang="scss">
+.dialog-footer {
+  text-align: right;
+}
+</style>"

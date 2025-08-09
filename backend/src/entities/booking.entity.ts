@@ -36,11 +36,26 @@ export class Booking extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: ['pending', 'confirmed', 'charged', 'checked_in', 'completed', 'cancelled', 'no_show'],
+    enum: [
+      'pending',
+      'confirmed',
+      'charged',
+      'checked_in',
+      'completed',
+      'cancelled',
+      'no_show',
+    ],
     default: 'pending',
     comment: '预约状态',
   })
-  status: 'pending' | 'confirmed' | 'charged' | 'checked_in' | 'completed' | 'cancelled' | 'no_show';
+  status:
+    | 'pending'
+    | 'confirmed'
+    | 'charged'
+    | 'checked_in'
+    | 'completed'
+    | 'cancelled'
+    | 'no_show';
 
   @Column({
     type: 'decimal',
@@ -226,7 +241,11 @@ export class Booking extends BaseEntity {
   }
 
   isCharged(): boolean {
-    return this.status === 'charged' || this.status === 'checked_in' || this.status === 'completed';
+    return (
+      this.status === 'charged' ||
+      this.status === 'checked_in' ||
+      this.status === 'completed'
+    );
   }
 
   isCheckedIn(): boolean {
@@ -235,7 +254,7 @@ export class Booking extends BaseEntity {
 
   needsCharging(): boolean {
     if (this.status !== 'confirmed') return false;
-    
+
     // 课前3小时需要扣费
     const threeHoursFromNow = new Date(Date.now() + 3 * 60 * 60 * 1000);
     return new Date(this.startTime) <= threeHoursFromNow;
@@ -243,7 +262,7 @@ export class Booking extends BaseEntity {
 
   charge(): boolean {
     if (this.status !== 'confirmed') return false;
-    
+
     this.status = 'charged';
     this.chargedAt = new Date();
     return true;
@@ -251,7 +270,7 @@ export class Booking extends BaseEntity {
 
   checkIn(): boolean {
     if (this.status !== 'charged') return false;
-    
+
     this.status = 'checked_in';
     this.checkedInAt = new Date();
     return true;
@@ -259,20 +278,22 @@ export class Booking extends BaseEntity {
 
   complete(): boolean {
     if (this.status !== 'checked_in') return false;
-    
+
     this.status = 'completed';
     return true;
   }
 
   markNoShow(): boolean {
     if (this.status !== 'charged') return false;
-    
+
     this.status = 'no_show';
     return true;
   }
 
   isGroupClass(): boolean {
-    return this.courseScheduleId !== null && this.courseScheduleId !== undefined;
+    return (
+      this.courseScheduleId !== null && this.courseScheduleId !== undefined
+    );
   }
 
   isPersonalTraining(): boolean {
@@ -288,8 +309,6 @@ export class Booking extends BaseEntity {
 
     return true;
   }
-
-
 
   addReview(rating: number, review?: string): void {
     if (this.status === 'completed' && !this.rating) {

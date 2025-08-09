@@ -3,7 +3,9 @@ import { CreatePersonalTrainingCardDto } from './create-personal-training-card.d
 import { IsOptional, IsEnum } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
-export class UpdatePersonalTrainingCardDto extends PartialType(CreatePersonalTrainingCardDto) {
+export class UpdatePersonalTrainingCardDto extends PartialType(
+  CreatePersonalTrainingCardDto,
+) {
   @ApiPropertyOptional({
     description: '卡片状态',
     enum: ['inactive', 'active', 'frozen', 'expired', 'refunded'],

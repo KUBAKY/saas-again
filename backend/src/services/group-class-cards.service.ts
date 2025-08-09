@@ -5,7 +5,15 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, FindManyOptions, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm';
+import {
+  Repository,
+  Like,
+  FindManyOptions,
+  FindOptionsWhere,
+  MoreThanOrEqual,
+  LessThanOrEqual,
+  Between,
+} from 'typeorm';
 import { GroupClassCard } from '../entities/group-class-card.entity';
 import { Member } from '../entities/member.entity';
 import { MembershipCard } from '../entities/membership-card.entity';
@@ -48,8 +56,8 @@ export class GroupClassCardsService {
 
     // 验证会籍卡是否存在且有效
     const membershipCard = await this.membershipCardRepository.findOne({
-      where: { 
-        id: createDto.membershipCardId, 
+      where: {
+        id: createDto.membershipCardId,
         memberId: createDto.memberId,
       },
       relations: ['member', 'member.store'],
@@ -68,7 +76,9 @@ export class GroupClassCardsService {
     const groupClassCard = this.groupClassCardRepository.create({
       ...createDto,
       cardNumber,
-      purchaseDate: createDto.purchaseDate ? new Date(createDto.purchaseDate) : new Date(),
+      purchaseDate: createDto.purchaseDate
+        ? new Date(createDto.purchaseDate)
+        : new Date(),
       usedSessions: 0,
       status: 'inactive',
     });
@@ -100,7 +110,10 @@ export class GroupClassCardsService {
     if (status) where.status = status;
 
     if (purchaseDateStart && purchaseDateEnd) {
-      where.purchaseDate = Between(new Date(purchaseDateStart), new Date(purchaseDateEnd));
+      where.purchaseDate = Between(
+        new Date(purchaseDateStart),
+        new Date(purchaseDateEnd),
+      );
     } else if (purchaseDateStart) {
       where.purchaseDate = MoreThanOrEqual(new Date(purchaseDateStart));
     } else if (purchaseDateEnd) {
@@ -123,15 +136,18 @@ export class GroupClassCardsService {
     }
 
     // 获取数据
-    const [allCards, allTotal] = await this.groupClassCardRepository.findAndCount({
-      where: options.where,
-      relations: ['member', 'member.store', 'membershipCard'],
-      order: { createdAt: 'DESC' },
-    });
+    const [allCards, allTotal] =
+      await this.groupClassCardRepository.findAndCount({
+        where: options.where,
+        relations: ['member', 'member.store', 'membershipCard'],
+        order: { createdAt: 'DESC' },
+      });
 
     // 过滤属于当前门店的数据
-    const filteredCards = allCards.filter(card => card.member.store.id === user.storeId);
-    
+    const filteredCards = allCards.filter(
+      (card) => card.member.store.id === user.storeId,
+    );
+
     // 应用分页
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
@@ -178,15 +194,21 @@ export class GroupClassCardsService {
       }
     }
 
-    if (updateDto.membershipCardId && updateDto.membershipCardId !== card.membershipCardId) {
+    if (
+      updateDto.membershipCardId &&
+      updateDto.membershipCardId !== card.membershipCardId
+    ) {
       const membershipCard = await this.membershipCardRepository.findOne({
-        where: { 
-          id: updateDto.membershipCardId, 
+        where: {
+          id: updateDto.membershipCardId,
           memberId: updateDto.memberId || card.memberId,
         },
         relations: ['member', 'member.store'],
       });
-      if (!membershipCard || membershipCard.member?.store?.id !== user.storeId) {
+      if (
+        !membershipCard ||
+        membershipCard.member?.store?.id !== user.storeId
+      ) {
         throw new NotFoundException('会籍卡不存在');
       }
     }
@@ -197,7 +219,7 @@ export class GroupClassCardsService {
 
   async remove(id: string, user: User): Promise<void> {
     const card = await this.findOne(id, user);
-    
+
     if (card.status === 'active' && card.usedSessions > 0) {
       throw new BadRequestException('已使用的团课卡不能删除，请先退款');
     }
@@ -207,7 +229,7 @@ export class GroupClassCardsService {
 
   async activate(id: string, user: User): Promise<GroupClassCard> {
     const card = await this.findOne(id, user);
-    
+
     if (card.status !== 'inactive') {
       throw new BadRequestException('只有未激活的团课卡才能激活');
     }
@@ -254,7 +276,9 @@ export class GroupClassCardsService {
   private async generateCardNumber(): Promise<string> {
     const prefix = 'GCC';
     const timestamp = Date.now().toString().slice(-8);
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0');
     return `${prefix}${timestamp}${random}`;
   }
 }

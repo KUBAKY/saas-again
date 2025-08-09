@@ -19,13 +19,7 @@ let GroupClassCardsModule = class GroupClassCardsModule {
 exports.GroupClassCardsModule = GroupClassCardsModule;
 exports.GroupClassCardsModule = GroupClassCardsModule = __decorate([
     (0, common_1.Module)({
-        imports: [
-            typeorm_1.TypeOrmModule.forFeature([
-                group_class_card_entity_1.GroupClassCard,
-                member_entity_1.Member,
-                membership_card_entity_1.MembershipCard,
-            ]),
-        ],
+        imports: [typeorm_1.TypeOrmModule.forFeature([group_class_card_entity_1.GroupClassCard, member_entity_1.Member, membership_card_entity_1.MembershipCard])],
         controllers: [group_class_cards_controller_1.GroupClassCardsController],
         providers: [group_class_cards_service_1.GroupClassCardsService],
         exports: [group_class_cards_service_1.GroupClassCardsService],

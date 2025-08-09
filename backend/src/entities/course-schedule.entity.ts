@@ -1,4 +1,11 @@
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  Index,
+} from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Course } from './course.entity';
 import { Coach } from './coach.entity';
@@ -143,7 +150,7 @@ export class CourseSchedule extends BaseEntity {
 
   canCancel(): boolean {
     if (this.status !== 'scheduled') return false;
-    
+
     // 开始前3小时内不能取消排课
     const threeHoursFromNow = new Date(Date.now() + 3 * 60 * 60 * 1000);
     return new Date(this.startTime) > threeHoursFromNow;
@@ -151,14 +158,14 @@ export class CourseSchedule extends BaseEntity {
 
   addParticipant(): boolean {
     if (!this.isAvailable()) return false;
-    
+
     this.currentParticipants += 1;
     return true;
   }
 
   removeParticipant(): boolean {
     if (this.currentParticipants <= 0) return false;
-    
+
     this.currentParticipants -= 1;
     return true;
   }
@@ -168,7 +175,8 @@ export class CourseSchedule extends BaseEntity {
   }
 
   getDuration(): number {
-    const diffMs = new Date(this.endTime).getTime() - new Date(this.startTime).getTime();
+    const diffMs =
+      new Date(this.endTime).getTime() - new Date(this.startTime).getTime();
     return Math.floor(diffMs / (1000 * 60)); // 返回分钟数
   }
 
@@ -187,7 +195,7 @@ export class CourseSchedule extends BaseEntity {
 
   cancel(reason?: string): boolean {
     if (!this.canCancel()) return false;
-    
+
     this.status = 'cancelled';
     this.cancelledAt = new Date();
     this.cancellationReason = reason;

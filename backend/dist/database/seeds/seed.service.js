@@ -296,9 +296,23 @@ let SeedService = SeedService_1 = class SeedService {
                 priority: 80,
             },
             {
+                name: 'PERSONAL_TRAINER',
+                displayName: '私人教练',
+                description: '负责私教课程执行和会员服务',
+                type: 'system',
+                priority: 75,
+            },
+            {
+                name: 'GROUP_FITNESS_INSTRUCTOR',
+                displayName: '团课教练',
+                description: '负责团体课程执行和管理',
+                type: 'system',
+                priority: 74,
+            },
+            {
                 name: 'COACH',
                 displayName: '健身教练',
-                description: '提供健身指导服务',
+                description: '提供健身指导服务（兼容角色）',
                 type: 'system',
                 priority: 70,
             },
@@ -334,6 +348,20 @@ let SeedService = SeedService_1 = class SeedService {
                 }
                 else if (roleData.name === 'STORE_MANAGER') {
                     role.permissions = allPermissions.filter((p) => p.group !== '品牌管理' && !p.name.includes('delete'));
+                }
+                else if (roleData.name === 'PERSONAL_TRAINER') {
+                    role.permissions = allPermissions.filter((p) => (p.group === '会员管理' &&
+                        (p.action === 'view' || p.action === 'update')) ||
+                        (p.group === '私教管理' && p.action !== 'delete') ||
+                        (p.group === '预约管理' && p.resource === 'personal_training') ||
+                        (p.group === '卡券管理' &&
+                            p.resource === 'personal_training_card'));
+                }
+                else if (roleData.name === 'GROUP_FITNESS_INSTRUCTOR') {
+                    role.permissions = allPermissions.filter((p) => (p.group === '会员管理' && p.action === 'view') ||
+                        (p.group === '团课管理' && p.action !== 'delete') ||
+                        (p.group === '预约管理' && p.resource === 'group_class') ||
+                        (p.group === '卡券管理' && p.resource === 'group_class_card'));
                 }
                 else if (roleData.name === 'COACH') {
                     role.permissions = allPermissions

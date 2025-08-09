@@ -18,7 +18,11 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { CourseSchedulesService } from './course-schedules.service';
-import { CreateCourseScheduleDto, UpdateCourseScheduleDto, QueryCourseScheduleDto } from './dto';
+import {
+  CreateCourseScheduleDto,
+  UpdateCourseScheduleDto,
+  QueryCourseScheduleDto,
+} from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '../entities/user.entity';
@@ -29,7 +33,9 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 @UseGuards(JwtAuthGuard)
 @Controller('course-schedules')
 export class CourseSchedulesController {
-  constructor(private readonly courseSchedulesService: CourseSchedulesService) {}
+  constructor(
+    private readonly courseSchedulesService: CourseSchedulesService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: '创建课程排课' })
@@ -50,7 +56,11 @@ export class CourseSchedulesController {
   @ApiResponse({ status: 200, description: '获取成功' })
   @ApiQuery({ name: 'page', required: false, description: '页码' })
   @ApiQuery({ name: 'limit', required: false, description: '每页数量' })
-  @ApiQuery({ name: 'search', required: false, description: '搜索关键字(课程名称/教练姓名)' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: '搜索关键字(课程名称/教练姓名)',
+  })
   @ApiQuery({ name: 'status', required: false, description: '排课状态' })
   @ApiQuery({ name: 'courseId', required: false, description: '课程ID' })
   @ApiQuery({ name: 'coachId', required: false, description: '教练ID' })
@@ -59,7 +69,10 @@ export class CourseSchedulesController {
   @ApiQuery({ name: 'endDate', required: false, description: '结束日期' })
   @ApiQuery({ name: 'sortBy', required: false, description: '排序字段' })
   @ApiQuery({ name: 'sortOrder', required: false, description: '排序方向' })
-  findAll(@Query() queryDto: QueryCourseScheduleDto, @CurrentUser() user: User) {
+  findAll(
+    @Query() queryDto: QueryCourseScheduleDto,
+    @CurrentUser() user: User,
+  ) {
     return this.courseSchedulesService.findAll(queryDto, user);
   }
 
@@ -117,7 +130,11 @@ export class CourseSchedulesController {
     @CurrentUser() user: User,
     @Body() body: { reason?: string },
   ) {
-    return this.courseSchedulesService.cancel(id, body.reason || '管理员取消', user);
+    return this.courseSchedulesService.cancel(
+      id,
+      body.reason || '管理员取消',
+      user,
+    );
   }
 
   @Patch(':id/complete')

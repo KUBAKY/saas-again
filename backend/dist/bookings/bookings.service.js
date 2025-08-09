@@ -518,7 +518,7 @@ let BookingsService = class BookingsService {
     async getMemberBookings(memberId, queryDto, user) {
         const queryBuilder = this.createBaseQuery(user);
         queryBuilder.andWhere('booking.memberId = :memberId', { memberId });
-        const { status, startDate, endDate, sortBy = 'startTime', sortOrder = 'DESC' } = queryDto;
+        const { status, startDate, endDate, sortBy = 'startTime', sortOrder = 'DESC', } = queryDto;
         if (status) {
             queryBuilder.andWhere('booking.status = :status', { status });
         }
@@ -532,7 +532,7 @@ let BookingsService = class BookingsService {
         const sortField = validSortFields.includes(sortBy) ? sortBy : 'startTime';
         queryBuilder.orderBy(`booking.${sortField}`, sortOrder === 'ASC' ? 'ASC' : 'DESC');
         const bookings = await queryBuilder.getMany();
-        return bookings.map(booking => ({
+        return bookings.map((booking) => ({
             ...booking,
             isGroupClass: booking.isGroupClass(),
             isPersonalTraining: booking.isPersonalTraining(),

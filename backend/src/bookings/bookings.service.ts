@@ -7,7 +7,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder, Between, LessThan, IsNull } from 'typeorm';
+import {
+  Repository,
+  SelectQueryBuilder,
+  Between,
+  LessThan,
+  IsNull,
+} from 'typeorm';
 import { Booking } from '../entities/booking.entity';
 import { User } from '../entities/user.entity';
 import { CourseSchedule } from '../entities/course-schedule.entity';
@@ -291,9 +297,7 @@ export class BookingsService {
 
     // 权限检查
     const userRole = user.roles?.[0]?.name || '';
-    if (
-      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
-    ) {
+    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)) {
       throw new ForbiddenException('权限不足，无法删除预约');
     }
 
@@ -645,7 +649,7 @@ export class BookingsService {
     // 检查是否已过课程结束时间
     const now = new Date();
     const endTime = new Date(booking.endTime);
-    
+
     if (now <= endTime) {
       throw new BadRequestException('课程尚未结束，不能标记为未到课');
     }
@@ -741,7 +745,9 @@ export class BookingsService {
     }
 
     if (!booking.isCancellable()) {
-      throw new BadRequestException('预约无法取消（可能已开始或开始前3小时内）');
+      throw new BadRequestException(
+        '预约无法取消（可能已开始或开始前3小时内）',
+      );
     }
 
     const success = booking.cancel(reason);
@@ -773,7 +779,13 @@ export class BookingsService {
     queryBuilder.andWhere('booking.memberId = :memberId', { memberId });
 
     // 应用其他过滤条件
-    const { status, startDate, endDate, sortBy = 'startTime', sortOrder = 'DESC' } = queryDto;
+    const {
+      status,
+      startDate,
+      endDate,
+      sortBy = 'startTime',
+      sortOrder = 'DESC',
+    } = queryDto;
 
     if (status) {
       queryBuilder.andWhere('booking.status = :status', { status });
@@ -790,11 +802,14 @@ export class BookingsService {
     // 排序
     const validSortFields = ['startTime', 'endTime', 'status', 'createdAt'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'startTime';
-    queryBuilder.orderBy(`booking.${sortField}`, sortOrder === 'ASC' ? 'ASC' : 'DESC');
+    queryBuilder.orderBy(
+      `booking.${sortField}`,
+      sortOrder === 'ASC' ? 'ASC' : 'DESC',
+    );
 
     const bookings = await queryBuilder.getMany();
 
-    return bookings.map(booking => ({
+    return bookings.map((booking) => ({
       ...booking,
       isGroupClass: booking.isGroupClass(),
       isPersonalTraining: booking.isPersonalTraining(),

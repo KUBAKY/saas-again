@@ -136,8 +136,12 @@ let CourseSchedulesService = class CourseSchedulesService {
             throw new common_1.BadRequestException('已完成或已取消的排课不能修改');
         }
         if (updateDto.startTime || updateDto.endTime) {
-            const startTime = updateDto.startTime ? new Date(updateDto.startTime) : schedule.startTime;
-            const endTime = updateDto.endTime ? new Date(updateDto.endTime) : schedule.endTime;
+            const startTime = updateDto.startTime
+                ? new Date(updateDto.startTime)
+                : schedule.startTime;
+            const endTime = updateDto.endTime
+                ? new Date(updateDto.endTime)
+                : schedule.endTime;
             if (startTime >= endTime) {
                 throw new common_1.BadRequestException('开始时间必须早于结束时间');
             }
@@ -177,9 +181,18 @@ let CourseSchedulesService = class CourseSchedulesService {
         const queryBuilder = this.createBaseQuery(user);
         const [total, scheduled, completed, cancelled] = await Promise.all([
             queryBuilder.getCount(),
-            queryBuilder.clone().andWhere('schedule.status = :status', { status: 'scheduled' }).getCount(),
-            queryBuilder.clone().andWhere('schedule.status = :status', { status: 'completed' }).getCount(),
-            queryBuilder.clone().andWhere('schedule.status = :status', { status: 'cancelled' }).getCount(),
+            queryBuilder
+                .clone()
+                .andWhere('schedule.status = :status', { status: 'scheduled' })
+                .getCount(),
+            queryBuilder
+                .clone()
+                .andWhere('schedule.status = :status', { status: 'completed' })
+                .getCount(),
+            queryBuilder
+                .clone()
+                .andWhere('schedule.status = :status', { status: 'cancelled' })
+                .getCount(),
         ]);
         const today = new Date();
         const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -216,7 +229,7 @@ let CourseSchedulesService = class CourseSchedulesService {
         }
         queryBuilder.orderBy('schedule.startTime', 'ASC');
         const schedules = await queryBuilder.getMany();
-        return schedules.map(schedule => ({
+        return schedules.map((schedule) => ({
             id: schedule.id,
             title: schedule.course.name,
             start: schedule.startTime,
@@ -250,10 +263,14 @@ let CourseSchedulesService = class CourseSchedulesService {
             .leftJoinAndSelect('schedule.store', 'store')
             .where('schedule.deletedAt IS NULL');
         if (user.hasRole('STORE_MANAGER')) {
-            queryBuilder.andWhere('schedule.storeId = :storeId', { storeId: user.storeId });
+            queryBuilder.andWhere('schedule.storeId = :storeId', {
+                storeId: user.storeId,
+            });
         }
         else if (user.hasRole('COACH')) {
-            queryBuilder.andWhere('schedule.coachId = :coachId', { coachId: user.id });
+            queryBuilder.andWhere('schedule.coachId = :coachId', {
+                coachId: user.id,
+            });
         }
         return queryBuilder;
     }

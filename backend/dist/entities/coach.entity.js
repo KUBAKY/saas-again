@@ -38,6 +38,8 @@ let Coach = class Coach extends base_entity_1.BaseEntity {
     workSchedule;
     status;
     notes;
+    specializationType;
+    businessSettings;
     storeId;
     store;
     courses;
@@ -97,6 +99,36 @@ let Coach = class Coach extends base_entity_1.BaseEntity {
     }
     getActiveCourses() {
         return this.courses?.filter((course) => course.isActive()) || [];
+    }
+    isPersonalTrainer() {
+        return (this.specializationType === 'personal' ||
+            this.specializationType === 'both');
+    }
+    isGroupInstructor() {
+        return (this.specializationType === 'group' || this.specializationType === 'both');
+    }
+    canManagePersonalTraining() {
+        return (this.isPersonalTrainer() &&
+            (this.businessSettings?.canManagePersonalTraining ?? true));
+    }
+    canManageGroupClass() {
+        return (this.isGroupInstructor() &&
+            (this.businessSettings?.canManageGroupClass ?? true));
+    }
+    getMaxStudentsPerClass() {
+        return this.businessSettings?.maxStudentsPerClass ?? 20;
+    }
+    getSpecializationDescription() {
+        switch (this.specializationType) {
+            case 'personal':
+                return '私人教练';
+            case 'group':
+                return '团课教练';
+            case 'both':
+                return '全能教练';
+            default:
+                return '未知类型';
+        }
     }
 };
 exports.Coach = Coach;
@@ -276,6 +308,23 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Coach.prototype, "notes", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: ['personal', 'group', 'both'],
+        default: 'both',
+        comment: '专业化类型：personal-私教，group-团课，both-全能',
+    }),
+    __metadata("design:type", String)
+], Coach.prototype, "specializationType", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'jsonb',
+        nullable: true,
+        comment: '业务设置：权限配置、专业信息等',
+    }),
+    __metadata("design:type", Object)
+], Coach.prototype, "businessSettings", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         name: 'store_id',

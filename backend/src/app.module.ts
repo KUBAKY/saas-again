@@ -15,6 +15,7 @@ import { BookingsModule } from './bookings/bookings.module';
 import { CheckInsModule } from './checkins/checkins.module';
 import { GroupClassCardsModule } from './group-class-cards/group-class-cards.module';
 import { PersonalTrainingCardsModule } from './personal-training-cards/personal-training-cards.module';
+import { MembershipCardsModule } from './membership-cards/membership-cards.module';
 import { SeedModule } from './database/seeds/seed.module';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
@@ -44,6 +45,7 @@ import jwtConfig from './config/jwt.config';
     CheckInsModule,
     GroupClassCardsModule,
     PersonalTrainingCardsModule,
+    MembershipCardsModule,
     SeedModule,
   ],
   controllers: [AppController],

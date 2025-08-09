@@ -1,4 +1,10 @@
-import { IsOptional, IsString, IsNumber, IsDateString, IsIn } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsDateString,
+  IsIn,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -51,10 +57,16 @@ export class QueryCourseScheduleDto {
   @IsDateString({}, { message: '结束日期格式不正确' })
   endDate?: string;
 
-  @ApiProperty({ description: '排序字段', required: false, default: 'startTime' })
+  @ApiProperty({
+    description: '排序字段',
+    required: false,
+    default: 'startTime',
+  })
   @IsOptional()
   @IsString({ message: '排序字段必须是字符串' })
-  @IsIn(['startTime', 'endTime', 'status', 'createdAt'], { message: '排序字段无效' })
+  @IsIn(['startTime', 'endTime', 'status', 'createdAt'], {
+    message: '排序字段无效',
+  })
   sortBy?: string = 'startTime';
 
   @ApiProperty({ description: '排序方向', required: false, default: 'ASC' })

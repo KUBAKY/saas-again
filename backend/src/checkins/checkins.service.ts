@@ -159,9 +159,7 @@ export class CheckInsService {
 
     // 权限检查
     const userRole = user.roles?.[0]?.name || '';
-    if (
-      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
-    ) {
+    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)) {
       throw new ForbiddenException('权限不足，无法修改签到记录');
     }
 
@@ -176,9 +174,7 @@ export class CheckInsService {
 
     // 权限检查
     const userRole = user.roles?.[0]?.name || '';
-    if (
-      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
-    ) {
+    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)) {
       throw new ForbiddenException('权限不足，无法删除签到记录');
     }
 

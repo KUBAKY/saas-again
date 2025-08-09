@@ -244,7 +244,11 @@ export class BookingsController {
     @Body('memberId') memberId: string,
     @CurrentUser() user: User,
   ) {
-    return this.bookingsService.createGroupClassBooking(scheduleId, memberId, user);
+    return this.bookingsService.createGroupClassBooking(
+      scheduleId,
+      memberId,
+      user,
+    );
   }
 
   @Patch(':id/cancel-group-class')

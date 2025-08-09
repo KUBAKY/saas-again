@@ -85,10 +85,16 @@ __decorate([
     __metadata("design:type", String)
 ], QueryCourseScheduleDto.prototype, "endDate", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '排序字段', required: false, default: 'startTime' }),
+    (0, swagger_1.ApiProperty)({
+        description: '排序字段',
+        required: false,
+        default: 'startTime',
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)({ message: '排序字段必须是字符串' }),
-    (0, class_validator_1.IsIn)(['startTime', 'endTime', 'status', 'createdAt'], { message: '排序字段无效' }),
+    (0, class_validator_1.IsIn)(['startTime', 'endTime', 'status', 'createdAt'], {
+        message: '排序字段无效',
+    }),
     __metadata("design:type", String)
 ], QueryCourseScheduleDto.prototype, "sortBy", void 0);
 __decorate([

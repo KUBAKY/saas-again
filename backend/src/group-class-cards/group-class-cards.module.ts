@@ -7,13 +7,7 @@ import { Member } from '../entities/member.entity';
 import { MembershipCard } from '../entities/membership-card.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      GroupClassCard,
-      Member,
-      MembershipCard,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([GroupClassCard, Member, MembershipCard])],
   controllers: [GroupClassCardsController],
   providers: [GroupClassCardsService],
   exports: [GroupClassCardsService],

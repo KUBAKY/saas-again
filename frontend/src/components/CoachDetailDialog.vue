@@ -55,4 +55,318 @@
               </el-descriptions-item>
               <el-descriptions-item label="入职日期">
                 {{ formatDate(coach.joinDate) }}
-              </el-descriptions-item>\n              <el-descriptions-item label="状态">\n                <el-tag :type="getStatusType(coach.status)">\n                  {{ getStatusText(coach.status) }}\n                </el-tag>\n              </el-descriptions-item>\n            </el-descriptions>\n          </el-card>\n        </el-col>\n        \n        <!-- 右侧统计信息 -->\n        <el-col :span=\"12\">\n          <el-card class=\"stats-card\">\n            <template #header>\n              <span class=\"card-title\">统计信息</span>\n            </template>\n            \n            <div class=\"stats-grid\">\n              <div class=\"stat-item\">\n                <div class=\"stat-value\">{{ coach.experienceYears }}</div>\n                <div class=\"stat-label\">从业年限</div>\n              </div>\n              <div class=\"stat-item\">\n                <div class=\"stat-value\">¥{{ coach.hourlyRate }}</div>\n                <div class=\"stat-label\">课时费</div>\n              </div>\n              <div class=\"stat-item\">\n                <div class=\"stat-value\">{{ coach.totalSessions || 0 }}</div>\n                <div class=\"stat-label\">总课时</div>\n              </div>\n              <div class=\"stat-item\">\n                <div class=\"stat-value\">{{ coach.rating?.toFixed(1) || '0.0' }}</div>\n                <div class=\"stat-label\">评分</div>\n              </div>\n            </div>\n            \n            <el-divider />\n            \n            <!-- 评分展示 -->\n            <div class=\"rating-section\">\n              <div class=\"rating-title\">学员评价</div>\n              <el-rate\n                :model-value=\"coach.rating\"\n                disabled\n                :precision=\"0.1\"\n                size=\"large\"\n              />\n              <span class=\"rating-text\">{{ coach.rating?.toFixed(1) || '0.0' }} 分</span>\n            </div>\n          </el-card>\n        </el-col>\n      </el-row>\n      \n      <el-row :gutter=\"20\" style=\"margin-top: 20px\">\n        <!-- 个人简介 -->\n        <el-col :span=\"24\">\n          <el-card>\n            <template #header>\n              <span class=\"card-title\">个人简介</span>\n            </template>\n            <p class=\"introduction\">\n              {{ coach.introduction || '暂无个人简介' }}\n            </p>\n          </el-card>\n        </el-col>\n      </el-row>\n      \n      <el-row :gutter=\"20\" style=\"margin-top: 20px\">\n        <!-- 资质认证 -->\n        <el-col :span=\"12\">\n          <el-card>\n            <template #header>\n              <span class=\"card-title\">资质认证</span>\n            </template>\n            <div v-if=\"coach.certifications?.length\" class=\"certifications\">\n              <div\n                v-for=\"cert in coach.certifications\"\n                :key=\"cert.name\"\n                class=\"certification-item\"\n              >\n                <div class=\"cert-name\">{{ cert.name }}</div>\n                <div class=\"cert-info\">\n                  <span class=\"cert-issuer\">{{ cert.issuer }}</span>\n                  <span class=\"cert-date\">{{ formatDate(cert.issueDate) }}</span>\n                </div>\n              </div>\n            </div>\n            <div v-else class=\"no-data\">\n              暂无资质认证\n            </div>\n          </el-card>\n        </el-col>\n        \n        <!-- 联系信息 -->\n        <el-col :span=\"12\">\n          <el-card>\n            <template #header>\n              <span class=\"card-title\">联系信息</span>\n            </template>\n            <el-descriptions :column=\"1\" size=\"small\">\n              <el-descriptions-item label=\"紧急联系人\">\n                {{ coach.emergencyContact || '-' }}\n              </el-descriptions-item>\n              <el-descriptions-item label=\"紧急联系电话\">\n                {{ coach.emergencyPhone || '-' }}\n              </el-descriptions-item>\n              <el-descriptions-item label=\"银行账户\">\n                {{ coach.bankAccount || '-' }}\n              </el-descriptions-item>\n              <el-descriptions-item label=\"备注\">\n                {{ coach.notes || '-' }}\n              </el-descriptions-item>\n            </el-descriptions>\n          </el-card>\n        </el-col>\n      </el-row>\n    </div>\n    \n    <template #footer>\n      <div class=\"dialog-footer\">\n        <el-button @click=\"dialogVisible = false\">关闭</el-button>\n        <el-button type=\"primary\" @click=\"handleEdit\">\n          编辑教练\n        </el-button>\n      </div>\n    </template>\n  </el-dialog>\n</template>\n\n<script setup lang=\"ts\">\nimport { computed } from 'vue'\nimport type { Coach } from '@/api/coaches'\n\ninterface Props {\n  modelValue: boolean\n  coach?: Coach | null\n}\n\ninterface Emits {\n  (e: 'update:modelValue', value: boolean): void\n  (e: 'edit', coach: Coach): void\n}\n\nconst props = withDefaults(defineProps<Props>(), {\n  coach: null\n})\n\nconst emit = defineEmits<Emits>()\n\n// 计算属性\nconst dialogVisible = computed({\n  get: () => props.modelValue,\n  set: (value) => emit('update:modelValue', value)\n})\n\n// 工具函数\nconst getGenderText = (gender?: string) => {\n  const genderMap: Record<string, string> = {\n    male: '男',\n    female: '女',\n    other: '其他'\n  }\n  return genderMap[gender || ''] || '-'\n}\n\nconst getStatusType = (status: string) => {\n  const types: Record<string, string> = {\n    active: 'success',\n    inactive: 'info',\n    suspended: 'warning'\n  }\n  return types[status] || 'info'\n}\n\nconst getStatusText = (status: string) => {\n  const texts: Record<string, string> = {\n    active: '在职',\n    inactive: '离职',\n    suspended: '暂停'\n  }\n  return texts[status] || '未知'\n}\n\nconst formatDate = (dateStr?: string) => {\n  if (!dateStr) return '-'\n  return new Date(dateStr).toLocaleDateString('zh-CN')\n}\n\n// 编辑教练\nconst handleEdit = () => {\n  if (props.coach) {\n    emit('edit', props.coach)\n    dialogVisible.value = false\n  }\n}\n</script>\n\n<style scoped lang=\"scss\">\n.coach-detail {\n  .info-card {\n    .coach-profile {\n      display: flex;\n      align-items: center;\n      margin-bottom: 20px;\n      \n      .coach-avatar {\n        margin-right: 16px;\n      }\n      \n      .coach-basic {\n        h3 {\n          margin: 0 0 8px 0;\n          color: #333;\n        }\n        \n        .coach-tags {\n          .el-tag {\n            margin-right: 8px;\n            margin-bottom: 4px;\n          }\n        }\n      }\n    }\n  }\n  \n  .stats-card {\n    .stats-grid {\n      display: grid;\n      grid-template-columns: repeat(2, 1fr);\n      gap: 16px;\n      \n      .stat-item {\n        text-align: center;\n        padding: 12px;\n        border-radius: 8px;\n        background: #f8f9fa;\n        \n        .stat-value {\n          font-size: 24px;\n          font-weight: 600;\n          color: #333;\n          margin-bottom: 4px;\n        }\n        \n        .stat-label {\n          font-size: 12px;\n          color: #666;\n        }\n      }\n    }\n    \n    .rating-section {\n      text-align: center;\n      \n      .rating-title {\n        margin-bottom: 12px;\n        font-weight: 500;\n        color: #333;\n      }\n      \n      .rating-text {\n        margin-left: 8px;\n        color: #666;\n      }\n    }\n  }\n  \n  .card-title {\n    font-weight: 500;\n    color: #333;\n  }\n  \n  .introduction {\n    color: #666;\n    line-height: 1.6;\n    margin: 0;\n  }\n  \n  .certifications {\n    .certification-item {\n      padding: 12px;\n      border: 1px solid #ebeef5;\n      border-radius: 6px;\n      margin-bottom: 8px;\n      \n      .cert-name {\n        font-weight: 500;\n        color: #333;\n        margin-bottom: 4px;\n      }\n      \n      .cert-info {\n        display: flex;\n        justify-content: space-between;\n        font-size: 12px;\n        color: #666;\n        \n        .cert-issuer {\n          flex: 1;\n        }\n      }\n    }\n  }\n  \n  .no-data {\n    text-align: center;\n    color: #ccc;\n    padding: 20px;\n  }\n}\n\n.dialog-footer {\n  text-align: right;\n}\n</style>"
+              </el-descriptions-item>
+              <el-descriptions-item label="状态">
+                <el-tag :type="getStatusType(coach.status)">
+                  {{ getStatusText(coach.status) }}
+                </el-tag>
+              </el-descriptions-item>
+            </el-descriptions>
+          </el-card>
+        </el-col>
+        
+        <!-- 右侧统计信息 -->
+        <el-col :span="12">
+          <el-card class="stats-card">
+            <template #header>
+              <span class="card-title">统计信息</span>
+            </template>
+            
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value">{{ coach.experienceYears }}</div>
+                <div class="stat-label">从业年限</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">¥{{ coach.hourlyRate }}</div>
+                <div class="stat-label">课时费</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">{{ coach.totalSessions || 0 }}</div>
+                <div class="stat-label">总课时</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">{{ coach.rating?.toFixed(1) || '0.0' }}</div>
+                <div class="stat-label">评分</div>
+              </div>
+            </div>
+            
+            <el-divider />
+            
+            <!-- 评分展示 -->
+            <div class="rating-section">
+              <div class="rating-title">学员评价</div>
+              <el-rate
+                :model-value="coach.rating"
+                disabled
+                :precision="0.1"
+                size="large"
+              />
+              <span class="rating-text">{{ coach.rating?.toFixed(1) || '0.0' }} 分</span>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+      
+      <el-row :gutter="20" style="margin-top: 20px">
+        <!-- 个人简介 -->
+        <el-col :span="24">
+          <el-card>
+            <template #header>
+              <span class="card-title">个人简介</span>
+            </template>
+            <p class="introduction">
+              {{ coach.introduction || '暂无个人简介' }}
+            </p>
+          </el-card>
+        </el-col>
+      </el-row>
+      
+      <el-row :gutter="20" style="margin-top: 20px">
+        <!-- 资质认证 -->
+        <el-col :span="12">
+          <el-card>
+            <template #header>
+              <span class="card-title">资质认证</span>
+            </template>
+            <div v-if="coach.certifications?.length" class="certifications">
+              <div
+                v-for="cert in coach.certifications"
+                :key="cert.name"
+                class="certification-item"
+              >
+                <div class="cert-name">{{ cert.name }}</div>
+                <div class="cert-info">
+                  <span class="cert-issuer">{{ cert.issuer }}</span>
+                  <span class="cert-date">{{ formatDate(cert.issueDate) }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-else class="no-data">
+              暂无资质认证
+            </div>
+          </el-card>
+        </el-col>
+        
+        <!-- 联系信息 -->
+        <el-col :span="12">
+          <el-card>
+            <template #header>
+              <span class="card-title">联系信息</span>
+            </template>
+            <el-descriptions :column="1" size="small">
+              <el-descriptions-item label="紧急联系人">
+                {{ coach.emergencyContact || '-' }}
+              </el-descriptions-item>
+              <el-descriptions-item label="紧急联系电话">
+                {{ coach.emergencyPhone || '-' }}
+              </el-descriptions-item>
+              <el-descriptions-item label="银行账户">
+                {{ coach.bankAccount || '-' }}
+              </el-descriptions-item>
+              <el-descriptions-item label="备注">
+                {{ coach.notes || '-' }}
+              </el-descriptions-item>
+            </el-descriptions>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
+    
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="dialogVisible = false">关闭</el-button>
+        <el-button type="primary" @click="handleEdit">
+          编辑教练
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import type { Coach } from '@/api/coaches'
+
+interface Props {
+  modelValue: boolean
+  coach?: Coach | null
+}
+
+interface Emits {
+  (e: 'update:modelValue', value: boolean): void
+  (e: 'edit', coach: Coach): void
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  coach: null
+})
+
+const emit = defineEmits<Emits>()
+
+// 计算属性
+const dialogVisible = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value)
+})
+
+// 工具函数
+const getGenderText = (gender?: string) => {
+  const genderMap: Record<string, string> = {
+    male: '男',
+    female: '女',
+    other: '其他'
+  }
+  return genderMap[gender || ''] || '-'
+}
+
+const getStatusType = (status: string) => {
+  const types: Record<string, string> = {
+    active: 'success',
+    inactive: 'info',
+    suspended: 'warning'
+  }
+  return types[status] || 'info'
+}
+
+const getStatusText = (status: string) => {
+  const texts: Record<string, string> = {
+    active: '在职',
+    inactive: '离职',
+    suspended: '暂停'
+  }
+  return texts[status] || '未知'
+}
+
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '-'
+  return new Date(dateStr).toLocaleDateString('zh-CN')
+}
+
+// 编辑教练
+const handleEdit = () => {
+  if (props.coach) {
+    emit('edit', props.coach)
+    dialogVisible.value = false
+  }
+}
+</script>
+
+<style scoped lang="scss">
+.coach-detail {
+  .info-card {
+    .coach-profile {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      
+      .coach-avatar {
+        margin-right: 16px;
+      }
+      
+      .coach-basic {
+        h3 {
+          margin: 0 0 8px 0;
+          color: #333;
+        }
+        
+        .coach-tags {
+          .el-tag {
+            margin-right: 8px;
+            margin-bottom: 4px;
+          }
+        }
+      }
+    }
+  }
+  
+  .stats-card {
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      
+      .stat-item {
+        text-align: center;
+        padding: 12px;
+        border-radius: 8px;
+        background: #f8f9fa;
+        
+        .stat-value {
+          font-size: 24px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 4px;
+        }
+        
+        .stat-label {
+          font-size: 12px;
+          color: #666;
+        }
+      }
+    }
+    
+    .rating-section {
+      text-align: center;
+      
+      .rating-title {
+        margin-bottom: 12px;
+        font-weight: 500;
+        color: #333;
+      }
+      
+      .rating-text {
+        margin-left: 8px;
+        color: #666;
+      }
+    }
+  }
+  
+  .card-title {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .introduction {
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+  }
+  
+  .certifications {
+    .certification-item {
+      padding: 12px;
+      border: 1px solid #ebeef5;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      
+      .cert-name {
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 4px;
+      }
+      
+      .cert-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #666;
+        
+        .cert-issuer {
+          flex: 1;
+        }
+      }
+    }
+  }
+  
+  .no-data {
+    text-align: center;
+    color: #ccc;
+    padding: 20px;
+  }
+}
+
+.dialog-footer {
+  text-align: right;
+}
+</style>

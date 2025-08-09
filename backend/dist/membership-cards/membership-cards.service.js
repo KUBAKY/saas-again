@@ -58,10 +58,14 @@ let MembershipCardsService = class MembershipCardsService {
             queryBuilder.andWhere('membershipCard.storeId = :storeId', { storeId });
         }
         if (memberId) {
-            queryBuilder.andWhere('membershipCard.memberId = :memberId', { memberId });
+            queryBuilder.andWhere('membershipCard.memberId = :memberId', {
+                memberId,
+            });
         }
         if (cardType) {
-            queryBuilder.andWhere('membershipCard.cardType = :cardType', { cardType });
+            queryBuilder.andWhere('membershipCard.cardType = :cardType', {
+                cardType,
+            });
         }
         if (status) {
             queryBuilder.andWhere('membershipCard.status = :status', { status });
@@ -123,7 +127,9 @@ let MembershipCardsService = class MembershipCardsService {
             throw new common_1.BadRequestException('只有激活的会员卡才能暂停');
         }
         membershipCard.freeze();
-        membershipCard.notes = reason ? `冻结原因: ${reason}` : membershipCard.notes;
+        membershipCard.notes = reason
+            ? `冻结原因: ${reason}`
+            : membershipCard.notes;
         return await this.membershipCardRepository.save(membershipCard);
     }
     async renew(id, renewalPeriod, amount, user) {
@@ -152,11 +158,20 @@ let MembershipCardsService = class MembershipCardsService {
                 storeId: user.storeId,
             });
         }
-        const [total, active, expired, suspended,] = await Promise.all([
+        const [total, active, expired, suspended] = await Promise.all([
             queryBuilder.getCount(),
-            queryBuilder.clone().andWhere('membershipCard.status = :status', { status: 'active' }).getCount(),
-            queryBuilder.clone().andWhere('membershipCard.status = :status', { status: 'expired' }).getCount(),
-            queryBuilder.clone().andWhere('membershipCard.status = :status', { status: 'suspended' }).getCount(),
+            queryBuilder
+                .clone()
+                .andWhere('membershipCard.status = :status', { status: 'active' })
+                .getCount(),
+            queryBuilder
+                .clone()
+                .andWhere('membershipCard.status = :status', { status: 'expired' })
+                .getCount(),
+            queryBuilder
+                .clone()
+                .andWhere('membershipCard.status = :status', { status: 'suspended' })
+                .getCount(),
         ]);
         return {
             total,

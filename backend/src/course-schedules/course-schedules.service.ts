@@ -12,7 +12,11 @@ import { Course } from '../entities/course.entity';
 import { Coach } from '../entities/coach.entity';
 import { Store } from '../entities/store.entity';
 import { User } from '../entities/user.entity';
-import { CreateCourseScheduleDto, UpdateCourseScheduleDto, QueryCourseScheduleDto } from './dto';
+import {
+  CreateCourseScheduleDto,
+  UpdateCourseScheduleDto,
+  QueryCourseScheduleDto,
+} from './dto';
 
 @Injectable()
 export class CourseSchedulesService {
@@ -30,7 +34,10 @@ export class CourseSchedulesService {
   /**
    * 创建课程排课
    */
-  async create(createDto: CreateCourseScheduleDto, user: User): Promise<CourseSchedule> {
+  async create(
+    createDto: CreateCourseScheduleDto,
+    user: User,
+  ): Promise<CourseSchedule> {
     // 验证课程是否存在
     const course = await this.courseRepository.findOne({
       where: { id: createDto.courseId },
@@ -66,7 +73,7 @@ export class CourseSchedulesService {
     // 验证时间合理性
     const startTime = new Date(createDto.startTime);
     const endTime = new Date(createDto.endTime);
-    
+
     if (startTime >= endTime) {
       throw new BadRequestException('开始时间必须早于结束时间');
     }
@@ -134,10 +141,13 @@ export class CourseSchedulesService {
 
     // 日期范围过滤
     if (startDate && endDate) {
-      queryBuilder.andWhere('schedule.startTime BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
-      });
+      queryBuilder.andWhere(
+        'schedule.startTime BETWEEN :startDate AND :endDate',
+        {
+          startDate,
+          endDate,
+        },
+      );
     } else if (startDate) {
       queryBuilder.andWhere('schedule.startTime >= :startDate', { startDate });
     } else if (endDate) {
@@ -147,7 +157,10 @@ export class CourseSchedulesService {
     // 排序
     const validSortFields = ['startTime', 'endTime', 'status', 'createdAt'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'startTime';
-    queryBuilder.orderBy(`schedule.${sortField}`, sortOrder === 'DESC' ? 'DESC' : 'ASC');
+    queryBuilder.orderBy(
+      `schedule.${sortField}`,
+      sortOrder === 'DESC' ? 'DESC' : 'ASC',
+    );
 
     // 分页
     const total = await queryBuilder.getCount();
@@ -194,7 +207,11 @@ export class CourseSchedulesService {
   /**
    * 更新排课信息
    */
-  async update(id: string, updateDto: UpdateCourseScheduleDto, user: User): Promise<CourseSchedule> {
+  async update(
+    id: string,
+    updateDto: UpdateCourseScheduleDto,
+    user: User,
+  ): Promise<CourseSchedule> {
     const schedule = await this.findOne(id, user);
 
     // 检查是否可以修改
@@ -204,9 +221,13 @@ export class CourseSchedulesService {
 
     // 如果修改了时间，需要检查冲突
     if (updateDto.startTime || updateDto.endTime) {
-      const startTime = updateDto.startTime ? new Date(updateDto.startTime) : schedule.startTime;
-      const endTime = updateDto.endTime ? new Date(updateDto.endTime) : schedule.endTime;
-      
+      const startTime = updateDto.startTime
+        ? new Date(updateDto.startTime)
+        : schedule.startTime;
+      const endTime = updateDto.endTime
+        ? new Date(updateDto.endTime)
+        : schedule.endTime;
+
       if (startTime >= endTime) {
         throw new BadRequestException('开始时间必须早于结束时间');
       }
@@ -229,11 +250,17 @@ export class CourseSchedulesService {
   /**
    * 取消排课
    */
-  async cancel(id: string, reason: string, user: User): Promise<CourseSchedule> {
+  async cancel(
+    id: string,
+    reason: string,
+    user: User,
+  ): Promise<CourseSchedule> {
     const schedule = await this.findOne(id, user);
 
     if (!schedule.canCancel()) {
-      throw new BadRequestException('排课无法取消（可能已开始或开始前3小时内）');
+      throw new BadRequestException(
+        '排课无法取消（可能已开始或开始前3小时内）',
+      );
     }
 
     schedule.cancel(reason);
@@ -280,14 +307,27 @@ export class CourseSchedulesService {
 
     const [total, scheduled, completed, cancelled] = await Promise.all([
       queryBuilder.getCount(),
-      queryBuilder.clone().andWhere('schedule.status = :status', { status: 'scheduled' }).getCount(),
-      queryBuilder.clone().andWhere('schedule.status = :status', { status: 'completed' }).getCount(),
-      queryBuilder.clone().andWhere('schedule.status = :status', { status: 'cancelled' }).getCount(),
+      queryBuilder
+        .clone()
+        .andWhere('schedule.status = :status', { status: 'scheduled' })
+        .getCount(),
+      queryBuilder
+        .clone()
+        .andWhere('schedule.status = :status', { status: 'completed' })
+        .getCount(),
+      queryBuilder
+        .clone()
+        .andWhere('schedule.status = :status', { status: 'cancelled' })
+        .getCount(),
     ]);
 
     // 今日排课数量
     const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const startOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    );
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
     const todayCount = await queryBuilder
@@ -316,10 +356,13 @@ export class CourseSchedulesService {
     const queryBuilder = this.createBaseQuery(user);
 
     if (startDate && endDate) {
-      queryBuilder.andWhere('schedule.startTime BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
-      });
+      queryBuilder.andWhere(
+        'schedule.startTime BETWEEN :startDate AND :endDate',
+        {
+          startDate,
+          endDate,
+        },
+      );
     }
 
     if (storeId) {
@@ -334,7 +377,7 @@ export class CourseSchedulesService {
 
     const schedules = await queryBuilder.getMany();
 
-    return schedules.map(schedule => ({
+    return schedules.map((schedule) => ({
       id: schedule.id,
       title: schedule.course.name,
       start: schedule.startTime,
@@ -390,9 +433,13 @@ export class CourseSchedulesService {
 
     // 数据隔离
     if (user.hasRole('STORE_MANAGER')) {
-      queryBuilder.andWhere('schedule.storeId = :storeId', { storeId: user.storeId });
+      queryBuilder.andWhere('schedule.storeId = :storeId', {
+        storeId: user.storeId,
+      });
     } else if (user.hasRole('COACH')) {
-      queryBuilder.andWhere('schedule.coachId = :coachId', { coachId: user.id });
+      queryBuilder.andWhere('schedule.coachId = :coachId', {
+        coachId: user.id,
+      });
     }
 
     return queryBuilder;

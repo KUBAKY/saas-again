@@ -53,7 +53,9 @@ let GroupClassCardsService = class GroupClassCardsService {
         const groupClassCard = this.groupClassCardRepository.create({
             ...createDto,
             cardNumber,
-            purchaseDate: createDto.purchaseDate ? new Date(createDto.purchaseDate) : new Date(),
+            purchaseDate: createDto.purchaseDate
+                ? new Date(createDto.purchaseDate)
+                : new Date(),
             usedSessions: 0,
             status: 'inactive',
         });
@@ -97,7 +99,7 @@ let GroupClassCardsService = class GroupClassCardsService {
             relations: ['member', 'member.store', 'membershipCard'],
             order: { createdAt: 'DESC' },
         });
-        const filteredCards = allCards.filter(card => card.member.store.id === user.storeId);
+        const filteredCards = allCards.filter((card) => card.member.store.id === user.storeId);
         const startIndex = (page - 1) * limit;
         const endIndex = startIndex + limit;
         const paginatedCards = filteredCards.slice(startIndex, endIndex);
@@ -131,7 +133,8 @@ let GroupClassCardsService = class GroupClassCardsService {
                 throw new common_1.NotFoundException('会员不存在');
             }
         }
-        if (updateDto.membershipCardId && updateDto.membershipCardId !== card.membershipCardId) {
+        if (updateDto.membershipCardId &&
+            updateDto.membershipCardId !== card.membershipCardId) {
             const membershipCard = await this.membershipCardRepository.findOne({
                 where: {
                     id: updateDto.membershipCardId,
@@ -139,7 +142,8 @@ let GroupClassCardsService = class GroupClassCardsService {
                 },
                 relations: ['member', 'member.store'],
             });
-            if (!membershipCard || membershipCard.member?.store?.id !== user.storeId) {
+            if (!membershipCard ||
+                membershipCard.member?.store?.id !== user.storeId) {
                 throw new common_1.NotFoundException('会籍卡不存在');
             }
         }
@@ -192,7 +196,9 @@ let GroupClassCardsService = class GroupClassCardsService {
     async generateCardNumber() {
         const prefix = 'GCC';
         const timestamp = Date.now().toString().slice(-8);
-        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        const random = Math.floor(Math.random() * 1000)
+            .toString()
+            .padStart(3, '0');
         return `${prefix}${timestamp}${random}`;
     }
 };

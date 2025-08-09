@@ -1,4 +1,11 @@
-import { IsOptional, IsString, IsEnum, IsUUID, IsNumber, Min } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsUUID,
+  IsNumber,
+  Min,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -27,7 +34,10 @@ export class QueryMembershipCardDto {
   @IsString()
   cardType?: string;
 
-  @ApiPropertyOptional({ description: '状态', enum: ['active', 'inactive', 'expired', 'frozen', 'refunded'] })
+  @ApiPropertyOptional({
+    description: '状态',
+    enum: ['active', 'inactive', 'expired', 'frozen', 'refunded'],
+  })
   @IsOptional()
   @IsEnum(['active', 'inactive', 'expired', 'frozen', 'refunded'])
   status?: 'active' | 'inactive' | 'expired' | 'frozen' | 'refunded';

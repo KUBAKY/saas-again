@@ -10,7 +10,12 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GroupClassCardsService } from '../services/group-class-cards.service';
 import { CreateGroupClassCardDto } from '../dto/create-group-class-card.dto';
@@ -22,7 +27,9 @@ import { QueryGroupClassCardDto } from '../dto/query-group-class-card.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('group-class-cards')
 export class GroupClassCardsController {
-  constructor(private readonly groupClassCardsService: GroupClassCardsService) {}
+  constructor(
+    private readonly groupClassCardsService: GroupClassCardsService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: '创建团课卡' })

@@ -53,7 +53,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: '价格',
-        example: 1200.00,
+        example: 1200.0,
     }),
     (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.IsNumber)(),
@@ -94,7 +94,7 @@ __decorate([
         example: {
             autoActivate: true,
             transferable: false,
-            refundable: true
+            refundable: true,
         },
     }),
     (0, class_validator_1.IsOptional)(),

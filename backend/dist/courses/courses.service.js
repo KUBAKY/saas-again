@@ -98,8 +98,7 @@ let CoursesService = class CoursesService {
         if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)) {
             throw new common_1.ForbiddenException('权限不足，无法修改课程');
         }
-        if (userRole === 'STORE_MANAGER' &&
-            course.storeId !== user.storeId) {
+        if (userRole === 'STORE_MANAGER' && course.storeId !== user.storeId) {
             throw new common_1.ForbiddenException('权限不足，只能修改自己门店的课程');
         }
         Object.assign(course, updateCourseDto);

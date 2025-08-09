@@ -24,4 +24,556 @@
           <el-button @click="handleNextWeek">
             下一周
             <el-icon><ArrowRight /></el-icon>
-          </el-button>\n          <el-button type=\"primary\" @click=\"handleSaveSchedule\">\n            保存排班\n          </el-button>\n        </div>\n      </div>\n\n      <!-- 工作时间设置 -->\n      <el-card class=\"working-hours-card\">\n        <template #header>\n          <span>工作时间设置</span>\n        </template>\n        \n        <el-row :gutter=\"12\">\n          <el-col\n            v-for=\"day in weekDays\"\n            :key=\"day.key\"\n            :span=\"3\"\n          >\n            <div class=\"day-schedule\">\n              <div class=\"day-header\">\n                <span class=\"day-name\">{{ day.name }}</span>\n                <el-switch\n                  v-model=\"workingHours[day.key].enabled\"\n                  size=\"small\"\n                />\n              </div>\n              \n              <div\n                v-if=\"workingHours[day.key].enabled\"\n                class=\"time-inputs\"\n              >\n                <el-time-picker\n                  v-model=\"workingHours[day.key].start\"\n                  placeholder=\"开始时间\"\n                  format=\"HH:mm\"\n                  value-format=\"HH:mm\"\n                  size=\"small\"\n                  style=\"width: 100%; margin-bottom: 8px\"\n                />\n                <el-time-picker\n                  v-model=\"workingHours[day.key].end\"\n                  placeholder=\"结束时间\"\n                  format=\"HH:mm\"\n                  value-format=\"HH:mm\"\n                  size=\"small\"\n                  style=\"width: 100%\"\n                />\n              </div>\n              \n              <div v-else class=\"rest-day\">\n                休息\n              </div>\n            </div>\n          </el-col>\n        </el-row>\n      </el-card>\n\n      <!-- 本周排班日历 -->\n      <el-card class=\"schedule-calendar\">\n        <template #header>\n          <span>本周排班 ({{ formatWeekRange(selectedWeek) }})</span>\n        </template>\n        \n        <div class=\"calendar-grid\">\n          <div class=\"time-column\">\n            <div class=\"time-header\">时间</div>\n            <div\n              v-for=\"hour in timeSlots\"\n              :key=\"hour\"\n              class=\"time-slot\"\n            >\n              {{ hour }}:00\n            </div>\n          </div>\n          \n          <div\n            v-for=\"(day, index) in weekDates\"\n            :key=\"day\"\n            class=\"day-column\"\n          >\n            <div class=\"day-header\">\n              <div class=\"day-name\">{{ weekDays[index].name }}</div>\n              <div class=\"day-date\">{{ formatDate(day) }}</div>\n            </div>\n            \n            <div\n              v-for=\"hour in timeSlots\"\n              :key=\"hour\"\n              class=\"schedule-slot\"\n              :class=\"{\n                'has-booking': hasBooking(day, hour),\n                'working-time': isWorkingTime(weekDays[index].key, hour)\n              }\"\n              @click=\"handleSlotClick(day, hour)\"\n            >\n              <div\n                v-if=\"hasBooking(day, hour)\"\n                class=\"booking-info\"\n              >\n                <div class=\"booking-title\">\n                  {{ getBookingInfo(day, hour)?.course }}\n                </div>\n                <div class=\"booking-member\">\n                  {{ getBookingInfo(day, hour)?.member }}\n                </div>\n              </div>\n              <div v-else-if=\"isWorkingTime(weekDays[index].key, hour)\" class=\"available-slot\">\n                可预约\n              </div>\n            </div>\n          </div>\n        </div>\n      </el-card>\n\n      <!-- 预约统计 -->\n      <el-card class=\"stats-card\">\n        <template #header>\n          <span>本周统计</span>\n        </template>\n        \n        <el-row :gutter=\"20\">\n          <el-col :span=\"6\">\n            <div class=\"stat-item\">\n              <div class=\"stat-value\">{{ weekStats.totalSlots }}</div>\n              <div class=\"stat-label\">总时段</div>\n            </div>\n          </el-col>\n          <el-col :span=\"6\">\n            <div class=\"stat-item\">\n              <div class=\"stat-value\">{{ weekStats.bookedSlots }}</div>\n              <div class=\"stat-label\">已预约</div>\n            </div>\n          </el-col>\n          <el-col :span=\"6\">\n            <div class=\"stat-item\">\n              <div class=\"stat-value\">{{ weekStats.availableSlots }}</div>\n              <div class=\"stat-label\">可预约</div>\n            </div>\n          </el-col>\n          <el-col :span=\"6\">\n            <div class=\"stat-item\">\n              <div class=\"stat-value\">{{ (weekStats.utilization * 100).toFixed(1) }}%</div>\n              <div class=\"stat-label\">利用率</div>\n            </div>\n          </el-col>\n        </el-row>\n      </el-card>\n    </div>\n    \n    <template #footer>\n      <div class=\"dialog-footer\">\n        <el-button @click=\"dialogVisible = false\">关闭</el-button>\n        <el-button type=\"primary\" @click=\"handleUpdateWorkingHours\">\n          更新工作时间\n        </el-button>\n      </div>\n    </template>\n  </el-dialog>\n</template>\n\n<script setup lang=\"ts\">\nimport { ref, reactive, computed, watch } from 'vue'\nimport { ElMessage } from 'element-plus'\nimport { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'\nimport { coachesApi, type Coach } from '@/api/coaches'\n\ninterface Props {\n  modelValue: boolean\n  coach?: Coach | null\n}\n\ninterface Emits {\n  (e: 'update:modelValue', value: boolean): void\n}\n\nconst props = withDefaults(defineProps<Props>(), {\n  coach: null\n})\n\nconst emit = defineEmits<Emits>()\n\n// 响应式数据\nconst selectedWeek = ref(getMonday(new Date()).toISOString().slice(0, 10))\nconst loading = ref(false)\nconst scheduleData = ref<any[]>([])\n\n// 周几配置\nconst weekDays = [\n  { key: 'monday', name: '周一' },\n  { key: 'tuesday', name: '周二' },\n  { key: 'wednesday', name: '周三' },\n  { key: 'thursday', name: '周四' },\n  { key: 'friday', name: '周五' },\n  { key: 'saturday', name: '周六' },\n  { key: 'sunday', name: '周日' }\n]\n\n// 时间段配置\nconst timeSlots = Array.from({ length: 14 }, (_, i) => i + 8) // 8:00 - 21:00\n\n// 工作时间\nconst workingHours = reactive({\n  monday: { enabled: true, start: '09:00', end: '18:00' },\n  tuesday: { enabled: true, start: '09:00', end: '18:00' },\n  wednesday: { enabled: true, start: '09:00', end: '18:00' },\n  thursday: { enabled: true, start: '09:00', end: '18:00' },\n  friday: { enabled: true, start: '09:00', end: '18:00' },\n  saturday: { enabled: true, start: '10:00', end: '17:00' },\n  sunday: { enabled: false, start: '10:00', end: '17:00' }\n})\n\n// 计算属性\nconst dialogVisible = computed({\n  get: () => props.modelValue,\n  set: (value) => emit('update:modelValue', value)\n})\n\nconst weekDates = computed(() => {\n  const monday = new Date(selectedWeek.value)\n  return Array.from({ length: 7 }, (_, i) => {\n    const date = new Date(monday)\n    date.setDate(monday.getDate() + i)\n    return date.toISOString().slice(0, 10)\n  })\n})\n\nconst weekStats = computed(() => {\n  const totalSlots = weekDates.value.reduce((total, date, dayIndex) => {\n    const dayKey = weekDays[dayIndex].key as keyof typeof workingHours\n    if (!workingHours[dayKey].enabled) return total\n    \n    const startHour = parseInt(workingHours[dayKey].start.split(':')[0])\n    const endHour = parseInt(workingHours[dayKey].end.split(':')[0])\n    return total + (endHour - startHour)\n  }, 0)\n  \n  const bookedSlots = scheduleData.value.length\n  const availableSlots = totalSlots - bookedSlots\n  const utilization = totalSlots > 0 ? bookedSlots / totalSlots : 0\n  \n  return {\n    totalSlots,\n    bookedSlots,\n    availableSlots,\n    utilization\n  }\n})\n\n// 监听教练变化\nwatch(\n  () => props.coach,\n  (newCoach) => {\n    if (newCoach && newCoach.workingHours) {\n      Object.assign(workingHours, newCoach.workingHours)\n    }\n  },\n  { immediate: true }\n)\n\n// 监听周变化\nwatch(selectedWeek, () => {\n  fetchScheduleData()\n})\n\n// 获取排班数据\nconst fetchScheduleData = async () => {\n  if (!props.coach) return\n  \n  try {\n    loading.value = true\n    const startDate = weekDates.value[0]\n    const endDate = weekDates.value[6]\n    \n    const response = await coachesApi.getCoachSchedule(props.coach.id, {\n      startDate,\n      endDate\n    })\n    \n    scheduleData.value = response\n  } catch (error) {\n    console.error('获取排班数据失败:', error)\n  } finally {\n    loading.value = false\n  }\n}\n\n// 工具函数\nfunction getMonday(date: Date): Date {\n  const d = new Date(date)\n  const day = d.getDay()\n  const diff = d.getDate() - day + (day === 0 ? -6 : 1)\n  return new Date(d.setDate(diff))\n}\n\nconst formatDate = (dateStr: string) => {\n  const date = new Date(dateStr)\n  return `${date.getMonth() + 1}/${date.getDate()}`\n}\n\nconst formatWeekRange = (mondayStr: string) => {\n  const monday = new Date(mondayStr)\n  const sunday = new Date(monday)\n  sunday.setDate(monday.getDate() + 6)\n  \n  return `${monday.getFullYear()}.${(monday.getMonth() + 1).toString().padStart(2, '0')}.${monday.getDate().toString().padStart(2, '0')} - ${sunday.getFullYear()}.${(sunday.getMonth() + 1).toString().padStart(2, '0')}.${sunday.getDate().toString().padStart(2, '0')}`\n}\n\nconst isWorkingTime = (dayKey: string, hour: number) => {\n  const daySchedule = workingHours[dayKey as keyof typeof workingHours]\n  if (!daySchedule.enabled) return false\n  \n  const startHour = parseInt(daySchedule.start.split(':')[0])\n  const endHour = parseInt(daySchedule.end.split(':')[0])\n  \n  return hour >= startHour && hour < endHour\n}\n\nconst hasBooking = (date: string, hour: number) => {\n  return scheduleData.value.some(booking => {\n    const bookingDate = booking.date\n    const bookingHour = parseInt(booking.startTime.split(':')[0])\n    return bookingDate === date && bookingHour === hour\n  })\n}\n\nconst getBookingInfo = (date: string, hour: number) => {\n  return scheduleData.value.find(booking => {\n    const bookingDate = booking.date\n    const bookingHour = parseInt(booking.startTime.split(':')[0])\n    return bookingDate === date && bookingHour === hour\n  })?.booking\n}\n\n// 事件处理\nconst handleWeekChange = () => {\n  fetchScheduleData()\n}\n\nconst handlePrevWeek = () => {\n  const currentWeek = new Date(selectedWeek.value)\n  currentWeek.setDate(currentWeek.getDate() - 7)\n  selectedWeek.value = currentWeek.toISOString().slice(0, 10)\n}\n\nconst handleNextWeek = () => {\n  const currentWeek = new Date(selectedWeek.value)\n  currentWeek.setDate(currentWeek.getDate() + 7)\n  selectedWeek.value = currentWeek.toISOString().slice(0, 10)\n}\n\nconst handleSlotClick = (date: string, hour: number) => {\n  // 这里可以实现预约管理功能\n  console.log('点击时段:', date, hour)\n}\n\nconst handleSaveSchedule = () => {\n  ElMessage.success('排班保存成功')\n}\n\nconst handleUpdateWorkingHours = async () => {\n  if (!props.coach) return\n  \n  try {\n    await coachesApi.updateWorkingHours(props.coach.id, workingHours)\n    ElMessage.success('工作时间更新成功')\n  } catch (error) {\n    ElMessage.error('工作时间更新失败')\n  }\n}\n\n// 组件挂载时获取数据\nfetchScheduleData()\n</script>\n\n<style scoped lang=\"scss\">\n.schedule-content {\n  .schedule-header {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    margin-bottom: 20px;\n    \n    .header-actions {\n      display: flex;\n      gap: 8px;\n    }\n  }\n  \n  .working-hours-card {\n    margin-bottom: 20px;\n    \n    .day-schedule {\n      .day-header {\n        display: flex;\n        justify-content: space-between;\n        align-items: center;\n        margin-bottom: 8px;\n        \n        .day-name {\n          font-weight: 500;\n          font-size: 12px;\n        }\n      }\n      \n      .time-inputs {\n        min-height: 80px;\n      }\n      \n      .rest-day {\n        text-align: center;\n        color: #999;\n        padding: 30px 0;\n        font-size: 12px;\n      }\n    }\n  }\n  \n  .schedule-calendar {\n    margin-bottom: 20px;\n    \n    .calendar-grid {\n      display: flex;\n      overflow-x: auto;\n      \n      .time-column {\n        min-width: 80px;\n        border-right: 1px solid #ebeef5;\n        \n        .time-header {\n          height: 60px;\n          display: flex;\n          align-items: center;\n          justify-content: center;\n          font-weight: 500;\n          border-bottom: 1px solid #ebeef5;\n        }\n        \n        .time-slot {\n          height: 60px;\n          display: flex;\n          align-items: center;\n          justify-content: center;\n          border-bottom: 1px solid #f5f7fa;\n          font-size: 12px;\n          color: #666;\n        }\n      }\n      \n      .day-column {\n        flex: 1;\n        min-width: 120px;\n        border-right: 1px solid #ebeef5;\n        \n        .day-header {\n          height: 60px;\n          display: flex;\n          flex-direction: column;\n          align-items: center;\n          justify-content: center;\n          border-bottom: 1px solid #ebeef5;\n          background: #f8f9fa;\n          \n          .day-name {\n            font-weight: 500;\n            margin-bottom: 2px;\n          }\n          \n          .day-date {\n            font-size: 12px;\n            color: #666;\n          }\n        }\n        \n        .schedule-slot {\n          height: 60px;\n          border-bottom: 1px solid #f5f7fa;\n          cursor: pointer;\n          transition: background-color 0.2s;\n          \n          &:hover {\n            background: #f8f9fa;\n          }\n          \n          &.working-time {\n            background: #f0f9ff;\n            \n            &:hover {\n              background: #e0f2fe;\n            }\n          }\n          \n          &.has-booking {\n            background: #fef3e2;\n            border: 1px solid #f59e0b;\n            \n            &:hover {\n              background: #fde68a;\n            }\n          }\n          \n          .booking-info {\n            padding: 8px;\n            \n            .booking-title {\n              font-weight: 500;\n              font-size: 12px;\n              color: #333;\n              margin-bottom: 2px;\n            }\n            \n            .booking-member {\n              font-size: 10px;\n              color: #666;\n            }\n          }\n          \n          .available-slot {\n            display: flex;\n            align-items: center;\n            justify-content: center;\n            height: 100%;\n            font-size: 11px;\n            color: #0ea5e9;\n          }\n        }\n      }\n    }\n  }\n  \n  .stats-card {\n    .stat-item {\n      text-align: center;\n      \n      .stat-value {\n        font-size: 24px;\n        font-weight: 600;\n        color: #333;\n        margin-bottom: 4px;\n      }\n      \n      .stat-label {\n        font-size: 12px;\n        color: #666;\n      }\n    }\n  }\n}\n\n.dialog-footer {\n  text-align: right;\n}\n</style>"
+          </el-button>
+          <el-button type="primary" @click="handleSaveSchedule">
+            保存排班
+          </el-button>
+        </div>
+      </div>
+
+      <!-- 工作时间设置 -->
+      <el-card class="working-hours-card">
+        <template #header>
+          <span>工作时间设置</span>
+        </template>
+        
+        <el-row :gutter="12">
+          <el-col
+            v-for="day in weekDays"
+            :key="day.key"
+            :span="3"
+          >
+            <div class="day-schedule">
+              <div class="day-header">
+                <span class="day-name">{{ day.name }}</span>
+                <el-switch
+                  v-model="workingHours[day.key].enabled"
+                  size="small"
+                />
+              </div>
+              
+              <div
+                v-if="workingHours[day.key].enabled"
+                class="time-inputs"
+              >
+                <el-time-picker
+                  v-model="workingHours[day.key].start"
+                  placeholder="开始时间"
+                  format="HH:mm"
+                  value-format="HH:mm"
+                  size="small"
+                  style="width: 100%; margin-bottom: 8px"
+                />
+                <el-time-picker
+                  v-model="workingHours[day.key].end"
+                  placeholder="结束时间"
+                  format="HH:mm"
+                  value-format="HH:mm"
+                  size="small"
+                  style="width: 100%"
+                />
+              </div>
+              
+              <div v-else class="rest-day">
+                休息
+              </div>
+            </div>
+          </el-col>
+        </el-row>
+      </el-card>
+
+      <!-- 本周排班日历 -->
+      <el-card class="schedule-calendar">
+        <template #header>
+          <span>本周排班 ({{ formatWeekRange(selectedWeek) }})</span>
+        </template>
+        
+        <div class="calendar-grid">
+          <div class="time-column">
+            <div class="time-header">时间</div>
+            <div
+              v-for="hour in timeSlots"
+              :key="hour"
+              class="time-slot"
+            >
+              {{ hour }}:00
+            </div>
+          </div>
+          
+          <div
+            v-for="(day, index) in weekDates"
+            :key="day"
+            class="day-column"
+          >
+            <div class="day-header">
+              <div class="day-name">{{ weekDays[index].name }}</div>
+              <div class="day-date">{{ formatDate(day) }}</div>
+            </div>
+            
+            <div
+              v-for="hour in timeSlots"
+              :key="hour"
+              class="schedule-slot"
+              :class="{
+                'has-booking': hasBooking(day, hour),
+                'working-time': isWorkingTime(weekDays[index].key, hour)
+              }"
+              @click="handleSlotClick(day, hour)"
+            >
+              <div
+                v-if="hasBooking(day, hour)"
+                class="booking-info"
+              >
+                <div class="booking-title">
+                  {{ getBookingInfo(day, hour)?.course }}
+                </div>
+                <div class="booking-member">
+                  {{ getBookingInfo(day, hour)?.member }}
+                </div>
+              </div>
+              <div v-else-if="isWorkingTime(weekDays[index].key, hour)" class="available-slot">
+                可预约
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-card>
+
+      <!-- 预约统计 -->
+      <el-card class="stats-card">
+        <template #header>
+          <span>本周统计</span>
+        </template>
+        
+        <el-row :gutter="20">
+          <el-col :span="6">
+            <div class="stat-item">
+              <div class="stat-value">{{ weekStats.totalSlots }}</div>
+              <div class="stat-label">总时段</div>
+            </div>
+          </el-col>
+          <el-col :span="6">
+            <div class="stat-item">
+              <div class="stat-value">{{ weekStats.bookedSlots }}</div>
+              <div class="stat-label">已预约</div>
+            </div>
+          </el-col>
+          <el-col :span="6">
+            <div class="stat-item">
+              <div class="stat-value">{{ weekStats.availableSlots }}</div>
+              <div class="stat-label">可预约</div>
+            </div>
+          </el-col>
+          <el-col :span="6">
+            <div class="stat-item">
+              <div class="stat-value">{{ (weekStats.utilization * 100).toFixed(1) }}%</div>
+              <div class="stat-label">利用率</div>
+            </div>
+          </el-col>
+        </el-row>
+      </el-card>
+    </div>
+    
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="dialogVisible = false">关闭</el-button>
+        <el-button type="primary" @click="handleUpdateWorkingHours">
+          更新工作时间
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, computed, watch } from 'vue'
+import { ElMessage } from 'element-plus'
+import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import { coachesApi, type Coach } from '@/api/coaches'
+
+interface Props {
+  modelValue: boolean
+  coach?: Coach | null
+}
+
+interface Emits {
+  (e: 'update:modelValue', value: boolean): void
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  coach: null
+})
+
+const emit = defineEmits<Emits>()
+
+// 响应式数据
+const selectedWeek = ref(getMonday(new Date()).toISOString().slice(0, 10))
+const loading = ref(false)
+const scheduleData = ref<any[]>([])
+
+// 周几配置
+const weekDays = [
+  { key: 'monday', name: '周一' },
+  { key: 'tuesday', name: '周二' },
+  { key: 'wednesday', name: '周三' },
+  { key: 'thursday', name: '周四' },
+  { key: 'friday', name: '周五' },
+  { key: 'saturday', name: '周六' },
+  { key: 'sunday', name: '周日' }
+]
+
+// 时间段配置
+const timeSlots = Array.from({ length: 14 }, (_, i) => i + 8) // 8:00 - 21:00
+
+// 工作时间
+const workingHours = reactive({
+  monday: { enabled: true, start: '09:00', end: '18:00' },
+  tuesday: { enabled: true, start: '09:00', end: '18:00' },
+  wednesday: { enabled: true, start: '09:00', end: '18:00' },
+  thursday: { enabled: true, start: '09:00', end: '18:00' },
+  friday: { enabled: true, start: '09:00', end: '18:00' },
+  saturday: { enabled: true, start: '10:00', end: '17:00' },
+  sunday: { enabled: false, start: '10:00', end: '17:00' }
+})
+
+// 计算属性
+const dialogVisible = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value)
+})
+
+const weekDates = computed(() => {
+  const monday = new Date(selectedWeek.value)
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(monday)
+    date.setDate(monday.getDate() + i)
+    return date.toISOString().slice(0, 10)
+  })
+})
+
+const weekStats = computed(() => {
+  const totalSlots = weekDates.value.reduce((total, date, dayIndex) => {
+    const dayKey = weekDays[dayIndex].key as keyof typeof workingHours
+    if (!workingHours[dayKey].enabled) return total
+    
+    const startHour = parseInt(workingHours[dayKey].start.split(':')[0])
+    const endHour = parseInt(workingHours[dayKey].end.split(':')[0])
+    return total + (endHour - startHour)
+  }, 0)
+  
+  const bookedSlots = scheduleData.value.length
+  const availableSlots = totalSlots - bookedSlots
+  const utilization = totalSlots > 0 ? bookedSlots / totalSlots : 0
+  
+  return {
+    totalSlots,
+    bookedSlots,
+    availableSlots,
+    utilization
+  }
+})
+
+// 监听教练变化
+watch(
+  () => props.coach,
+  (newCoach) => {
+    if (newCoach && newCoach.workingHours) {
+      Object.assign(workingHours, newCoach.workingHours)
+    }
+  },
+  { immediate: true }
+)
+
+// 监听周变化
+watch(selectedWeek, () => {
+  fetchScheduleData()
+})
+
+// 获取排班数据
+const fetchScheduleData = async () => {
+  if (!props.coach) return
+  
+  try {
+    loading.value = true
+    const startDate = weekDates.value[0]
+    const endDate = weekDates.value[6]
+    
+    const response = await coachesApi.getCoachSchedule(props.coach.id, {
+      startDate,
+      endDate
+    })
+    
+    scheduleData.value = response
+  } catch (error) {
+    console.error('获取排班数据失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// 工具函数
+function getMonday(date: Date): Date {
+  const d = new Date(date)
+  const day = d.getDay()
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+  return new Date(d.setDate(diff))
+}
+
+const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr)
+  return `${date.getMonth() + 1}/${date.getDate()}`
+}
+
+const formatWeekRange = (mondayStr: string) => {
+  const monday = new Date(mondayStr)
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  
+  return `${monday.getFullYear()}.${(monday.getMonth() + 1).toString().padStart(2, '0')}.${monday.getDate().toString().padStart(2, '0')} - ${sunday.getFullYear()}.${(sunday.getMonth() + 1).toString().padStart(2, '0')}.${sunday.getDate().toString().padStart(2, '0')}`
+}
+
+const isWorkingTime = (dayKey: string, hour: number) => {
+  const daySchedule = workingHours[dayKey as keyof typeof workingHours]
+  if (!daySchedule.enabled) return false
+  
+  const startHour = parseInt(daySchedule.start.split(':')[0])
+  const endHour = parseInt(daySchedule.end.split(':')[0])
+  
+  return hour >= startHour && hour < endHour
+}
+
+const hasBooking = (date: string, hour: number) => {
+  return scheduleData.value.some(booking => {
+    const bookingDate = booking.date
+    const bookingHour = parseInt(booking.startTime.split(':')[0])
+    return bookingDate === date && bookingHour === hour
+  })
+}
+
+const getBookingInfo = (date: string, hour: number) => {
+  return scheduleData.value.find(booking => {
+    const bookingDate = booking.date
+    const bookingHour = parseInt(booking.startTime.split(':')[0])
+    return bookingDate === date && bookingHour === hour
+  })?.booking
+}
+
+// 事件处理
+const handleWeekChange = () => {
+  fetchScheduleData()
+}
+
+const handlePrevWeek = () => {
+  const currentWeek = new Date(selectedWeek.value)
+  currentWeek.setDate(currentWeek.getDate() - 7)
+  selectedWeek.value = currentWeek.toISOString().slice(0, 10)
+}
+
+const handleNextWeek = () => {
+  const currentWeek = new Date(selectedWeek.value)
+  currentWeek.setDate(currentWeek.getDate() + 7)
+  selectedWeek.value = currentWeek.toISOString().slice(0, 10)
+}
+
+const handleSlotClick = (date: string, hour: number) => {
+  // 这里可以实现预约管理功能
+  console.log('点击时段:', date, hour)
+}
+
+const handleSaveSchedule = () => {
+  ElMessage.success('排班保存成功')
+}
+
+const handleUpdateWorkingHours = async () => {
+  if (!props.coach) return
+  
+  try {
+    await coachesApi.updateWorkingHours(props.coach.id, workingHours)
+    ElMessage.success('工作时间更新成功')
+  } catch (error) {
+    ElMessage.error('工作时间更新失败')
+  }
+}
+
+// 组件挂载时获取数据
+fetchScheduleData()
+</script>
+
+<style scoped lang="scss">
+.schedule-content {
+  .schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+  }
+  
+  .working-hours-card {
+    margin-bottom: 20px;
+    
+    .day-schedule {
+      .day-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        
+        .day-name {
+          font-weight: 500;
+          font-size: 12px;
+        }
+      }
+      
+      .time-inputs {
+        min-height: 80px;
+      }
+      
+      .rest-day {
+        text-align: center;
+        color: #999;
+        padding: 30px 0;
+        font-size: 12px;
+      }
+    }
+  }
+  
+  .schedule-calendar {
+    margin-bottom: 20px;
+    
+    .calendar-grid {
+      display: flex;
+      overflow-x: auto;
+      
+      .time-column {
+        min-width: 80px;
+        border-right: 1px solid #ebeef5;
+        
+        .time-header {
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 500;
+          border-bottom: 1px solid #ebeef5;
+        }
+        
+        .time-slot {
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-bottom: 1px solid #f5f7fa;
+          font-size: 12px;
+          color: #666;
+        }
+      }
+      
+      .day-column {
+        flex: 1;
+        min-width: 120px;
+        border-right: 1px solid #ebeef5;
+        
+        .day-header {
+          height: 60px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          border-bottom: 1px solid #ebeef5;
+          background: #f8f9fa;
+          
+          .day-name {
+            font-weight: 500;
+            margin-bottom: 2px;
+          }
+          
+          .day-date {
+            font-size: 12px;
+            color: #666;
+          }
+        }
+        
+        .schedule-slot {
+          height: 60px;
+          border-bottom: 1px solid #f5f7fa;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          
+          &:hover {
+            background: #f8f9fa;
+          }
+          
+          &.working-time {
+            background: #f0f9ff;
+            
+            &:hover {
+              background: #e0f2fe;
+            }
+          }
+          
+          &.has-booking {
+            background: #fef3e2;
+            border: 1px solid #f59e0b;
+            
+            &:hover {
+              background: #fde68a;
+            }
+          }
+          
+          .booking-info {
+            padding: 8px;
+            
+            .booking-title {
+              font-weight: 500;
+              font-size: 12px;
+              color: #333;
+              margin-bottom: 2px;
+            }
+            
+            .booking-member {
+              font-size: 10px;
+              color: #666;
+            }
+          }
+          
+          .available-slot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 11px;
+            color: #0ea5e9;
+          }
+        }
+      }
+    }
+  }
+  
+  .stats-card {
+    .stat-item {
+      text-align: center;
+      
+      .stat-value {
+        font-size: 24px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+      }
+      
+      .stat-label {
+        font-size: 12px;
+        color: #666;
+      }
+    }
+  }
+}
+
+.dialog-footer {
+  text-align: right;
+}
+</style>

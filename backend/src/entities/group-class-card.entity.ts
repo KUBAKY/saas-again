@@ -105,9 +105,13 @@ export class GroupClassCard extends BaseEntity {
   @JoinColumn({ name: 'member_id' })
   member: Member;
 
-  @ManyToOne(() => MembershipCard, (membershipCard) => membershipCard.groupClassCards, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(
+    () => MembershipCard,
+    (membershipCard) => membershipCard.groupClassCards,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({ name: 'membership_card_id' })
   membershipCard: MembershipCard;
 

@@ -51,7 +51,10 @@ __decorate([
     __metadata("design:type", String)
 ], QueryMembershipCardDto.prototype, "cardType", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '状态', enum: ['active', 'inactive', 'expired', 'frozen', 'refunded'] }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '状态',
+        enum: ['active', 'inactive', 'expired', 'frozen', 'refunded'],
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(['active', 'inactive', 'expired', 'frozen', 'refunded']),
     __metadata("design:type", String)

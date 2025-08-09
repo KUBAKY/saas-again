@@ -6,38 +6,38 @@ const PERMISSIONS = {
     '*': ['create', 'read', 'update', 'delete'],
   },
   'brand-admin': {
-    'brand': ['read', 'update'],
-    'store': ['create', 'read', 'update', 'delete'],
-    'user': ['create', 'read', 'update', 'delete'],
-    'member': ['create', 'read', 'update', 'delete'],
-    'coach': ['create', 'read', 'update', 'delete'],
-    'course': ['create', 'read', 'update', 'delete'],
-    'booking': ['create', 'read', 'update', 'delete'],
-    'checkin': ['create', 'read', 'update', 'delete'],
+    brand: ['read', 'update'],
+    store: ['create', 'read', 'update', 'delete'],
+    user: ['create', 'read', 'update', 'delete'],
+    member: ['create', 'read', 'update', 'delete'],
+    coach: ['create', 'read', 'update', 'delete'],
+    course: ['create', 'read', 'update', 'delete'],
+    booking: ['create', 'read', 'update', 'delete'],
+    checkin: ['create', 'read', 'update', 'delete'],
     'membership-card': ['create', 'read', 'update', 'delete'],
   },
   'store-manager': {
-    'store': ['read', 'update'],
-    'user': ['read'],
-    'member': ['create', 'read', 'update', 'delete'],
-    'coach': ['create', 'read', 'update', 'delete'],
-    'course': ['create', 'read', 'update', 'delete'],
-    'booking': ['create', 'read', 'update', 'delete'],
-    'checkin': ['create', 'read', 'update', 'delete'],
+    store: ['read', 'update'],
+    user: ['read'],
+    member: ['create', 'read', 'update', 'delete'],
+    coach: ['create', 'read', 'update', 'delete'],
+    course: ['create', 'read', 'update', 'delete'],
+    booking: ['create', 'read', 'update', 'delete'],
+    checkin: ['create', 'read', 'update', 'delete'],
     'membership-card': ['create', 'read', 'update', 'delete'],
   },
-  'coach': {
-    'member': ['read'],
-    'course': ['read'],
-    'booking': ['read', 'update'],
-    'checkin': ['create', 'read'],
+  coach: {
+    member: ['read'],
+    course: ['read'],
+    booking: ['read', 'update'],
+    checkin: ['create', 'read'],
     'membership-card': ['read'],
   },
-  'staff': {
-    'member': ['create', 'read', 'update'],
-    'course': ['read'],
-    'booking': ['create', 'read', 'update'],
-    'checkin': ['create', 'read'],
+  staff: {
+    member: ['create', 'read', 'update'],
+    course: ['read'],
+    booking: ['create', 'read', 'update'],
+    checkin: ['create', 'read'],
     'membership-card': ['create', 'read', 'update'],
   },
 };
@@ -71,7 +71,9 @@ export function checkPermission(
   // 检查具体资源权限
   const resourcePermissions = rolePermissions[resource];
   if (!resourcePermissions || !resourcePermissions.includes(action)) {
-    throw new ForbiddenException(`权限不足：无法对 ${resource} 执行 ${action} 操作`);
+    throw new ForbiddenException(
+      `权限不足：无法对 ${resource} 执行 ${action} 操作`,
+    );
   }
 }
 

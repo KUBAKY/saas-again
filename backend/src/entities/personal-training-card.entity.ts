@@ -114,9 +114,13 @@ export class PersonalTrainingCard extends BaseEntity {
   @JoinColumn({ name: 'member_id' })
   member: Member;
 
-  @ManyToOne(() => MembershipCard, (membershipCard) => membershipCard.personalTrainingCards, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(
+    () => MembershipCard,
+    (membershipCard) => membershipCard.personalTrainingCards,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({ name: 'membership_card_id' })
   membershipCard: MembershipCard;
 

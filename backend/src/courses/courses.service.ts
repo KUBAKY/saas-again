@@ -18,11 +18,9 @@ export class CoursesService {
 
   async create(createCourseDto: CreateCourseDto, user: User): Promise<Course> {
     const userRole = user.roles?.[0]?.name || '';
-    
+
     // 权限检查：只有门店管理员及以上可以创建课程
-    if (
-      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
-    ) {
+    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)) {
       throw new ForbiddenException('权限不足，无法创建课程');
     }
 
@@ -141,19 +139,14 @@ export class CoursesService {
     const course = await this.findOne(id, user);
 
     const userRole = user.roles?.[0]?.name || '';
-    
+
     // 权限检查
-    if (
-      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
-    ) {
+    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)) {
       throw new ForbiddenException('权限不足，无法修改课程');
     }
 
     // 门店管理员只能修改自己门店的课程
-    if (
-      userRole === 'STORE_MANAGER' &&
-      course.storeId !== user.storeId
-    ) {
+    if (userRole === 'STORE_MANAGER' && course.storeId !== user.storeId) {
       throw new ForbiddenException('权限不足，只能修改自己门店的课程');
     }
 
@@ -171,11 +164,9 @@ export class CoursesService {
     const course = await this.findOne(id, user);
 
     const userRole = user.roles?.[0]?.name || '';
-    
+
     // 权限检查
-    if (
-      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
-    ) {
+    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)) {
       throw new ForbiddenException('权限不足，无法修改课程状态');
     }
 
@@ -189,11 +180,9 @@ export class CoursesService {
     const course = await this.findOne(id, user);
 
     const userRole = user.roles?.[0]?.name || '';
-    
+
     // 权限检查
-    if (
-      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
-    ) {
+    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)) {
       throw new ForbiddenException('权限不足，无法删除课程');
     }
 
@@ -319,7 +308,7 @@ export class CoursesService {
     }
 
     const userRole = user.roles?.[0]?.name || '';
-    
+
     // 数据隔离
     if (userRole === 'STORE_MANAGER' && user.storeId) {
       queryBuilder.andWhere('course.storeId = :storeId', {

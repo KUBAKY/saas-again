@@ -10,7 +10,12 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PersonalTrainingCardsService } from '../services/personal-training-cards.service';
 import { CreatePersonalTrainingCardDto } from '../dto/create-personal-training-card.dto';
@@ -22,14 +27,19 @@ import { QueryPersonalTrainingCardDto } from '../dto/query-personal-training-car
 @UseGuards(JwtAuthGuard)
 @Controller('personal-training-cards')
 export class PersonalTrainingCardsController {
-  constructor(private readonly personalTrainingCardsService: PersonalTrainingCardsService) {}
+  constructor(
+    private readonly personalTrainingCardsService: PersonalTrainingCardsService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: '创建私教卡' })
   @ApiResponse({ status: 201, description: '私教卡创建成功' })
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 404, description: '会员、会籍卡或教练不存在' })
-  async create(@Body() createDto: CreatePersonalTrainingCardDto, @Request() req) {
+  async create(
+    @Body() createDto: CreatePersonalTrainingCardDto,
+    @Request() req,
+  ) {
     return await this.personalTrainingCardsService.create(createDto, req.user);
   }
 
@@ -57,7 +67,11 @@ export class PersonalTrainingCardsController {
     @Body() updateDto: UpdatePersonalTrainingCardDto,
     @Request() req,
   ) {
-    return await this.personalTrainingCardsService.update(id, updateDto, req.user);
+    return await this.personalTrainingCardsService.update(
+      id,
+      updateDto,
+      req.user,
+    );
   }
 
   @Delete(':id')

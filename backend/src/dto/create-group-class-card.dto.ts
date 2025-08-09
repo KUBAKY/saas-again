@@ -1,4 +1,13 @@
-import { IsNotEmpty, IsString, IsNumber, IsOptional, IsEnum, IsUUID, IsDateString, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsEnum,
+  IsUUID,
+  IsDateString,
+  Min,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateGroupClassCardDto {
@@ -28,7 +37,7 @@ export class CreateGroupClassCardDto {
 
   @ApiProperty({
     description: '价格',
-    example: 1200.00,
+    example: 1200.0,
   })
   @IsNotEmpty()
   @IsNumber()
@@ -65,7 +74,7 @@ export class CreateGroupClassCardDto {
     example: {
       autoActivate: true,
       transferable: false,
-      refundable: true
+      refundable: true,
     },
   })
   @IsOptional()

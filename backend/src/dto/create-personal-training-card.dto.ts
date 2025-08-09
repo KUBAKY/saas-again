@@ -1,4 +1,13 @@
-import { IsNotEmpty, IsString, IsNumber, IsOptional, IsEnum, IsUUID, IsDateString, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsEnum,
+  IsUUID,
+  IsDateString,
+  Min,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreatePersonalTrainingCardDto {
@@ -28,7 +37,7 @@ export class CreatePersonalTrainingCardDto {
 
   @ApiProperty({
     description: '价格',
-    example: 5000.00,
+    example: 5000.0,
   })
   @IsNotEmpty()
   @IsNumber()
@@ -74,7 +83,7 @@ export class CreatePersonalTrainingCardDto {
       autoActivate: true,
       transferable: false,
       refundable: true,
-      coachChangeable: true
+      coachChangeable: true,
     },
   })
   @IsOptional()

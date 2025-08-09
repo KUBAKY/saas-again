@@ -35,6 +35,14 @@ export declare class Coach extends BaseEntity {
     }>;
     status: 'active' | 'inactive' | 'on_leave' | 'resigned';
     notes?: string;
+    specializationType: 'personal' | 'group' | 'both';
+    businessSettings?: {
+        canManagePersonalTraining: boolean;
+        canManageGroupClass: boolean;
+        maxStudentsPerClass?: number;
+        specialties: string[];
+        certifications: string[];
+    };
     storeId: string;
     store: Store;
     courses: Course[];
@@ -51,4 +59,10 @@ export declare class Coach extends BaseEntity {
     private timeToMinutes;
     getTotalCourses(): number;
     getActiveCourses(): Course[];
+    isPersonalTrainer(): boolean;
+    isGroupInstructor(): boolean;
+    canManagePersonalTraining(): boolean;
+    canManageGroupClass(): boolean;
+    getMaxStudentsPerClass(): number;
+    getSpecializationDescription(): string;
 }

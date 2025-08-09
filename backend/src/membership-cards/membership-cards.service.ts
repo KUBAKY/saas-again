@@ -1,10 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MembershipCard } from '../entities/membership-card.entity';
 import { User } from '../entities/user.entity';
 import { Member } from '../entities/member.entity';
-import { CreateMembershipCardDto, UpdateMembershipCardDto, QueryMembershipCardDto } from './dto';
+import {
+  CreateMembershipCardDto,
+  UpdateMembershipCardDto,
+  QueryMembershipCardDto,
+} from './dto';
 import { checkPermission } from '../common/utils/permission.util';
 
 @Injectable()
@@ -17,11 +25,7 @@ export class MembershipCardsService {
   ) {}
 
   async create(createMembershipCardDto: CreateMembershipCardDto, user: User) {
-    checkPermission(
-      user.roles?.[0]?.name || '',
-      'membership-card',
-      'create'
-    );
+    checkPermission(user.roles?.[0]?.name || '', 'membership-card', 'create');
 
     // 验证会员是否存在
     const member = await this.memberRepository.findOne({
@@ -43,11 +47,7 @@ export class MembershipCardsService {
   }
 
   async findAll(queryDto: QueryMembershipCardDto, user: User) {
-    checkPermission(
-      user.roles?.[0]?.name || '',
-      'membership-card',
-      'read'
-    );
+    checkPermission(user.roles?.[0]?.name || '', 'membership-card', 'read');
 
     const {
       page = 1,
@@ -72,11 +72,15 @@ export class MembershipCardsService {
     }
 
     if (memberId) {
-      queryBuilder.andWhere('membershipCard.memberId = :memberId', { memberId });
+      queryBuilder.andWhere('membershipCard.memberId = :memberId', {
+        memberId,
+      });
     }
 
     if (cardType) {
-      queryBuilder.andWhere('membershipCard.cardType = :cardType', { cardType });
+      queryBuilder.andWhere('membershipCard.cardType = :cardType', {
+        cardType,
+      });
     }
 
     if (status) {
@@ -99,11 +103,7 @@ export class MembershipCardsService {
   }
 
   async findOne(id: string, user: User) {
-    checkPermission(
-      user.roles?.[0]?.name || '',
-      'membership-card',
-      'read'
-    );
+    checkPermission(user.roles?.[0]?.name || '', 'membership-card', 'read');
 
     const queryBuilder = this.membershipCardRepository
       .createQueryBuilder('membershipCard')
@@ -126,12 +126,12 @@ export class MembershipCardsService {
     return membershipCard;
   }
 
-  async update(id: string, updateMembershipCardDto: UpdateMembershipCardDto, user: User) {
-    checkPermission(
-      user.roles?.[0]?.name || '',
-      'membership-card',
-      'update'
-    );
+  async update(
+    id: string,
+    updateMembershipCardDto: UpdateMembershipCardDto,
+    user: User,
+  ) {
+    checkPermission(user.roles?.[0]?.name || '', 'membership-card', 'update');
 
     const membershipCard = await this.findOne(id, user);
 
@@ -142,32 +142,24 @@ export class MembershipCardsService {
   }
 
   async activate(id: string, user: User) {
-    checkPermission(
-      user.roles?.[0]?.name || '',
-      'membership-card',
-      'update'
-    );
+    checkPermission(user.roles?.[0]?.name || '', 'membership-card', 'update');
 
     const membershipCard = await this.findOne(id, user);
-    
+
     if (membershipCard.status !== 'inactive') {
       throw new BadRequestException('只有未激活的会员卡才能激活');
     }
 
     membershipCard.activate();
-    
+
     return await this.membershipCardRepository.save(membershipCard);
   }
 
   async suspend(id: string, reason: string, user: User) {
-    checkPermission(
-      user.roles?.[0]?.name || '',
-      'membership-card',
-      'update'
-    );
+    checkPermission(user.roles?.[0]?.name || '', 'membership-card', 'update');
 
     const membershipCard = await this.findOne(id, user);
-    
+
     if (membershipCard.status === 'frozen') {
       throw new BadRequestException('会员卡已经冻结');
     }
@@ -177,17 +169,15 @@ export class MembershipCardsService {
     }
 
     membershipCard.freeze();
-    membershipCard.notes = reason ? `冻结原因: ${reason}` : membershipCard.notes;
-    
+    membershipCard.notes = reason
+      ? `冻结原因: ${reason}`
+      : membershipCard.notes;
+
     return await this.membershipCardRepository.save(membershipCard);
   }
 
   async renew(id: string, renewalPeriod: number, amount: number, user: User) {
-    checkPermission(
-      user.roles?.[0]?.name || '',
-      'membership-card',
-      'update'
-    );
+    checkPermission(user.roles?.[0]?.name || '', 'membership-card', 'update');
 
     const membershipCard = await this.findOne(id, user);
 
@@ -204,22 +194,14 @@ export class MembershipCardsService {
   }
 
   async remove(id: string, user: User) {
-    checkPermission(
-      user.roles?.[0]?.name || '',
-      'membership-card',
-      'delete'
-    );
+    checkPermission(user.roles?.[0]?.name || '', 'membership-card', 'delete');
 
     const membershipCard = await this.findOne(id, user);
     return await this.membershipCardRepository.remove(membershipCard);
   }
 
   async getStats(user: User) {
-    checkPermission(
-      user.roles?.[0]?.name || '',
-      'membership-card',
-      'read'
-    );
+    checkPermission(user.roles?.[0]?.name || '', 'membership-card', 'read');
 
     const queryBuilder = this.membershipCardRepository
       .createQueryBuilder('membershipCard')
@@ -231,16 +213,20 @@ export class MembershipCardsService {
       });
     }
 
-    const [
-      total,
-      active,
-      expired,
-      suspended,
-    ] = await Promise.all([
+    const [total, active, expired, suspended] = await Promise.all([
       queryBuilder.getCount(),
-      queryBuilder.clone().andWhere('membershipCard.status = :status', { status: 'active' }).getCount(),
-      queryBuilder.clone().andWhere('membershipCard.status = :status', { status: 'expired' }).getCount(),
-      queryBuilder.clone().andWhere('membershipCard.status = :status', { status: 'suspended' }).getCount(),
+      queryBuilder
+        .clone()
+        .andWhere('membershipCard.status = :status', { status: 'active' })
+        .getCount(),
+      queryBuilder
+        .clone()
+        .andWhere('membershipCard.status = :status', { status: 'expired' })
+        .getCount(),
+      queryBuilder
+        .clone()
+        .andWhere('membershipCard.status = :status', { status: 'suspended' })
+        .getCount(),
     ]);
 
     return {

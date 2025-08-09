@@ -185,6 +185,27 @@ export class Coach extends BaseEntity {
   })
   notes?: string;
 
+  @Column({
+    type: 'enum',
+    enum: ['personal', 'group', 'both'],
+    default: 'both',
+    comment: '专业化类型：personal-私教，group-团课，both-全能',
+  })
+  specializationType: 'personal' | 'group' | 'both';
+
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+    comment: '业务设置：权限配置、专业信息等',
+  })
+  businessSettings?: {
+    canManagePersonalTraining: boolean;
+    canManageGroupClass: boolean;
+    maxStudentsPerClass?: number;
+    specialties: string[];
+    certifications: string[];
+  };
+
   // 外键关联
   @Column({
     name: 'store_id',
@@ -281,5 +302,69 @@ export class Coach extends BaseEntity {
 
   getActiveCourses(): Course[] {
     return this.courses?.filter((course) => course.isActive()) || [];
+  }
+
+  // 专业化相关方法
+
+  /**
+   * 检查是否为私人教练
+   */
+  isPersonalTrainer(): boolean {
+    return (
+      this.specializationType === 'personal' ||
+      this.specializationType === 'both'
+    );
+  }
+
+  /**
+   * 检查是否为团课教练
+   */
+  isGroupInstructor(): boolean {
+    return (
+      this.specializationType === 'group' || this.specializationType === 'both'
+    );
+  }
+
+  /**
+   * 检查是否可以管理私教业务
+   */
+  canManagePersonalTraining(): boolean {
+    return (
+      this.isPersonalTrainer() &&
+      (this.businessSettings?.canManagePersonalTraining ?? true)
+    );
+  }
+
+  /**
+   * 检查是否可以管理团课业务
+   */
+  canManageGroupClass(): boolean {
+    return (
+      this.isGroupInstructor() &&
+      (this.businessSettings?.canManageGroupClass ?? true)
+    );
+  }
+
+  /**
+   * 获取最大学员数量
+   */
+  getMaxStudentsPerClass(): number {
+    return this.businessSettings?.maxStudentsPerClass ?? 20;
+  }
+
+  /**
+   * 获取专业化描述
+   */
+  getSpecializationDescription(): string {
+    switch (this.specializationType) {
+      case 'personal':
+        return '私人教练';
+      case 'group':
+        return '团课教练';
+      case 'both':
+        return '全能教练';
+      default:
+        return '未知类型';
+    }
   }
 }

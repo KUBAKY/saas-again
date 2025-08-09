@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import { PersonalTrainingCard } from '../entities/personal-training-card.entity';
@@ -23,7 +27,10 @@ export class PersonalTrainingCardsService {
     private coachRepository: Repository<Coach>,
   ) {}
 
-  async create(createDto: CreatePersonalTrainingCardDto, user: User): Promise<PersonalTrainingCard> {
+  async create(
+    createDto: CreatePersonalTrainingCardDto,
+    user: User,
+  ): Promise<PersonalTrainingCard> {
     // 验证会员是否存在且属于当前门店
     const member = await this.memberRepository.findOne({
       where: { id: createDto.memberId },
@@ -100,15 +107,21 @@ export class PersonalTrainingCardsService {
 
     // 应用筛选条件
     if (filters.memberId) {
-      queryBuilder.andWhere('member.id = :memberId', { memberId: filters.memberId });
+      queryBuilder.andWhere('member.id = :memberId', {
+        memberId: filters.memberId,
+      });
     }
 
     if (filters.membershipCardId) {
-      queryBuilder.andWhere('membershipCard.id = :membershipCardId', { membershipCardId: filters.membershipCardId });
+      queryBuilder.andWhere('membershipCard.id = :membershipCardId', {
+        membershipCardId: filters.membershipCardId,
+      });
     }
 
     if (filters.coachId) {
-      queryBuilder.andWhere('coach.id = :coachId', { coachId: filters.coachId });
+      queryBuilder.andWhere('coach.id = :coachId', {
+        coachId: filters.coachId,
+      });
     }
 
     if (filters.type) {
@@ -116,21 +129,27 @@ export class PersonalTrainingCardsService {
     }
 
     if (filters.status) {
-      queryBuilder.andWhere('card.status = :status', { status: filters.status });
+      queryBuilder.andWhere('card.status = :status', {
+        status: filters.status,
+      });
     }
 
     if (filters.purchaseDateStart) {
-      queryBuilder.andWhere('card.purchaseDate >= :purchaseDateStart', { purchaseDateStart: filters.purchaseDateStart });
+      queryBuilder.andWhere('card.purchaseDate >= :purchaseDateStart', {
+        purchaseDateStart: filters.purchaseDateStart,
+      });
     }
 
     if (filters.purchaseDateEnd) {
-      queryBuilder.andWhere('card.purchaseDate <= :purchaseDateEnd', { purchaseDateEnd: filters.purchaseDateEnd });
+      queryBuilder.andWhere('card.purchaseDate <= :purchaseDateEnd', {
+        purchaseDateEnd: filters.purchaseDateEnd,
+      });
     }
 
     if (filters.search) {
       queryBuilder.andWhere(
         '(card.cardNumber LIKE :search OR member.name LIKE :search OR coach.name LIKE :search)',
-        { search: `%${filters.search}%` }
+        { search: `%${filters.search}%` },
       );
     }
 
@@ -167,7 +186,11 @@ export class PersonalTrainingCardsService {
     return card;
   }
 
-  async update(id: string, updateDto: UpdatePersonalTrainingCardDto, user: User): Promise<PersonalTrainingCard> {
+  async update(
+    id: string,
+    updateDto: UpdatePersonalTrainingCardDto,
+    user: User,
+  ): Promise<PersonalTrainingCard> {
     const card = await this.findOne(id, user);
 
     // 如果更新会员，验证新会员
@@ -189,7 +212,10 @@ export class PersonalTrainingCardsService {
     }
 
     // 如果更新会籍卡，验证新会籍卡
-    if (updateDto.membershipCardId && updateDto.membershipCardId !== card.membershipCard.id) {
+    if (
+      updateDto.membershipCardId &&
+      updateDto.membershipCardId !== card.membershipCard.id
+    ) {
       const membershipCard = await this.membershipCardRepository.findOne({
         where: { id: updateDto.membershipCardId },
         relations: ['member', 'member.store'],
@@ -275,7 +301,9 @@ export class PersonalTrainingCardsService {
   private async generateCardNumber(): Promise<string> {
     const prefix = 'PT';
     const timestamp = Date.now().toString().slice(-8);
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0');
     return `${prefix}${timestamp}${random}`;
   }
 }

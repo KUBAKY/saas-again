@@ -29,6 +29,7 @@ let MembershipCard = class MembershipCard extends base_entity_1.BaseEntity {
     status;
     notes;
     settings;
+    benefits;
     memberId;
     member;
     groupClassCards;
@@ -216,6 +217,14 @@ __decorate([
     }),
     __metadata("design:type", Object)
 ], MembershipCard.prototype, "settings", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'jsonb',
+        nullable: true,
+        comment: '会员权益配置',
+    }),
+    __metadata("design:type", Object)
+], MembershipCard.prototype, "benefits", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         name: 'member_id',

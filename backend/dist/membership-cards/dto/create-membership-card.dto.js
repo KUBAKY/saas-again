@@ -40,7 +40,10 @@ __decorate([
     __metadata("design:type", String)
 ], CreateMembershipCardDto.prototype, "type", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '计费方式', enum: ['times', 'period', 'unlimited'] }),
+    (0, swagger_1.ApiProperty)({
+        description: '计费方式',
+        enum: ['times', 'period', 'unlimited'],
+    }),
     (0, class_validator_1.IsEnum)(['times', 'period', 'unlimited']),
     __metadata("design:type", String)
 ], CreateMembershipCardDto.prototype, "billingType", void 0);
@@ -86,7 +89,10 @@ __decorate([
     __metadata("design:type", String)
 ], CreateMembershipCardDto.prototype, "activationDate", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '卡状态', enum: ['active', 'inactive', 'expired', 'frozen', 'refunded'] }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '卡状态',
+        enum: ['active', 'inactive', 'expired', 'frozen', 'refunded'],
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(['active', 'inactive', 'expired', 'frozen', 'refunded']),
     __metadata("design:type", String)

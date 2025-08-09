@@ -16,6 +16,15 @@ export declare class MembershipCard extends BaseEntity {
     status: 'active' | 'inactive' | 'expired' | 'frozen' | 'refunded';
     notes?: string;
     settings?: Record<string, any>;
+    benefits?: {
+        discountRate: number;
+        freeServices: string[];
+        priorityBooking: boolean;
+        guestPasses: number;
+        personalTrainingDiscount: number;
+        groupClassDiscount: number;
+        additionalBenefits: Record<string, any>;
+    };
     memberId: string;
     member: Member;
     groupClassCards: GroupClassCard[];

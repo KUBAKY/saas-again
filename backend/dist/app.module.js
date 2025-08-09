@@ -27,6 +27,7 @@ const bookings_module_1 = require("./bookings/bookings.module");
 const checkins_module_1 = require("./checkins/checkins.module");
 const group_class_cards_module_1 = require("./group-class-cards/group-class-cards.module");
 const personal_training_cards_module_1 = require("./personal-training-cards/personal-training-cards.module");
+const membership_cards_module_1 = require("./membership-cards/membership-cards.module");
 const seed_module_1 = require("./database/seeds/seed.module");
 const database_config_1 = __importDefault(require("./config/database.config"));
 const redis_config_1 = __importDefault(require("./config/redis.config"));
@@ -58,6 +59,7 @@ exports.AppModule = AppModule = __decorate([
             checkins_module_1.CheckInsModule,
             group_class_cards_module_1.GroupClassCardsModule,
             personal_training_cards_module_1.PersonalTrainingCardsModule,
+            membership_cards_module_1.MembershipCardsModule,
             seed_module_1.SeedModule,
         ],
         controllers: [app_controller_1.AppController],

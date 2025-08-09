@@ -74,7 +74,9 @@ let Booking = class Booking extends base_entity_1.BaseEntity {
         }
     }
     isCharged() {
-        return this.status === 'charged' || this.status === 'checked_in' || this.status === 'completed';
+        return (this.status === 'charged' ||
+            this.status === 'checked_in' ||
+            this.status === 'completed');
     }
     isCheckedIn() {
         return this.status === 'checked_in' || this.status === 'completed';
@@ -112,7 +114,7 @@ let Booking = class Booking extends base_entity_1.BaseEntity {
         return true;
     }
     isGroupClass() {
-        return this.courseScheduleId !== null && this.courseScheduleId !== undefined;
+        return (this.courseScheduleId !== null && this.courseScheduleId !== undefined);
     }
     isPersonalTraining() {
         return !this.isGroupClass();
@@ -172,7 +174,15 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
-        enum: ['pending', 'confirmed', 'charged', 'checked_in', 'completed', 'cancelled', 'no_show'],
+        enum: [
+            'pending',
+            'confirmed',
+            'charged',
+            'checked_in',
+            'completed',
+            'cancelled',
+            'no_show',
+        ],
         default: 'pending',
         comment: '预约状态',
     }),
