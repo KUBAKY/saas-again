@@ -38,8 +38,15 @@ export declare class BookingsController {
     }[]>;
     checkConflicts(query: any, user: User): Promise<{
         hasConflicts: boolean;
+        conflictTypes: string[];
         coachConflicts: import("../entities").Booking[];
         memberConflicts: import("../entities").Booking[];
+        capacityConflicts: import("../entities").Booking[];
+        details: {
+            coachConflictCount: number;
+            memberConflictCount: number;
+            capacityConflictCount: number;
+        };
     }>;
     findOne(id: string, user: User): Promise<import("../entities").Booking>;
     update(id: string, updateBookingDto: UpdateBookingDto, user: User): Promise<import("../entities").Booking>;

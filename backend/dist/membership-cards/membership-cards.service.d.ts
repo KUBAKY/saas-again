@@ -27,4 +27,68 @@ export declare class MembershipCardsService {
         expired: number;
         suspended: number;
     }>;
+    validateBenefit(cardId: string, benefitType: string, user: User): Promise<{
+        valid: boolean;
+        message?: string;
+        discount?: number;
+    }>;
+    useBenefit(cardId: string, benefitType: string, user: User): Promise<MembershipCard>;
+    getUsageHistory(cardId: string, user: User): Promise<{
+        benefitType: string;
+        usedCount: number;
+        usageLimit?: number;
+    }[]>;
+    getExpiringCards(days: number | undefined, user: User): Promise<MembershipCard[]>;
+    batchRenew(cardIds: string[], renewalPeriod: number, amount: number, user: User): Promise<{
+        success: number;
+        failed: number;
+        errors: string[];
+    }>;
+    getCardTypeStats(user: User): Promise<{
+        cardType: any;
+        count: number;
+    }[]>;
+    transferCard(cardId: string, newMemberId: string, reason: string, user: User): Promise<MembershipCard>;
+    freezeCard(cardId: string, freezeDays: number, reason: string, user: User): Promise<MembershipCard>;
+    unfreezeCard(cardId: string, user: User): Promise<MembershipCard>;
+    upgradeBenefits(cardId: string, newBenefits: Partial<MembershipCard['benefits']>, additionalFee: number, user: User): Promise<MembershipCard>;
+    getUsageAnalytics(cardId: string, startDate: Date, endDate: Date, user: User): Promise<{
+        totalUsage: number;
+        benefitUsage: Record<string, number>;
+        usageByDate: Array<{
+            date: string;
+            count: number;
+        }>;
+        remainingBenefits: Record<string, number>;
+    }>;
+    batchImport(cardData: Array<{
+        cardNumber: string;
+        type: string;
+        memberId: string;
+        billingType: 'times' | 'period' | 'unlimited';
+        price: number;
+        totalSessions?: number;
+        validityDays?: number;
+    }>, user: User): Promise<{
+        success: number;
+        failed: number;
+        errors: string[];
+    }>;
+    getRevenueStats(startDate: Date, endDate: Date, user: User): Promise<{
+        totalRevenue: number;
+        cardTypeRevenue: Array<{
+            type: string;
+            revenue: number;
+            count: number;
+        }>;
+        monthlyRevenue: Array<{
+            month: string;
+            revenue: number;
+        }>;
+        renewalRevenue: number;
+    }>;
+    processExpiredCards(): Promise<{
+        processed: number;
+        errors: string[];
+    }>;
 }

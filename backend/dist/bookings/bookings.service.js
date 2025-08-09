@@ -18,12 +18,22 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const booking_entity_1 = require("../entities/booking.entity");
 const course_schedule_entity_1 = require("../entities/course-schedule.entity");
+const course_entity_1 = require("../entities/course.entity");
+const member_entity_1 = require("../entities/member.entity");
+const coach_entity_1 = require("../entities/coach.entity");
+const permission_util_1 = require("../common/utils/permission.util");
 let BookingsService = class BookingsService {
     bookingRepository;
     courseScheduleRepository;
-    constructor(bookingRepository, courseScheduleRepository) {
+    courseRepository;
+    memberRepository;
+    coachRepository;
+    constructor(bookingRepository, courseScheduleRepository, courseRepository, memberRepository, coachRepository) {
         this.bookingRepository = bookingRepository;
         this.courseScheduleRepository = courseScheduleRepository;
+        this.courseRepository = courseRepository;
+        this.memberRepository = memberRepository;
+        this.coachRepository = coachRepository;
     }
     async create(createBookingDto, user) {
         const bookingNumber = await this.generateBookingNumber();
@@ -110,7 +120,7 @@ let BookingsService = class BookingsService {
                 memberId: booking.memberId,
                 courseId: updateBookingDto.courseId || booking.courseId,
                 storeId: booking.storeId,
-            }, user, id);
+            }, user || { storeId: booking.storeId }, id);
         }
         Object.assign(booking, updateBookingDto);
         booking.updatedAt = new Date();
@@ -192,7 +202,7 @@ let BookingsService = class BookingsService {
         return { message: '预约删除成功' };
     }
     async getStats(user) {
-        const queryBuilder = this.createBaseQuery(user, false);
+        const queryBuilder = this.createBaseQuery(user || { storeId: '' }, false);
         const [total, pending, confirmed, cancelled, completed, noShow] = await Promise.all([
             queryBuilder.clone().getCount(),
             queryBuilder
@@ -264,9 +274,12 @@ let BookingsService = class BookingsService {
         }));
     }
     async checkConflicts(query, user) {
-        const { startTime, endTime, coachId, memberId, excludeBookingId } = query;
+        const { startTime, endTime, coachId, memberId, excludeBookingId, courseId, storeId, } = query;
         const queryBuilder = this.bookingRepository
             .createQueryBuilder('booking')
+            .leftJoinAndSelect('booking.course', 'course')
+            .leftJoinAndSelect('booking.coach', 'coach')
+            .leftJoinAndSelect('booking.member', 'member')
             .where('booking.status IN (:...statuses)', {
             statuses: ['pending', 'confirmed'],
         })
@@ -276,6 +289,9 @@ let BookingsService = class BookingsService {
             queryBuilder.andWhere('booking.id != :excludeBookingId', {
                 excludeBookingId,
             });
+        }
+        if (storeId) {
+            queryBuilder.andWhere('booking.storeId = :storeId', { storeId });
         }
         let coachConflicts = [];
         if (coachId) {
@@ -288,13 +304,51 @@ let BookingsService = class BookingsService {
         if (memberId) {
             const memberQuery = queryBuilder
                 .clone()
-                .andWhere('booking.memberId = :memberId', { memberId });
+                .andWhere('booking.memberId = :memberId', { memberId })
+                .andWhere('course.type = :courseType', { courseType: 'personal' });
             memberConflicts = await memberQuery.getMany();
         }
+        let capacityConflicts = [];
+        if (courseId) {
+            const capacityQuery = this.bookingRepository
+                .createQueryBuilder('booking')
+                .leftJoinAndSelect('booking.course', 'course')
+                .where('booking.courseId = :courseId', { courseId })
+                .andWhere('booking.status IN (:...statuses)', {
+                statuses: ['pending', 'confirmed'],
+            })
+                .andWhere('booking.deletedAt IS NULL')
+                .andWhere('(booking.startTime < :endTime AND booking.endTime > :startTime)', { startTime, endTime });
+            if (excludeBookingId) {
+                capacityQuery.andWhere('booking.id != :excludeBookingId', {
+                    excludeBookingId,
+                });
+            }
+            capacityConflicts = await capacityQuery.getMany();
+        }
+        const conflictTypes = [];
+        if (coachConflicts.length > 0) {
+            conflictTypes.push('coach_busy');
+        }
+        if (memberConflicts.length > 0) {
+            conflictTypes.push('member_busy');
+        }
+        if (capacityConflicts.length > 0) {
+            conflictTypes.push('course_full');
+        }
         return {
-            hasConflicts: coachConflicts.length > 0 || memberConflicts.length > 0,
+            hasConflicts: coachConflicts.length > 0 ||
+                memberConflicts.length > 0 ||
+                capacityConflicts.length > 0,
+            conflictTypes,
             coachConflicts,
             memberConflicts,
+            capacityConflicts,
+            details: {
+                coachConflictCount: coachConflicts.length,
+                memberConflictCount: memberConflicts.length,
+                capacityConflictCount: capacityConflicts.length,
+            },
         };
     }
     createBaseQuery(user, withRelations = true) {
@@ -331,7 +385,7 @@ let BookingsService = class BookingsService {
         const conflicts = await this.checkConflicts({
             ...bookingData,
             excludeBookingId: excludeId,
-        }, user);
+        }, user || { storeId: '' });
         if (conflicts.hasConflicts) {
             throw new common_1.ConflictException('预约时间冲突');
         }
@@ -402,6 +456,15 @@ let BookingsService = class BookingsService {
         return { processed, failed };
     }
     async checkIn(bookingId, user) {
+        if (!user) {
+            throw new common_1.BadRequestException('用户信息不能为空');
+        }
+        if (!user) {
+            throw new common_1.BadRequestException('用户信息不能为空');
+        }
+        if (!user) {
+            throw new common_1.BadRequestException('用户信息不能为空');
+        }
         const booking = await this.findOne(bookingId, user);
         if (!booking.isCharged()) {
             throw new common_1.BadRequestException('只有已扣费的预约才能签到');
@@ -540,13 +603,282 @@ let BookingsService = class BookingsService {
             canCheckIn: booking.isCharged() && !booking.isCheckedIn(),
         }));
     }
+    async rescheduleBooking(bookingId, newStartTime, newEndTime, reason, user) {
+        if (!user) {
+            throw new common_1.BadRequestException('用户信息不能为空');
+        }
+        (0, permission_util_1.checkPermission)(user.roles?.[0]?.name || '', 'booking', 'update');
+        const booking = await this.findOne(bookingId, user);
+        if (!['pending', 'confirmed'].includes(booking.status)) {
+            throw new common_1.BadRequestException('当前状态不允许改期');
+        }
+        const now = new Date();
+        const timeDiff = booking.startTime.getTime() - now.getTime();
+        const hoursUntilBooking = timeDiff / (1000 * 60 * 60);
+        if (hoursUntilBooking < 2) {
+            throw new common_1.BadRequestException('预约开始前2小时内不允许改期');
+        }
+        await this.validateBookingTime({
+            startTime: newStartTime,
+            endTime: newEndTime,
+            coachId: booking.coachId,
+            memberId: booking.memberId,
+            courseId: booking.courseId,
+            storeId: booking.storeId,
+        }, user || { storeId: '' }, bookingId);
+        booking.startTime = newStartTime;
+        booking.endTime = newEndTime;
+        booking.updatedBy = user?.id;
+        booking.updatedAt = new Date();
+        if (reason) {
+            booking.notes = `${booking.notes || ''}\n改期原因: ${reason}`;
+        }
+        return await this.bookingRepository.save(booking);
+    }
+    async getBookingsForReminder(reminderType, user) {
+        (0, permission_util_1.checkPermission)(user.roles?.[0]?.name || '', 'booking', 'read');
+        const now = new Date();
+        let startTime;
+        let endTime;
+        switch (reminderType) {
+            case 'before_24h':
+                startTime = new Date(now.getTime() + 23 * 60 * 60 * 1000);
+                endTime = new Date(now.getTime() + 25 * 60 * 60 * 1000);
+                break;
+            case 'before_2h':
+                startTime = new Date(now.getTime() + 1.5 * 60 * 60 * 1000);
+                endTime = new Date(now.getTime() + 2.5 * 60 * 60 * 1000);
+                break;
+            case 'before_30min':
+                startTime = new Date(now.getTime() + 25 * 60 * 1000);
+                endTime = new Date(now.getTime() + 35 * 60 * 1000);
+                break;
+        }
+        const queryBuilder = this.createBaseQuery(user)
+            .andWhere('booking.status IN (:...statuses)', {
+            statuses: ['pending', 'confirmed'],
+        })
+            .andWhere('booking.startTime BETWEEN :startTime AND :endTime', {
+            startTime,
+            endTime,
+        });
+        return await queryBuilder.getMany();
+    }
+    async getBookingAnalytics(startDate, endDate, user) {
+        (0, permission_util_1.checkPermission)(user.roles?.[0]?.name || '', 'booking', 'read');
+        const baseQuery = this.createBaseQuery(user || { storeId: '' }, false).andWhere('booking.startTime BETWEEN :startDate AND :endDate', {
+            startDate,
+            endDate,
+        });
+        const totalBookings = await baseQuery.getCount();
+        const statusStats = await this.bookingRepository
+            .createQueryBuilder('booking')
+            .select('booking.status', 'status')
+            .addSelect('COUNT(*)', 'count')
+            .where('booking.startTime BETWEEN :startDate AND :endDate', {
+            startDate,
+            endDate,
+        })
+            .andWhere('booking.deletedAt IS NULL')
+            .groupBy('booking.status')
+            .getRawMany();
+        const completedCount = statusStats.find((s) => s.status === 'completed')?.count || 0;
+        const cancelledCount = statusStats.find((s) => s.status === 'cancelled')?.count || 0;
+        const noShowCount = statusStats.find((s) => s.status === 'no_show')?.count || 0;
+        const timeSlotStats = await this.bookingRepository
+            .createQueryBuilder('booking')
+            .select('EXTRACT(HOUR FROM booking.startTime)', 'hour')
+            .addSelect('COUNT(*)', 'count')
+            .where('booking.startTime BETWEEN :startDate AND :endDate', {
+            startDate,
+            endDate,
+        })
+            .andWhere('booking.deletedAt IS NULL')
+            .groupBy('EXTRACT(HOUR FROM booking.startTime)')
+            .orderBy('count', 'DESC')
+            .limit(10)
+            .getRawMany();
+        const popularCourses = await this.bookingRepository
+            .createQueryBuilder('booking')
+            .leftJoin('booking.course', 'course')
+            .select('booking.courseId', 'courseId')
+            .addSelect('course.name', 'courseName')
+            .addSelect('COUNT(*)', 'count')
+            .where('booking.startTime BETWEEN :startDate AND :endDate', {
+            startDate,
+            endDate,
+        })
+            .andWhere('booking.deletedAt IS NULL')
+            .groupBy('booking.courseId, course.name')
+            .orderBy('count', 'DESC')
+            .limit(10)
+            .getRawMany();
+        const coachPerformance = await this.bookingRepository
+            .createQueryBuilder('booking')
+            .leftJoin('booking.coach', 'coach')
+            .select('booking.coachId', 'coachId')
+            .addSelect('coach.name', 'coachName')
+            .addSelect('COUNT(*)', 'bookings')
+            .addSelect("ROUND(COUNT(CASE WHEN booking.status = 'completed' THEN 1 END) * 100.0 / COUNT(*), 2)", 'completionRate')
+            .where('booking.startTime BETWEEN :startDate AND :endDate', {
+            startDate,
+            endDate,
+        })
+            .andWhere('booking.deletedAt IS NULL')
+            .groupBy('booking.coachId, coach.name')
+            .orderBy('bookings', 'DESC')
+            .getRawMany();
+        const memberActivity = await this.bookingRepository
+            .createQueryBuilder('booking')
+            .leftJoin('booking.member', 'member')
+            .select('booking.memberId', 'memberId')
+            .addSelect('member.name', 'memberName')
+            .addSelect('COUNT(*)', 'bookings')
+            .where('booking.startTime BETWEEN :startDate AND :endDate', {
+            startDate,
+            endDate,
+        })
+            .andWhere('booking.deletedAt IS NULL')
+            .groupBy('booking.memberId, member.name')
+            .orderBy('bookings', 'DESC')
+            .limit(20)
+            .getRawMany();
+        return {
+            totalBookings,
+            completionRate: totalBookings > 0 ? (completedCount / totalBookings) * 100 : 0,
+            cancellationRate: totalBookings > 0 ? (cancelledCount / totalBookings) * 100 : 0,
+            noShowRate: totalBookings > 0 ? (noShowCount / totalBookings) * 100 : 0,
+            popularTimeSlots: timeSlotStats.map((item) => ({
+                hour: parseInt(item.hour),
+                count: parseInt(item.count),
+            })),
+            popularCourses: popularCourses.map((item) => ({
+                courseId: item.courseId,
+                courseName: item.courseName,
+                count: parseInt(item.count),
+            })),
+            coachPerformance: coachPerformance.map((item) => ({
+                coachId: item.coachId,
+                coachName: item.coachName,
+                bookings: parseInt(item.bookings),
+                completionRate: parseFloat(item.completionRate),
+            })),
+            memberActivity: memberActivity.map((item) => ({
+                memberId: item.memberId,
+                memberName: item.memberName,
+                bookings: parseInt(item.bookings),
+            })),
+        };
+    }
+    async batchUpdateBookings(bookingIds, operation, reason, user) {
+        (0, permission_util_1.checkPermission)(user?.roles?.[0]?.name || '', 'booking', 'update');
+        let success = 0;
+        let failed = 0;
+        const errors = [];
+        for (const bookingId of bookingIds) {
+            try {
+                if (!user) {
+                    throw new Error('用户信息不能为空');
+                }
+                switch (operation) {
+                    case 'confirm':
+                        await this.confirm(bookingId, user);
+                        break;
+                    case 'cancel':
+                        await this.cancel(bookingId, reason, user);
+                        break;
+                    case 'complete':
+                        await this.complete(bookingId, user);
+                        break;
+                }
+                success++;
+            }
+            catch (error) {
+                failed++;
+                errors.push(`预约 ${bookingId}: ${error.message}`);
+            }
+        }
+        return { success, failed, errors };
+    }
+    async getConflictDetails(startTime, endTime, coachId, memberId, courseId, storeId, user) {
+        const conflictResult = await this.checkConflicts({
+            startTime,
+            endTime,
+            coachId,
+            memberId,
+            courseId,
+            storeId,
+        }, user || { storeId: '' });
+        const conflicts = [];
+        for (const booking of conflictResult.coachConflicts) {
+            conflicts.push({
+                type: 'coach',
+                booking,
+                message: `教练 ${booking.coach?.name} 在此时间段已有预约`,
+            });
+        }
+        for (const booking of conflictResult.memberConflicts) {
+            conflicts.push({
+                type: 'member',
+                booking,
+                message: `会员 ${booking.member?.name} 在此时间段已有私教预约`,
+            });
+        }
+        if (conflictResult.capacityConflicts.length > 0 && courseId) {
+            const course = await this.courseRepository.findOne({
+                where: { id: courseId },
+            });
+            if (course &&
+                conflictResult.capacityConflicts.length >= course.capacity) {
+                conflicts.push({
+                    type: 'capacity',
+                    booking: conflictResult.capacityConflicts[0],
+                    message: `课程 ${course.name} 已达到最大容量 ${course.capacity} 人`,
+                });
+            }
+        }
+        return {
+            hasConflicts: conflicts.length > 0,
+            conflicts,
+        };
+    }
+    async processExpiredBookings() {
+        const now = new Date();
+        const expiredBookings = await this.bookingRepository
+            .createQueryBuilder('booking')
+            .where('booking.status = :status', { status: 'pending' })
+            .andWhere('booking.startTime < :now', { now })
+            .andWhere('booking.deletedAt IS NULL')
+            .getMany();
+        let processed = 0;
+        const errors = [];
+        for (const booking of expiredBookings) {
+            try {
+                booking.status = 'cancelled';
+                booking.notes = `${booking.notes || ''}\n系统自动取消：预约已过期`;
+                booking.updatedAt = now;
+                await this.bookingRepository.save(booking);
+                processed++;
+            }
+            catch (error) {
+                errors.push(`处理预约 ${booking.bookingNumber} 失败: ${error.message}`);
+            }
+        }
+        return { processed, errors };
+    }
 };
 exports.BookingsService = BookingsService;
 exports.BookingsService = BookingsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(booking_entity_1.Booking)),
     __param(1, (0, typeorm_1.InjectRepository)(course_schedule_entity_1.CourseSchedule)),
+    __param(2, (0, typeorm_1.InjectRepository)(course_entity_1.Course)),
+    __param(3, (0, typeorm_1.InjectRepository)(member_entity_1.Member)),
+    __param(4, (0, typeorm_1.InjectRepository)(coach_entity_1.Coach)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], BookingsService);
 //# sourceMappingURL=bookings.service.js.map

@@ -12,12 +12,17 @@ import {
   SelectQueryBuilder,
   Between,
   LessThan,
+  MoreThan,
   IsNull,
 } from 'typeorm';
 import { Booking } from '../entities/booking.entity';
 import { User } from '../entities/user.entity';
 import { CourseSchedule } from '../entities/course-schedule.entity';
+import { Course } from '../entities/course.entity';
+import { Member } from '../entities/member.entity';
+import { Coach } from '../entities/coach.entity';
 import { CreateBookingDto, UpdateBookingDto, QueryBookingDto } from './dto';
+import { checkPermission } from '../common/utils/permission.util';
 
 @Injectable()
 export class BookingsService {
@@ -26,6 +31,12 @@ export class BookingsService {
     private readonly bookingRepository: Repository<Booking>,
     @InjectRepository(CourseSchedule)
     private readonly courseScheduleRepository: Repository<CourseSchedule>,
+    @InjectRepository(Course)
+    private readonly courseRepository: Repository<Course>,
+    @InjectRepository(Member)
+    private readonly memberRepository: Repository<Member>,
+    @InjectRepository(Coach)
+    private readonly coachRepository: Repository<Coach>,
   ) {}
 
   async create(
@@ -180,7 +191,7 @@ export class BookingsService {
           courseId: updateBookingDto.courseId || booking.courseId,
           storeId: booking.storeId,
         },
-        user,
+        user || ({ storeId: booking.storeId } as User),
         id,
       );
     }
@@ -308,7 +319,10 @@ export class BookingsService {
   }
 
   async getStats(user: User) {
-    const queryBuilder = this.createBaseQuery(user, false);
+    const queryBuilder = this.createBaseQuery(
+      user || ({ storeId: '' } as User),
+      false,
+    );
 
     const [total, pending, confirmed, cancelled, completed, noShow] =
       await Promise.all([
@@ -396,10 +410,21 @@ export class BookingsService {
   }
 
   async checkConflicts(query: any, user: User) {
-    const { startTime, endTime, coachId, memberId, excludeBookingId } = query;
+    const {
+      startTime,
+      endTime,
+      coachId,
+      memberId,
+      excludeBookingId,
+      courseId,
+      storeId,
+    } = query;
 
     const queryBuilder = this.bookingRepository
       .createQueryBuilder('booking')
+      .leftJoinAndSelect('booking.course', 'course')
+      .leftJoinAndSelect('booking.coach', 'coach')
+      .leftJoinAndSelect('booking.member', 'member')
       .where('booking.status IN (:...statuses)', {
         statuses: ['pending', 'confirmed'],
       })
@@ -415,6 +440,11 @@ export class BookingsService {
       });
     }
 
+    // 门店数据隔离
+    if (storeId) {
+      queryBuilder.andWhere('booking.storeId = :storeId', { storeId });
+    }
+
     // 检查教练冲突
     let coachConflicts: Booking[] = [];
     if (coachId) {
@@ -424,19 +454,67 @@ export class BookingsService {
       coachConflicts = await coachQuery.getMany();
     }
 
-    // 检查会员冲突
+    // 检查会员冲突（私教课程）
     let memberConflicts: Booking[] = [];
     if (memberId) {
       const memberQuery = queryBuilder
         .clone()
-        .andWhere('booking.memberId = :memberId', { memberId });
+        .andWhere('booking.memberId = :memberId', { memberId })
+        .andWhere('course.type = :courseType', { courseType: 'personal' });
       memberConflicts = await memberQuery.getMany();
     }
 
+    // 检查课程容量冲突（团课）
+    let capacityConflicts: Booking[] = [];
+    if (courseId) {
+      const capacityQuery = this.bookingRepository
+        .createQueryBuilder('booking')
+        .leftJoinAndSelect('booking.course', 'course')
+        .where('booking.courseId = :courseId', { courseId })
+        .andWhere('booking.status IN (:...statuses)', {
+          statuses: ['pending', 'confirmed'],
+        })
+        .andWhere('booking.deletedAt IS NULL')
+        .andWhere(
+          '(booking.startTime < :endTime AND booking.endTime > :startTime)',
+          { startTime, endTime },
+        );
+
+      if (excludeBookingId) {
+        capacityQuery.andWhere('booking.id != :excludeBookingId', {
+          excludeBookingId,
+        });
+      }
+
+      capacityConflicts = await capacityQuery.getMany();
+    }
+
+    // 分析冲突类型
+    const conflictTypes: string[] = [];
+    if (coachConflicts.length > 0) {
+      conflictTypes.push('coach_busy');
+    }
+    if (memberConflicts.length > 0) {
+      conflictTypes.push('member_busy');
+    }
+    if (capacityConflicts.length > 0) {
+      conflictTypes.push('course_full');
+    }
+
     return {
-      hasConflicts: coachConflicts.length > 0 || memberConflicts.length > 0,
+      hasConflicts:
+        coachConflicts.length > 0 ||
+        memberConflicts.length > 0 ||
+        capacityConflicts.length > 0,
+      conflictTypes,
       coachConflicts,
       memberConflicts,
+      capacityConflicts,
+      details: {
+        coachConflictCount: coachConflicts.length,
+        memberConflictCount: memberConflicts.length,
+        capacityConflictCount: capacityConflicts.length,
+      },
     };
   }
 
@@ -490,7 +568,7 @@ export class BookingsService {
         ...bookingData,
         excludeBookingId: excludeId,
       },
-      user,
+      user || ({ storeId: '' } as User),
     );
 
     if (conflicts.hasConflicts) {
@@ -589,6 +667,15 @@ export class BookingsService {
    * 会员签到
    */
   async checkIn(bookingId: string, user: User): Promise<Booking> {
+    if (!user) {
+      throw new BadRequestException('用户信息不能为空');
+    }
+    if (!user) {
+      throw new BadRequestException('用户信息不能为空');
+    }
+    if (!user) {
+      throw new BadRequestException('用户信息不能为空');
+    }
     const booking = await this.findOne(bookingId, user);
 
     if (!booking.isCharged()) {
@@ -816,5 +903,418 @@ export class BookingsService {
       canCancel: booking.isCancellable(),
       canCheckIn: booking.isCharged() && !booking.isCheckedIn(),
     }));
+  }
+
+  /**
+   * 预约改期
+   */
+  async rescheduleBooking(
+    bookingId: string,
+    newStartTime: Date,
+    newEndTime: Date,
+    reason?: string,
+    user?: User,
+  ): Promise<Booking> {
+    if (!user) {
+      throw new BadRequestException('用户信息不能为空');
+    }
+    checkPermission(user.roles?.[0]?.name || '', 'booking', 'update');
+
+    const booking = await this.findOne(bookingId, user);
+
+    // 检查预约状态是否允许改期
+    if (!['pending', 'confirmed'].includes(booking.status)) {
+      throw new BadRequestException('当前状态不允许改期');
+    }
+
+    // 检查改期时间是否在允许范围内
+    const now = new Date();
+    const timeDiff = booking.startTime.getTime() - now.getTime();
+    const hoursUntilBooking = timeDiff / (1000 * 60 * 60);
+
+    if (hoursUntilBooking < 2) {
+      throw new BadRequestException('预约开始前2小时内不允许改期');
+    }
+
+    // 验证新时间是否有冲突
+    await this.validateBookingTime(
+      {
+        startTime: newStartTime,
+        endTime: newEndTime,
+        coachId: booking.coachId,
+        memberId: booking.memberId,
+        courseId: booking.courseId,
+        storeId: booking.storeId,
+      },
+      user || ({ storeId: '' } as User),
+      bookingId,
+    );
+
+    // 更新预约时间
+    booking.startTime = newStartTime;
+    booking.endTime = newEndTime;
+    booking.updatedBy = user?.id;
+    booking.updatedAt = new Date();
+
+    // 记录改期原因
+    if (reason) {
+      booking.notes = `${booking.notes || ''}\n改期原因: ${reason}`;
+    }
+
+    return await this.bookingRepository.save(booking);
+  }
+
+  /**
+   * 获取需要提醒的预约
+   */
+  async getBookingsForReminder(
+    reminderType: 'before_24h' | 'before_2h' | 'before_30min',
+    user: User,
+  ): Promise<Booking[]> {
+    checkPermission(user.roles?.[0]?.name || '', 'booking', 'read');
+
+    const now = new Date();
+    let startTime: Date;
+    let endTime: Date;
+
+    switch (reminderType) {
+      case 'before_24h':
+        startTime = new Date(now.getTime() + 23 * 60 * 60 * 1000);
+        endTime = new Date(now.getTime() + 25 * 60 * 60 * 1000);
+        break;
+      case 'before_2h':
+        startTime = new Date(now.getTime() + 1.5 * 60 * 60 * 1000);
+        endTime = new Date(now.getTime() + 2.5 * 60 * 60 * 1000);
+        break;
+      case 'before_30min':
+        startTime = new Date(now.getTime() + 25 * 60 * 1000);
+        endTime = new Date(now.getTime() + 35 * 60 * 1000);
+        break;
+    }
+
+    const queryBuilder = this.createBaseQuery(user)
+      .andWhere('booking.status IN (:...statuses)', {
+        statuses: ['pending', 'confirmed'],
+      })
+      .andWhere('booking.startTime BETWEEN :startTime AND :endTime', {
+        startTime,
+        endTime,
+      });
+
+    return await queryBuilder.getMany();
+  }
+
+  /**
+   * 获取预约统计分析
+   */
+  async getBookingAnalytics(
+    startDate: Date,
+    endDate: Date,
+    user: User,
+  ): Promise<{
+    totalBookings: number;
+    completionRate: number;
+    cancellationRate: number;
+    noShowRate: number;
+    popularTimeSlots: Array<{ hour: number; count: number }>;
+    popularCourses: Array<{
+      courseId: string;
+      courseName: string;
+      count: number;
+    }>;
+    coachPerformance: Array<{
+      coachId: string;
+      coachName: string;
+      bookings: number;
+      completionRate: number;
+    }>;
+    memberActivity: Array<{
+      memberId: string;
+      memberName: string;
+      bookings: number;
+    }>;
+  }> {
+    checkPermission(user.roles?.[0]?.name || '', 'booking', 'read');
+
+    const baseQuery = this.createBaseQuery(
+      user || ({ storeId: '' } as User),
+      false,
+    ).andWhere('booking.startTime BETWEEN :startDate AND :endDate', {
+      startDate,
+      endDate,
+    });
+
+    // 总预约数
+    const totalBookings = await baseQuery.getCount();
+
+    // 各状态统计
+    const statusStats = await this.bookingRepository
+      .createQueryBuilder('booking')
+      .select('booking.status', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .where('booking.startTime BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      })
+      .andWhere('booking.deletedAt IS NULL')
+      .groupBy('booking.status')
+      .getRawMany();
+
+    const completedCount =
+      statusStats.find((s) => s.status === 'completed')?.count || 0;
+    const cancelledCount =
+      statusStats.find((s) => s.status === 'cancelled')?.count || 0;
+    const noShowCount =
+      statusStats.find((s) => s.status === 'no_show')?.count || 0;
+
+    // 热门时间段
+    const timeSlotStats = await this.bookingRepository
+      .createQueryBuilder('booking')
+      .select('EXTRACT(HOUR FROM booking.startTime)', 'hour')
+      .addSelect('COUNT(*)', 'count')
+      .where('booking.startTime BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      })
+      .andWhere('booking.deletedAt IS NULL')
+      .groupBy('EXTRACT(HOUR FROM booking.startTime)')
+      .orderBy('count', 'DESC')
+      .limit(10)
+      .getRawMany();
+
+    // 热门课程
+    const popularCourses = await this.bookingRepository
+      .createQueryBuilder('booking')
+      .leftJoin('booking.course', 'course')
+      .select('booking.courseId', 'courseId')
+      .addSelect('course.name', 'courseName')
+      .addSelect('COUNT(*)', 'count')
+      .where('booking.startTime BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      })
+      .andWhere('booking.deletedAt IS NULL')
+      .groupBy('booking.courseId, course.name')
+      .orderBy('count', 'DESC')
+      .limit(10)
+      .getRawMany();
+
+    // 教练表现
+    const coachPerformance = await this.bookingRepository
+      .createQueryBuilder('booking')
+      .leftJoin('booking.coach', 'coach')
+      .select('booking.coachId', 'coachId')
+      .addSelect('coach.name', 'coachName')
+      .addSelect('COUNT(*)', 'bookings')
+      .addSelect(
+        "ROUND(COUNT(CASE WHEN booking.status = 'completed' THEN 1 END) * 100.0 / COUNT(*), 2)",
+        'completionRate',
+      )
+      .where('booking.startTime BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      })
+      .andWhere('booking.deletedAt IS NULL')
+      .groupBy('booking.coachId, coach.name')
+      .orderBy('bookings', 'DESC')
+      .getRawMany();
+
+    // 会员活跃度
+    const memberActivity = await this.bookingRepository
+      .createQueryBuilder('booking')
+      .leftJoin('booking.member', 'member')
+      .select('booking.memberId', 'memberId')
+      .addSelect('member.name', 'memberName')
+      .addSelect('COUNT(*)', 'bookings')
+      .where('booking.startTime BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      })
+      .andWhere('booking.deletedAt IS NULL')
+      .groupBy('booking.memberId, member.name')
+      .orderBy('bookings', 'DESC')
+      .limit(20)
+      .getRawMany();
+
+    return {
+      totalBookings,
+      completionRate:
+        totalBookings > 0 ? (completedCount / totalBookings) * 100 : 0,
+      cancellationRate:
+        totalBookings > 0 ? (cancelledCount / totalBookings) * 100 : 0,
+      noShowRate: totalBookings > 0 ? (noShowCount / totalBookings) * 100 : 0,
+      popularTimeSlots: timeSlotStats.map((item) => ({
+        hour: parseInt(item.hour),
+        count: parseInt(item.count),
+      })),
+      popularCourses: popularCourses.map((item) => ({
+        courseId: item.courseId,
+        courseName: item.courseName,
+        count: parseInt(item.count),
+      })),
+      coachPerformance: coachPerformance.map((item) => ({
+        coachId: item.coachId,
+        coachName: item.coachName,
+        bookings: parseInt(item.bookings),
+        completionRate: parseFloat(item.completionRate),
+      })),
+      memberActivity: memberActivity.map((item) => ({
+        memberId: item.memberId,
+        memberName: item.memberName,
+        bookings: parseInt(item.bookings),
+      })),
+    };
+  }
+
+  /**
+   * 批量操作预约
+   */
+  async batchUpdateBookings(
+    bookingIds: string[],
+    operation: 'confirm' | 'cancel' | 'complete',
+    reason?: string,
+    user?: User,
+  ): Promise<{ success: number; failed: number; errors: string[] }> {
+    checkPermission(user?.roles?.[0]?.name || '', 'booking', 'update');
+
+    let success = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    for (const bookingId of bookingIds) {
+      try {
+        if (!user) {
+          throw new Error('用户信息不能为空');
+        }
+        switch (operation) {
+          case 'confirm':
+            await this.confirm(bookingId, user);
+            break;
+          case 'cancel':
+            await this.cancel(bookingId, reason, user);
+            break;
+          case 'complete':
+            await this.complete(bookingId, user);
+            break;
+        }
+        success++;
+      } catch (error) {
+        failed++;
+        errors.push(`预约 ${bookingId}: ${error.message}`);
+      }
+    }
+
+    return { success, failed, errors };
+  }
+
+  /**
+   * 获取预约冲突详情
+   */
+  async getConflictDetails(
+    startTime: Date,
+    endTime: Date,
+    coachId?: string,
+    memberId?: string,
+    courseId?: string,
+    storeId?: string,
+    user?: User,
+  ): Promise<{
+    hasConflicts: boolean;
+    conflicts: Array<{
+      type: 'coach' | 'member' | 'capacity';
+      booking: Booking;
+      message: string;
+    }>;
+  }> {
+    const conflictResult = await this.checkConflicts(
+      {
+        startTime,
+        endTime,
+        coachId,
+        memberId,
+        courseId,
+        storeId,
+      },
+      user || ({ storeId: '' } as User),
+    );
+
+    const conflicts: Array<{
+      type: 'coach' | 'member' | 'capacity';
+      booking: Booking;
+      message: string;
+    }> = [];
+
+    // 教练冲突
+    for (const booking of conflictResult.coachConflicts) {
+      conflicts.push({
+        type: 'coach' as const,
+        booking,
+        message: `教练 ${booking.coach?.name} 在此时间段已有预约`,
+      });
+    }
+
+    // 会员冲突
+    for (const booking of conflictResult.memberConflicts) {
+      conflicts.push({
+        type: 'member' as const,
+        booking,
+        message: `会员 ${booking.member?.name} 在此时间段已有私教预约`,
+      });
+    }
+
+    // 容量冲突
+    if (conflictResult.capacityConflicts.length > 0 && courseId) {
+      const course = await this.courseRepository.findOne({
+        where: { id: courseId },
+      });
+      if (
+        course &&
+        conflictResult.capacityConflicts.length >= (course as any).capacity
+      ) {
+        conflicts.push({
+          type: 'capacity' as const,
+          booking: conflictResult.capacityConflicts[0],
+          message: `课程 ${course.name} 已达到最大容量 ${(course as any).capacity} 人`,
+        });
+      }
+    }
+
+    return {
+      hasConflicts: conflicts.length > 0,
+      conflicts,
+    };
+  }
+
+  /**
+   * 自动处理过期预约
+   */
+  async processExpiredBookings(): Promise<{
+    processed: number;
+    errors: string[];
+  }> {
+    const now = new Date();
+    const expiredBookings = await this.bookingRepository
+      .createQueryBuilder('booking')
+      .where('booking.status = :status', { status: 'pending' })
+      .andWhere('booking.startTime < :now', { now })
+      .andWhere('booking.deletedAt IS NULL')
+      .getMany();
+
+    let processed = 0;
+    const errors: string[] = [];
+
+    for (const booking of expiredBookings) {
+      try {
+        booking.status = 'cancelled';
+        booking.notes = `${booking.notes || ''}\n系统自动取消：预约已过期`;
+        booking.updatedAt = now;
+        await this.bookingRepository.save(booking);
+        processed++;
+      } catch (error) {
+        errors.push(`处理预约 ${booking.bookingNumber} 失败: ${error.message}`);
+      }
+    }
+
+    return { processed, errors };
   }
 }

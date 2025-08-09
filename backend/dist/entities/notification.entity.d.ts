@@ -1,0 +1,31 @@
+export declare class Notification {
+    id: string;
+    notificationNumber: string;
+    title: string;
+    content: string;
+    type: 'system' | 'booking' | 'payment' | 'membership' | 'promotion';
+    priority: 'low' | 'normal' | 'high' | 'urgent';
+    targetType: 'all' | 'member' | 'coach' | 'staff';
+    targetIds: string[];
+    status: 'pending' | 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled';
+    channels: ('push' | 'sms' | 'email' | 'wechat')[];
+    scheduledAt: Date;
+    sentAt: Date;
+    sentCount: number;
+    failedCount: number;
+    metadata: Record<string, any>;
+    storeId: string;
+    createdBy: string;
+    updatedBy: string;
+    createdAt: Date;
+    updatedAt: Date;
+    isPending(): boolean;
+    isScheduled(): boolean;
+    isSent(): boolean;
+    isFailed(): boolean;
+    isCancelled(): boolean;
+    canCancel(): boolean;
+    canResend(): boolean;
+    isExpired(): boolean;
+    getSuccessRate(): number;
+}

@@ -13,6 +13,7 @@ import { CheckIn } from './check-in.entity';
 import { Booking } from './booking.entity';
 import { GroupClassCard } from './group-class-card.entity';
 import { PersonalTrainingCard } from './personal-training-card.entity';
+import { Order } from './order.entity';
 
 @Entity('members')
 @Index(['phone'], { unique: true })
@@ -241,6 +242,9 @@ export class Member extends BaseEntity {
 
   @OneToMany(() => PersonalTrainingCard, (card) => card.member)
   personalTrainingCards: PersonalTrainingCard[];
+
+  @OneToMany(() => Order, (order) => order.member)
+  orders: Order[];
 
   // 业务方法
   isActive(): boolean {

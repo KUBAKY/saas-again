@@ -18,6 +18,7 @@ const check_in_entity_1 = require("./check-in.entity");
 const booking_entity_1 = require("./booking.entity");
 const group_class_card_entity_1 = require("./group-class-card.entity");
 const personal_training_card_entity_1 = require("./personal-training-card.entity");
+const order_entity_1 = require("./order.entity");
 let Member = class Member extends base_entity_1.BaseEntity {
     memberNumber;
     name;
@@ -50,6 +51,7 @@ let Member = class Member extends base_entity_1.BaseEntity {
     bookings;
     groupClassCards;
     personalTrainingCards;
+    orders;
     isActive() {
         return this.status === 'active' && !this.deletedAt;
     }
@@ -365,6 +367,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => personal_training_card_entity_1.PersonalTrainingCard, (card) => card.member),
     __metadata("design:type", Array)
 ], Member.prototype, "personalTrainingCards", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => order_entity_1.Order, (order) => order.member),
+    __metadata("design:type", Array)
+], Member.prototype, "orders", void 0);
 exports.Member = Member = __decorate([
     (0, typeorm_1.Entity)('members'),
     (0, typeorm_1.Index)(['phone'], { unique: true }),

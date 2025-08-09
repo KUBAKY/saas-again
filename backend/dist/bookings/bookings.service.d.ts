@@ -2,11 +2,17 @@ import { Repository } from 'typeorm';
 import { Booking } from '../entities/booking.entity';
 import { User } from '../entities/user.entity';
 import { CourseSchedule } from '../entities/course-schedule.entity';
+import { Course } from '../entities/course.entity';
+import { Member } from '../entities/member.entity';
+import { Coach } from '../entities/coach.entity';
 import { CreateBookingDto, UpdateBookingDto, QueryBookingDto } from './dto';
 export declare class BookingsService {
     private readonly bookingRepository;
     private readonly courseScheduleRepository;
-    constructor(bookingRepository: Repository<Booking>, courseScheduleRepository: Repository<CourseSchedule>);
+    private readonly courseRepository;
+    private readonly memberRepository;
+    private readonly coachRepository;
+    constructor(bookingRepository: Repository<Booking>, courseScheduleRepository: Repository<CourseSchedule>, courseRepository: Repository<Course>, memberRepository: Repository<Member>, coachRepository: Repository<Coach>);
     create(createBookingDto: CreateBookingDto, user: User): Promise<Booking>;
     findAll(queryDto: QueryBookingDto, user: User): Promise<{
         data: Booking[];
@@ -51,8 +57,15 @@ export declare class BookingsService {
     }[]>;
     checkConflicts(query: any, user: User): Promise<{
         hasConflicts: boolean;
+        conflictTypes: string[];
         coachConflicts: Booking[];
         memberConflicts: Booking[];
+        capacityConflicts: Booking[];
+        details: {
+            coachConflictCount: number;
+            memberConflictCount: number;
+            capacityConflictCount: number;
+        };
     }>;
     private createBaseQuery;
     private generateBookingNumber;
@@ -93,9 +106,9 @@ export declare class BookingsService {
         courseId: string;
         storeId: string;
         courseScheduleId?: string;
-        member: import("../entities").Member;
-        coach?: import("../entities").Coach;
-        course: import("../entities").Course;
+        member: Member;
+        coach?: Coach;
+        course: Course;
         store: import("../entities").Store;
         courseSchedule?: CourseSchedule;
         id: string;
@@ -106,4 +119,49 @@ export declare class BookingsService {
         updatedBy?: string;
         version: number;
     }[]>;
+    rescheduleBooking(bookingId: string, newStartTime: Date, newEndTime: Date, reason?: string, user?: User): Promise<Booking>;
+    getBookingsForReminder(reminderType: 'before_24h' | 'before_2h' | 'before_30min', user: User): Promise<Booking[]>;
+    getBookingAnalytics(startDate: Date, endDate: Date, user: User): Promise<{
+        totalBookings: number;
+        completionRate: number;
+        cancellationRate: number;
+        noShowRate: number;
+        popularTimeSlots: Array<{
+            hour: number;
+            count: number;
+        }>;
+        popularCourses: Array<{
+            courseId: string;
+            courseName: string;
+            count: number;
+        }>;
+        coachPerformance: Array<{
+            coachId: string;
+            coachName: string;
+            bookings: number;
+            completionRate: number;
+        }>;
+        memberActivity: Array<{
+            memberId: string;
+            memberName: string;
+            bookings: number;
+        }>;
+    }>;
+    batchUpdateBookings(bookingIds: string[], operation: 'confirm' | 'cancel' | 'complete', reason?: string, user?: User): Promise<{
+        success: number;
+        failed: number;
+        errors: string[];
+    }>;
+    getConflictDetails(startTime: Date, endTime: Date, coachId?: string, memberId?: string, courseId?: string, storeId?: string, user?: User): Promise<{
+        hasConflicts: boolean;
+        conflicts: Array<{
+            type: 'coach' | 'member' | 'capacity';
+            booking: Booking;
+            message: string;
+        }>;
+    }>;
+    processExpiredBookings(): Promise<{
+        processed: number;
+        errors: string[];
+    }>;
 }

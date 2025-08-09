@@ -1,8 +1,4 @@
-import {
-  MigrationInterface,
-  QueryRunner,
-  TableColumn,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 export class UpdateMembershipCardSchema1733827200000
   implements MigrationInterface
@@ -24,7 +20,7 @@ export class UpdateMembershipCardSchema1733827200000
         type: 'varchar',
         length: '50',
         comment: '卡类型名称',
-      })
+      }),
     );
 
     // 3. 添加计费方式字段
@@ -36,7 +32,7 @@ export class UpdateMembershipCardSchema1733827200000
         enum: ['times', 'period', 'unlimited'],
         default: "'times'",
         comment: '计费方式',
-      })
+      }),
     );
 
     // 4. 添加价格字段
@@ -48,7 +44,7 @@ export class UpdateMembershipCardSchema1733827200000
         precision: 10,
         scale: 2,
         comment: '卡片价格',
-      })
+      }),
     );
 
     // 5. 添加总次数字段
@@ -59,7 +55,7 @@ export class UpdateMembershipCardSchema1733827200000
         type: 'int',
         isNullable: true,
         comment: '总次数（次卡）',
-      })
+      }),
     );
 
     // 6. 添加已使用次数字段
@@ -70,7 +66,7 @@ export class UpdateMembershipCardSchema1733827200000
         type: 'int',
         default: 0,
         comment: '已使用次数',
-      })
+      }),
     );
 
     // 7. 添加有效期天数字段
@@ -81,7 +77,7 @@ export class UpdateMembershipCardSchema1733827200000
         type: 'int',
         isNullable: true,
         comment: '有效期（天数）',
-      })
+      }),
     );
 
     // 8. 添加开卡日期字段
@@ -91,7 +87,7 @@ export class UpdateMembershipCardSchema1733827200000
         name: 'issue_date',
         type: 'date',
         comment: '开卡日期',
-      })
+      }),
     );
 
     // 9. 添加到期日期字段
@@ -102,7 +98,7 @@ export class UpdateMembershipCardSchema1733827200000
         type: 'date',
         isNullable: true,
         comment: '到期日期',
-      })
+      }),
     );
 
     // 10. 添加激活日期字段
@@ -113,7 +109,7 @@ export class UpdateMembershipCardSchema1733827200000
         type: 'date',
         isNullable: true,
         comment: '激活日期',
-      })
+      }),
     );
 
     // 11. 修改status字段的枚举值
@@ -126,7 +122,7 @@ export class UpdateMembershipCardSchema1733827200000
         enum: ['active', 'inactive', 'expired', 'frozen', 'refunded'],
         default: "'inactive'",
         comment: '卡状态',
-      })
+      }),
     );
 
     // 12. 添加备注字段
@@ -137,7 +133,7 @@ export class UpdateMembershipCardSchema1733827200000
         type: 'text',
         isNullable: true,
         comment: '备注信息',
-      })
+      }),
     );
 
     // 13. 添加卡片配置字段
@@ -148,7 +144,7 @@ export class UpdateMembershipCardSchema1733827200000
         type: 'jsonb',
         isNullable: true,
         comment: '卡片配置',
-      })
+      }),
     );
 
     // 14. 添加brand_id字段支持多租户
@@ -158,7 +154,7 @@ export class UpdateMembershipCardSchema1733827200000
         name: 'brand_id',
         type: 'uuid',
         comment: '品牌ID',
-      })
+      }),
     );
 
     // 15. 添加deleted_at字段支持软删除
@@ -169,7 +165,7 @@ export class UpdateMembershipCardSchema1733827200000
         type: 'timestamp',
         isNullable: true,
         comment: '删除时间',
-      })
+      }),
     );
 
     // 16. 创建brand_id外键
@@ -247,11 +243,19 @@ export class UpdateMembershipCardSchema1733827200000
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // 删除新添加的字段和索引
-    await queryRunner.dropIndex('membership_cards', 'IDX_membership_cards_brand_store_status');
-    await queryRunner.dropIndex('membership_cards', 'IDX_membership_cards_member_active');
-    
-    await queryRunner.query('ALTER TABLE membership_cards DROP CONSTRAINT FK_membership_cards_brand_id');
-    
+    await queryRunner.dropIndex(
+      'membership_cards',
+      'IDX_membership_cards_brand_store_status',
+    );
+    await queryRunner.dropIndex(
+      'membership_cards',
+      'IDX_membership_cards_member_active',
+    );
+
+    await queryRunner.query(
+      'ALTER TABLE membership_cards DROP CONSTRAINT FK_membership_cards_brand_id',
+    );
+
     await queryRunner.dropColumn('membership_cards', 'deleted_at');
     await queryRunner.dropColumn('membership_cards', 'brand_id');
     await queryRunner.dropColumn('membership_cards', 'settings');
@@ -272,7 +276,7 @@ export class UpdateMembershipCardSchema1733827200000
         name: 'valid_from',
         type: 'timestamp',
         comment: '生效时间',
-      })
+      }),
     );
 
     await queryRunner.addColumn(
@@ -281,7 +285,7 @@ export class UpdateMembershipCardSchema1733827200000
         name: 'valid_to',
         type: 'timestamp',
         comment: '失效时间',
-      })
+      }),
     );
 
     await queryRunner.addColumn(
@@ -292,7 +296,7 @@ export class UpdateMembershipCardSchema1733827200000
         precision: 10,
         scale: 2,
         comment: '购买价格',
-      })
+      }),
     );
   }
 }
