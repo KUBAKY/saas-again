@@ -34,37 +34,59 @@ __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.Length)(2, 50),
-    (0, class_validator_1.Matches)(/^[A-Z0-9_]+$/, { message: '品牌编码只能包含大写字母、数字和下划线' }),
+    (0, class_validator_1.Matches)(/^[A-Z0-9_]+$/, {
+        message: '品牌编码只能包含大写字母、数字和下划线',
+    }),
     __metadata("design:type", String)
 ], CreateBrandDto.prototype, "code", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '品牌描述', example: '专业健身连锁品牌', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '品牌描述',
+        example: '专业健身连锁品牌',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(0, 500),
     __metadata("design:type", String)
 ], CreateBrandDto.prototype, "description", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '联系电话', example: '400-888-0001', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '联系电话',
+        example: '400-888-0001',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(0, 20),
     __metadata("design:type", String)
 ], CreateBrandDto.prototype, "contactPhone", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '联系邮箱', example: 'contact@fitnesspro.com', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '联系邮箱',
+        example: 'contact@fitnesspro.com',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEmail)(),
     __metadata("design:type", String)
 ], CreateBrandDto.prototype, "contactEmail", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '品牌LOGO URL', example: 'https://example.com/logo.png', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '品牌LOGO URL',
+        example: 'https://example.com/logo.png',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateBrandDto.prototype, "logoUrl", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '官网地址', example: 'https://www.fitnesspro.com', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '官网地址',
+        example: 'https://www.fitnesspro.com',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)

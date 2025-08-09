@@ -6,7 +6,13 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, FindManyOptions, FindOptionsWhere, Between } from 'typeorm';
+import {
+  Repository,
+  Like,
+  FindManyOptions,
+  FindOptionsWhere,
+  Between,
+} from 'typeorm';
 import { Member } from '../entities/member.entity';
 import { Store } from '../entities/store.entity';
 import { User } from '../entities/user.entity';
@@ -22,7 +28,10 @@ export class MembersService {
     private readonly storeRepository: Repository<Store>,
   ) {}
 
-  async create(createMemberDto: CreateMemberDto, currentUser: User): Promise<Member> {
+  async create(
+    createMemberDto: CreateMemberDto,
+    currentUser: User,
+  ): Promise<Member> {
     const { storeId, phone } = createMemberDto;
 
     // 验证门店是否存在且用户有权限
@@ -36,7 +45,11 @@ export class MembersService {
     }
 
     // 权限检查
-    const canCreate = this.checkStorePermission(currentUser, store.brandId, storeId);
+    const canCreate = this.checkStorePermission(
+      currentUser,
+      store.brandId,
+      storeId,
+    );
     if (!canCreate) {
       throw new ForbiddenException('无权限在此门店创建会员');
     }
@@ -63,29 +76,32 @@ export class MembersService {
     return await this.memberRepository.save(member);
   }
 
-  async findAll(queryDto: QueryMemberDto, currentUser: User): Promise<PaginatedResult<Member>> {
-    const { 
-      page = 1, 
-      limit = 20, 
-      search, 
-      status, 
-      storeId, 
+  async findAll(
+    queryDto: QueryMemberDto,
+    currentUser: User,
+  ): Promise<PaginatedResult<Member>> {
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      status,
+      storeId,
       level,
       gender,
       minAge,
       maxAge,
-      sortBy = 'createdAt', 
-      sortOrder = 'DESC' 
+      sortBy = 'createdAt',
+      sortOrder = 'DESC',
     } = queryDto;
-    
+
     // 构建查询条件
     const where: FindOptionsWhere<Member> = {};
-    
+
     if (search) {
       // 可以搜索姓名、手机号、会员号
       where.name = Like(`%${search}%`);
     }
-    
+
     if (status) {
       where.status = status;
     }
@@ -102,20 +118,22 @@ export class MembersService {
     // TypeORM的FindOptionsWhere不支持复杂的日期计算
 
     // 权限控制：根据用户角色限制查询范围
-    if (currentUser.roles?.some(role => role.name === 'ADMIN')) {
+    if (currentUser.roles?.some((role) => role.name === 'ADMIN')) {
       // 系统管理员可以查看所有会员
       if (storeId) {
         where.storeId = storeId;
       }
-    } else if (currentUser.roles?.some(role => role.name === 'BRAND_MANAGER')) {
+    } else if (
+      currentUser.roles?.some((role) => role.name === 'BRAND_MANAGER')
+    ) {
       // 品牌管理员只能查看自己品牌的会员
       // 需要通过store表来过滤brandId
       const stores = await this.storeRepository.find({
         where: { brandId: currentUser.brandId },
         select: ['id'],
       });
-      const storeIds = stores.map(s => s.id);
-      
+      const storeIds = stores.map((s) => s.id);
+
       if (storeId && storeIds.includes(storeId)) {
         where.storeId = storeId;
       } else {
@@ -132,13 +150,16 @@ export class MembersService {
     let findOptions: FindManyOptions<Member>;
 
     // 处理品牌管理员的多门店查询
-    if (currentUser.roles?.some(role => role.name === 'BRAND_MANAGER') && !storeId) {
+    if (
+      currentUser.roles?.some((role) => role.name === 'BRAND_MANAGER') &&
+      !storeId
+    ) {
       const stores = await this.storeRepository.find({
         where: { brandId: currentUser.brandId },
         select: ['id'],
       });
-      const storeIds = stores.map(s => s.id);
-      
+      const storeIds = stores.map((s) => s.id);
+
       findOptions = {
         where: {
           ...where,
@@ -151,7 +172,8 @@ export class MembersService {
       };
 
       // 使用query builder处理IN查询
-      const queryBuilder = this.memberRepository.createQueryBuilder('member')
+      const queryBuilder = this.memberRepository
+        .createQueryBuilder('member')
         .leftJoinAndSelect('member.store', 'store')
         .where('member.storeId IN (:...storeIds)', { storeIds })
         .orderBy(`member.${sortBy}`, sortOrder)
@@ -159,7 +181,9 @@ export class MembersService {
         .take(limit);
 
       if (search) {
-        queryBuilder.andWhere('member.name LIKE :search', { search: `%${search}%` });
+        queryBuilder.andWhere('member.name LIKE :search', {
+          search: `%${search}%`,
+        });
       }
       if (status) {
         queryBuilder.andWhere('member.status = :status', { status });
@@ -172,7 +196,7 @@ export class MembersService {
       }
 
       const [data, total] = await queryBuilder.getManyAndCount();
-      
+
       return {
         data,
         total,
@@ -189,7 +213,8 @@ export class MembersService {
         relations: ['store'],
       };
 
-      const [data, total] = await this.memberRepository.findAndCount(findOptions);
+      const [data, total] =
+        await this.memberRepository.findAndCount(findOptions);
 
       return {
         data,
@@ -212,7 +237,11 @@ export class MembersService {
     }
 
     // 权限检查
-    const canView = this.checkStorePermission(currentUser, member.store.brandId, member.storeId);
+    const canView = this.checkStorePermission(
+      currentUser,
+      member.store.brandId,
+      member.storeId,
+    );
     if (!canView) {
       throw new ForbiddenException('无权限查看此会员');
     }
@@ -220,11 +249,19 @@ export class MembersService {
     return member;
   }
 
-  async update(id: string, updateMemberDto: UpdateMemberDto, currentUser: User): Promise<Member> {
+  async update(
+    id: string,
+    updateMemberDto: UpdateMemberDto,
+    currentUser: User,
+  ): Promise<Member> {
     const member = await this.findOne(id, currentUser);
 
     // 权限检查
-    const canUpdate = this.checkStorePermission(currentUser, member.store.brandId, member.storeId);
+    const canUpdate = this.checkStorePermission(
+      currentUser,
+      member.store.brandId,
+      member.storeId,
+    );
     if (!canUpdate) {
       throw new ForbiddenException('无权限更新此会员');
     }
@@ -250,9 +287,11 @@ export class MembersService {
     const member = await this.findOne(id, currentUser);
 
     // 权限检查：只有系统管理员和品牌管理员可以删除会员
-    const canDelete = currentUser.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && currentUser.brandId === member.store.brandId)
+    const canDelete = currentUser.roles?.some(
+      (role) =>
+        role.name === 'ADMIN' ||
+        (role.name === 'BRAND_MANAGER' &&
+          currentUser.brandId === member.store.brandId),
     );
 
     if (!canDelete) {
@@ -269,16 +308,18 @@ export class MembersService {
     // 根据用户权限获取统计信息
     let whereCondition = {};
 
-    if (currentUser.roles?.some(role => role.name === 'ADMIN')) {
+    if (currentUser.roles?.some((role) => role.name === 'ADMIN')) {
       // 系统管理员可以查看全部统计
-    } else if (currentUser.roles?.some(role => role.name === 'BRAND_MANAGER')) {
+    } else if (
+      currentUser.roles?.some((role) => role.name === 'BRAND_MANAGER')
+    ) {
       // 品牌管理员查看自己品牌的统计
       const stores = await this.storeRepository.find({
         where: { brandId: currentUser.brandId },
         select: ['id'],
       });
-      const storeIds = stores.map(s => s.id);
-      
+      const storeIds = stores.map((s) => s.id);
+
       const totalMembers = await this.memberRepository
         .createQueryBuilder('member')
         .where('member.storeId IN (:...storeIds)', { storeIds })
@@ -293,8 +334,12 @@ export class MembersService {
       const newMembersThisMonth = await this.memberRepository
         .createQueryBuilder('member')
         .where('member.storeId IN (:...storeIds)', { storeIds })
-        .andWhere('member.createdAt >= :startDate', { 
-          startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1) 
+        .andWhere('member.createdAt >= :startDate', {
+          startDate: new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            1,
+          ),
         })
         .getCount();
 
@@ -308,19 +353,21 @@ export class MembersService {
     } else {
       // 门店级别统计
       whereCondition = { storeId: currentUser.storeId };
-      
-      const totalMembers = await this.memberRepository.count({ where: whereCondition });
-      const activeMembers = await this.memberRepository.count({ 
-        where: { ...whereCondition, status: 'active' } 
+
+      const totalMembers = await this.memberRepository.count({
+        where: whereCondition,
+      });
+      const activeMembers = await this.memberRepository.count({
+        where: { ...whereCondition, status: 'active' },
       });
       const newMembersThisMonth = await this.memberRepository.count({
         where: {
           ...whereCondition,
           createdAt: Between(
             new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-            new Date()
-          )
-        }
+            new Date(),
+          ),
+        },
       });
 
       return {
@@ -339,12 +386,20 @@ export class MembersService {
     return `M${year}${(count + 1).toString().padStart(6, '0')}`;
   }
 
-  private checkStorePermission(user: User, brandId: string, storeId: string): boolean {
-    return user.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && user.brandId === brandId) ||
-      (user.brandId === brandId && (!user.storeId || user.storeId === storeId))
-    ) || false;
+  private checkStorePermission(
+    user: User,
+    brandId: string,
+    storeId: string,
+  ): boolean {
+    return (
+      user.roles?.some(
+        (role) =>
+          role.name === 'ADMIN' ||
+          (role.name === 'BRAND_MANAGER' && user.brandId === brandId) ||
+          (user.brandId === brandId &&
+            (!user.storeId || user.storeId === storeId)),
+      ) || false
+    );
   }
 
   private async getMembersByLevel(storeIds: string[]) {

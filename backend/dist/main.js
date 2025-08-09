@@ -15,7 +15,9 @@ async function bootstrap() {
     const configService = app.get(config_1.ConfigService);
     app.setGlobalPrefix('api/v1');
     app.enableCors({
-        origin: configService.get('CORS_ORIGIN')?.split(',') || ['http://localhost:3001'],
+        origin: configService.get('CORS_ORIGIN')?.split(',') || [
+            'http://localhost:3001',
+        ],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true,

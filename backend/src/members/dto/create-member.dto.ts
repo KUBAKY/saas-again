@@ -1,17 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { 
-  IsString, 
-  IsNotEmpty, 
-  IsOptional, 
-  IsEmail, 
-  IsUUID, 
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEmail,
+  IsUUID,
   IsDateString,
   IsNumber,
   IsIn,
   IsPhoneNumber,
   Min,
   Max,
-  Length 
+  Length,
 } from 'class-validator';
 
 export class CreateMemberDto {
@@ -27,12 +27,20 @@ export class CreateMemberDto {
   @Length(11, 11)
   phone: string;
 
-  @ApiProperty({ description: '邮箱', example: 'member@example.com', required: false })
+  @ApiProperty({
+    description: '邮箱',
+    example: 'member@example.com',
+    required: false,
+  })
   @IsOptional()
   @IsEmail()
   email?: string;
 
-  @ApiProperty({ description: '性别', example: 'male', enum: ['male', 'female'] })
+  @ApiProperty({
+    description: '性别',
+    example: 'male',
+    enum: ['male', 'female'],
+  })
   @IsIn(['male', 'female'])
   gender: 'male' | 'female';
 
@@ -55,22 +63,29 @@ export class CreateMemberDto {
   @Max(200)
   weight?: number;
 
-  @ApiProperty({ description: '门店ID', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiProperty({
+    description: '门店ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   @IsUUID()
   @IsNotEmpty()
   storeId: string;
 
-  @ApiProperty({ 
-    description: '会员等级', 
-    example: 'bronze', 
+  @ApiProperty({
+    description: '会员等级',
+    example: 'bronze',
     enum: ['bronze', 'silver', 'gold', 'platinum'],
-    default: 'bronze' 
+    default: 'bronze',
   })
   @IsOptional()
   @IsIn(['bronze', 'silver', 'gold', 'platinum'])
   level?: 'bronze' | 'silver' | 'gold' | 'platinum' = 'bronze';
 
-  @ApiProperty({ description: '健身目标', example: '减肥塑形', required: false })
+  @ApiProperty({
+    description: '健身目标',
+    example: '减肥塑形',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   @Length(0, 200)
@@ -82,13 +97,21 @@ export class CreateMemberDto {
   @Length(0, 50)
   emergencyContact?: string;
 
-  @ApiProperty({ description: '紧急联系人电话', example: '13900139000', required: false })
+  @ApiProperty({
+    description: '紧急联系人电话',
+    example: '13900139000',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   @Length(0, 20)
   emergencyPhone?: string;
 
-  @ApiProperty({ description: '会员头像URL', example: 'https://example.com/avatar.jpg', required: false })
+  @ApiProperty({
+    description: '会员头像URL',
+    example: 'https://example.com/avatar.jpg',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   avatar?: string;

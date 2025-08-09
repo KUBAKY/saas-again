@@ -1,0 +1,328 @@
+/* 训练记录页面样式 */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding-bottom: 120rpx;
+}
+
+/* 页面头部 */
+.header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  margin: 20rpx;
+  border-radius: 16rpx;
+  padding: 30rpx;
+}
+
+.course-info {
+  margin-bottom: 20rpx;
+}
+
+.course-title {
+  display: block;
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.course-time {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 26rpx;
+  margin-bottom: 8rpx;
+}
+
+.member-name {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
+}
+
+.timer-section {
+  text-align: center;
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12rpx;
+}
+
+.timer-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
+  margin-bottom: 8rpx;
+}
+
+.timer {
+  color: #fff;
+  font-size: 48rpx;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+/* 训练动作区域 */
+.training-section {
+  margin: 20rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16rpx;
+  padding: 30rpx;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  color: #333;
+  font-size: 30rpx;
+  font-weight: bold;
+}
+
+.exercise-list {
+  margin-top: 20rpx;
+}
+
+.exercise-item {
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.exercise-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.exercise-name {
+  color: #333;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.exercise-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.sets-list {
+  margin-top: 16rpx;
+}
+
+.set-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx;
+  background: #fff;
+  border-radius: 8rpx;
+  margin-bottom: 12rpx;
+}
+
+.set-number {
+  color: #666;
+  font-size: 24rpx;
+  width: 120rpx;
+}
+
+.set-data {
+  flex: 1;
+  display: flex;
+  gap: 20rpx;
+}
+
+.data-item {
+  text-align: center;
+}
+
+.data-label {
+  display: block;
+  color: #999;
+  font-size: 20rpx;
+  margin-bottom: 4rpx;
+}
+
+.data-value {
+  color: #333;
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+/* 身体数据区域 */
+.body-data-section {
+  margin: 20rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16rpx;
+  padding: 30rpx;
+}
+
+.body-data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  margin-top: 20rpx;
+}
+
+.data-card {
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  text-align: center;
+}
+
+.data-title {
+  display: block;
+  color: #666;
+  font-size: 24rpx;
+  margin-bottom: 8rpx;
+}
+
+.data-card .data-value {
+  color: #333;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+/* 媒体区域 */
+.media-section {
+  margin: 20rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16rpx;
+  padding: 30rpx;
+}
+
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.media-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.media-image, .media-video {
+  width: 100%;
+  height: 100%;
+  border-radius: 8rpx;
+}
+
+.media-delete {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 32rpx;
+  height: 32rpx;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-media-btn {
+  aspect-ratio: 1;
+  border: 2rpx dashed #ddd;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+}
+
+/* 备注区域 */
+.notes-section {
+  margin: 20rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16rpx;
+  padding: 30rpx;
+}
+
+/* 底部操作按钮 */
+.bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1rpx solid rgba(0, 0, 0, 0.1);
+}
+
+.recording-actions {
+  display: flex;
+  gap: 20rpx;
+}
+
+.recording-actions .van-button {
+  flex: 1;
+}
+
+/* 弹窗样式 */
+.exercise-popup, .body-data-popup {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.popup-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.popup-content {
+  flex: 1;
+  padding: 30rpx;
+  overflow-y: auto;
+}
+
+.form-section {
+  margin-top: 30rpx;
+}
+
+.form-title {
+  color: #333;
+  font-size: 28rpx;
+  font-weight: 500;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 40rpx;
+}
+
+.popup-actions .van-button {
+  flex: 1;
+}
+
+/* 响应式调整 */
+@media (max-width: 375px) {
+  .body-data-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .media-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

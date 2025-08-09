@@ -1,6 +1,7 @@
 import { BaseEntity } from './base.entity';
 import { Brand } from './brand.entity';
 import { Store } from './store.entity';
+import { Role } from './role.entity';
 export declare class User extends BaseEntity {
     username: string;
     email: string;
@@ -27,7 +28,7 @@ export declare class User extends BaseEntity {
     storeId?: string;
     brand: Brand;
     store?: Store;
-    roles: any[];
+    roles?: Role[];
     hashPassword(): Promise<void>;
     validatePassword(password: string): Promise<boolean>;
     isActive(): boolean;

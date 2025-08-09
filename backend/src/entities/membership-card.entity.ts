@@ -1,12 +1,8 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  Index,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Member } from './member.entity';
+import { GroupClassCard } from './group-class-card.entity';
+import { PersonalTrainingCard } from './personal-training-card.entity';
 
 @Entity('membership_cards')
 @Index(['cardNumber'], { unique: true })
@@ -124,6 +120,12 @@ export class MembershipCard extends BaseEntity {
   @JoinColumn({ name: 'member_id' })
   member: Member;
 
+  @OneToMany(() => GroupClassCard, (card) => card.membershipCard)
+  groupClassCards: GroupClassCard[];
+
+  @OneToMany(() => PersonalTrainingCard, (card) => card.membershipCard)
+  personalTrainingCards: PersonalTrainingCard[];
+
   // 业务方法
   isActive(): boolean {
     return this.status === 'active' && !this.deletedAt && !this.isExpired();
@@ -136,12 +138,12 @@ export class MembershipCard extends BaseEntity {
 
   getRemainingDays(): number | null {
     if (!this.expiryDate) return null;
-    
+
     const today = new Date();
     const expiry = new Date(this.expiryDate);
     const diffTime = expiry.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     return Math.max(0, diffDays);
   }
 
@@ -152,35 +154,35 @@ export class MembershipCard extends BaseEntity {
 
   canUse(): boolean {
     if (!this.isActive()) return false;
-    
+
     if (this.billingType === 'times') {
       return (this.getRemainingTimes() || 0) > 0;
     }
-    
+
     return true;
   }
 
   use(): boolean {
     if (!this.canUse()) return false;
-    
+
     if (this.billingType === 'times') {
       this.usedSessions += 1;
-      
+
       // 检查是否用完
       if (this.getRemainingTimes() === 0) {
         this.status = 'expired';
       }
     }
-    
+
     return true;
   }
 
   activate(): void {
     if (this.status !== 'inactive') return;
-    
+
     this.status = 'active';
     this.activationDate = new Date();
-    
+
     // 设置到期日期
     if (this.validityDays && !this.expiryDate) {
       const expiryDate = new Date(this.activationDate);

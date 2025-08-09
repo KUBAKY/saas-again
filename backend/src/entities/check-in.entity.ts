@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  Index,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Member } from './member.entity';
 import { Store } from './store.entity';
@@ -81,8 +75,10 @@ export class CheckIn extends BaseEntity {
   // 业务方法
   getDuration(): number | null {
     if (!this.checkOutTime) return null;
-    
-    const diffMs = new Date(this.checkOutTime).getTime() - new Date(this.checkInTime).getTime();
+
+    const diffMs =
+      new Date(this.checkOutTime).getTime() -
+      new Date(this.checkInTime).getTime();
     return Math.floor(diffMs / (1000 * 60)); // 返回分钟数
   }
 

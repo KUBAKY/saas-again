@@ -32,18 +32,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-      
+
       if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
         const responseObj = exceptionResponse as any;
         message = responseObj.message || exception.message;
-        
+
         // Handle validation errors
         if (responseObj.message && Array.isArray(responseObj.message)) {
           errors = responseObj.message;
           message = 'Validation failed';
         }
       } else {
-        message = exceptionResponse as string;
+        message = exceptionResponse;
       }
     } else {
       // Log unknown exceptions
@@ -62,7 +62,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     };
 
     // Remove undefined fields
-    Object.keys(errorResponse).forEach(key => {
+    Object.keys(errorResponse).forEach((key) => {
       if (errorResponse[key as keyof ErrorResponse] === undefined) {
         delete errorResponse[key as keyof ErrorResponse];
       }

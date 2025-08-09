@@ -48,13 +48,20 @@ __decorate([
     __metadata("design:type", String)
 ], QueryStoreDto.prototype, "search", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '状态', example: 'active', enum: ['active', 'inactive'] }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '状态',
+        example: 'active',
+        enum: ['active', 'inactive'],
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsIn)(['active', 'inactive']),
     __metadata("design:type", String)
 ], QueryStoreDto.prototype, "status", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '品牌ID', example: '123e4567-e89b-12d3-a456-426614174000' }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '品牌ID',
+        example: '123e4567-e89b-12d3-a456-426614174000',
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
@@ -66,14 +73,23 @@ __decorate([
     __metadata("design:type", String)
 ], QueryStoreDto.prototype, "city", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '排序字段', example: 'createdAt', default: 'createdAt' }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '排序字段',
+        example: 'createdAt',
+        default: 'createdAt',
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsIn)(['createdAt', 'updatedAt', 'name', 'code']),
     __metadata("design:type", String)
 ], QueryStoreDto.prototype, "sortBy", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '排序方向', example: 'DESC', default: 'DESC', enum: ['ASC', 'DESC'] }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '排序方向',
+        example: 'DESC',
+        default: 'DESC',
+        enum: ['ASC', 'DESC'],
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Transform)(({ value }) => value.toUpperCase()),
     (0, class_validator_1.IsIn)(['ASC', 'DESC']),

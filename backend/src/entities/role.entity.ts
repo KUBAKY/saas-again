@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  ManyToMany,
-  JoinTable,
-  Index,
-} from 'typeorm';
+import { Entity, Column, ManyToMany, JoinTable, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
 import { Permission } from './permission.entity';
@@ -92,13 +86,16 @@ export class Role extends BaseEntity {
   }
 
   hasPermission(permissionName: string): boolean {
-    return this.permissions?.some(permission => 
-      permission.name === permissionName && permission.isActive()
-    ) || false;
+    return (
+      this.permissions?.some(
+        (permission) =>
+          permission.name === permissionName && permission.isActive(),
+      ) || false
+    );
   }
 
   getPermissionNames(): string[] {
-    return this.permissions?.map(permission => permission.name) || [];
+    return this.permissions?.map((permission) => permission.name) || [];
   }
 
   isSystemRole(): boolean {

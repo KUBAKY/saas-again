@@ -15,6 +15,7 @@ const base_entity_1 = require("./base.entity");
 const store_entity_1 = require("./store.entity");
 const coach_entity_1 = require("./coach.entity");
 const booking_entity_1 = require("./booking.entity");
+const course_schedule_entity_1 = require("./course-schedule.entity");
 let Course = class Course extends base_entity_1.BaseEntity {
     name;
     description;
@@ -38,6 +39,7 @@ let Course = class Course extends base_entity_1.BaseEntity {
     store;
     coach;
     bookings;
+    schedules;
     isActive() {
         return this.status === 'active' && !this.deletedAt;
     }
@@ -74,14 +76,14 @@ let Course = class Course extends base_entity_1.BaseEntity {
         return this.bookings?.length || 0;
     }
     getActiveBookings() {
-        return this.bookings?.filter(booking => booking.status === 'confirmed' &&
-            new Date(booking.startTime) > new Date()) || [];
+        return (this.bookings?.filter((booking) => booking.status === 'confirmed' &&
+            new Date(booking.startTime) > new Date()) || []);
     }
     getCurrentBookings() {
         const now = new Date();
-        return this.bookings?.filter(booking => booking.status === 'confirmed' &&
+        return (this.bookings?.filter((booking) => booking.status === 'confirmed' &&
             new Date(booking.startTime) <= now &&
-            new Date(booking.endTime) >= now) || [];
+            new Date(booking.endTime) >= now) || []);
     }
 };
 exports.Course = Course;
@@ -265,6 +267,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => booking_entity_1.Booking, (booking) => booking.course),
     __metadata("design:type", Array)
 ], Course.prototype, "bookings", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => course_schedule_entity_1.CourseSchedule, (schedule) => schedule.course),
+    __metadata("design:type", Array)
+], Course.prototype, "schedules", void 0);
 exports.Course = Course = __decorate([
     (0, typeorm_1.Entity)('courses'),
     (0, typeorm_1.Index)(['storeId', 'name'])

@@ -18,7 +18,11 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { MembershipCardsService } from './membership-cards.service';
-import { CreateMembershipCardDto, UpdateMembershipCardDto, QueryMembershipCardDto } from './dto';
+import {
+  CreateMembershipCardDto,
+  UpdateMembershipCardDto,
+  QueryMembershipCardDto,
+} from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '../entities/user.entity';
@@ -29,13 +33,18 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 @UseGuards(JwtAuthGuard)
 @Controller('membership-cards')
 export class MembershipCardsController {
-  constructor(private readonly membershipCardsService: MembershipCardsService) {}
+  constructor(
+    private readonly membershipCardsService: MembershipCardsService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: '创建会员卡' })
   @ApiResponse({ status: 201, description: '会员卡创建成功' })
   @ApiResponse({ status: 400, description: '请求参数错误' })
-  create(@Body() createMembershipCardDto: CreateMembershipCardDto, @CurrentUser() user: User) {
+  create(
+    @Body() createMembershipCardDto: CreateMembershipCardDto,
+    @CurrentUser() user: User,
+  ) {
     return this.membershipCardsService.create(createMembershipCardDto, user);
   }
 
@@ -49,7 +58,10 @@ export class MembershipCardsController {
   @ApiQuery({ name: 'cardType', required: false, description: '卡类型' })
   @ApiQuery({ name: 'status', required: false, description: '状态' })
   @ApiQuery({ name: 'storeId', required: false, description: '门店ID' })
-  findAll(@Query() queryDto: QueryMembershipCardDto, @CurrentUser() user: User) {
+  findAll(
+    @Query() queryDto: QueryMembershipCardDto,
+    @CurrentUser() user: User,
+  ) {
     return this.membershipCardsService.findAll(queryDto, user);
   }
 
@@ -79,7 +91,11 @@ export class MembershipCardsController {
     @Body() updateMembershipCardDto: UpdateMembershipCardDto,
     @CurrentUser() user: User,
   ) {
-    return this.membershipCardsService.update(id, updateMembershipCardDto, user);
+    return this.membershipCardsService.update(
+      id,
+      updateMembershipCardDto,
+      user,
+    );
   }
 
   @Patch(':id/activate')
@@ -94,10 +110,10 @@ export class MembershipCardsController {
   @ApiResponse({ status: 200, description: '暂停成功' })
   suspend(
     @Param('id') id: string,
-    @Body('reason') reason?: string,
     @CurrentUser() user: User,
+    @Body('reason') reason?: string,
   ) {
-    return this.membershipCardsService.suspend(id, reason, user);
+    return this.membershipCardsService.suspend(id, reason || '', user);
   }
 
   @Patch(':id/renew')

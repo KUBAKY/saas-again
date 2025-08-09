@@ -1,17 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { 
-  IsString, 
-  IsNotEmpty, 
-  IsOptional, 
-  IsEmail, 
-  IsUUID, 
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEmail,
+  IsUUID,
   IsDateString,
   IsNumber,
   IsIn,
   IsArray,
   Min,
   Max,
-  Length 
+  Length,
 } from 'class-validator';
 
 export class CreateCoachDto {
@@ -33,29 +33,44 @@ export class CreateCoachDto {
   @Length(11, 11)
   phone: string;
 
-  @ApiProperty({ description: '邮箱', example: 'coach@gym.com', required: false })
+  @ApiProperty({
+    description: '邮箱',
+    example: 'coach@gym.com',
+    required: false,
+  })
   @IsOptional()
   @IsEmail()
   email?: string;
 
-  @ApiProperty({ description: '性别', example: 'male', enum: ['male', 'female'] })
+  @ApiProperty({
+    description: '性别',
+    example: 'male',
+    enum: ['male', 'female'],
+  })
   @IsIn(['male', 'female'])
   gender: 'male' | 'female';
 
-  @ApiProperty({ description: '门店ID', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiProperty({
+    description: '门店ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   @IsUUID()
   @IsNotEmpty()
   storeId: string;
 
-  @ApiProperty({ description: '入职日期', example: '2023-01-01', required: false })
+  @ApiProperty({
+    description: '入职日期',
+    example: '2023-01-01',
+    required: false,
+  })
   @IsOptional()
   @IsDateString()
   hireDate?: string;
 
-  @ApiProperty({ 
-    description: '专长', 
+  @ApiProperty({
+    description: '专长',
     example: ['力量训练', '减脂塑形', '功能性训练'],
-    required: false 
+    required: false,
   })
   @IsOptional()
   @IsArray()
@@ -69,7 +84,11 @@ export class CreateCoachDto {
   @Max(50)
   experienceYears?: number;
 
-  @ApiProperty({ description: '个人简介', example: '5年健身教练经验，专业力量训练指导', required: false })
+  @ApiProperty({
+    description: '个人简介',
+    example: '5年健身教练经验，专业力量训练指导',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   @Length(0, 500)
@@ -87,12 +106,20 @@ export class CreateCoachDto {
   @Min(0)
   hourlyRate?: number;
 
-  @ApiProperty({ description: '教练头像URL', example: 'https://example.com/avatar.jpg', required: false })
+  @ApiProperty({
+    description: '教练头像URL',
+    example: 'https://example.com/avatar.jpg',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   avatar?: string;
 
-  @ApiProperty({ description: '认证资质', example: ['ACSM认证', 'NASM认证'], required: false })
+  @ApiProperty({
+    description: '认证资质',
+    example: ['ACSM认证', 'NASM认证'],
+    required: false,
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

@@ -10,6 +10,7 @@ import { BaseEntity } from './base.entity';
 import { Store } from './store.entity';
 import { Coach } from './coach.entity';
 import { Booking } from './booking.entity';
+import { CourseSchedule } from './course-schedule.entity';
 
 @Entity('courses')
 @Index(['storeId', 'name'])
@@ -174,6 +175,9 @@ export class Course extends BaseEntity {
   @OneToMany(() => Booking, (booking) => booking.course)
   bookings: Booking[];
 
+  @OneToMany(() => CourseSchedule, (schedule) => schedule.course)
+  schedules: CourseSchedule[];
+
   // 业务方法
   isActive(): boolean {
     return this.status === 'active' && !this.deletedAt;
@@ -222,18 +226,24 @@ export class Course extends BaseEntity {
   }
 
   getActiveBookings(): Booking[] {
-    return this.bookings?.filter(booking => 
-      booking.status === 'confirmed' && 
-      new Date(booking.startTime) > new Date()
-    ) || [];
+    return (
+      this.bookings?.filter(
+        (booking) =>
+          booking.status === 'confirmed' &&
+          new Date(booking.startTime) > new Date(),
+      ) || []
+    );
   }
 
   getCurrentBookings(): Booking[] {
     const now = new Date();
-    return this.bookings?.filter(booking => 
-      booking.status === 'confirmed' && 
-      new Date(booking.startTime) <= now &&
-      new Date(booking.endTime) >= now
-    ) || [];
+    return (
+      this.bookings?.filter(
+        (booking) =>
+          booking.status === 'confirmed' &&
+          new Date(booking.startTime) <= now &&
+          new Date(booking.endTime) >= now,
+      ) || []
+    );
   }
 }

@@ -6,17 +6,23 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, FindManyOptions, FindOptionsWhere, In } from 'typeorm';
+import {
+  Repository,
+  Like,
+  FindManyOptions,
+  FindOptionsWhere,
+  In,
+} from 'typeorm';
 import { User } from '../entities/user.entity';
 import { Role } from '../entities/role.entity';
 import { Brand } from '../entities/brand.entity';
 import { Store } from '../entities/store.entity';
-import { 
-  CreateUserDto, 
-  UpdateUserDto, 
+import {
+  CreateUserDto,
+  UpdateUserDto,
   QueryUserDto,
   UpdateUserStatusDto,
-  UpdateUserRolesDto 
+  UpdateUserRolesDto,
 } from './dto';
 import { PaginatedResult } from '../brands/brands.service';
 
@@ -37,9 +43,10 @@ export class UsersService {
     const { brandId, storeId, roleIds, email, username, phone } = createUserDto;
 
     // 权限检查：只有系统管理员和品牌管理员可以创建用户
-    const canCreate = currentUser.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && currentUser.brandId === brandId)
+    const canCreate = currentUser.roles?.some(
+      (role) =>
+        role.name === 'ADMIN' ||
+        (role.name === 'BRAND_MANAGER' && currentUser.brandId === brandId),
     );
 
     if (!canCreate) {
@@ -68,11 +75,7 @@ export class UsersService {
 
     // 检查用户是否已存在
     const existingUser = await this.userRepository.findOne({
-      where: [
-        { email },
-        { username },
-        ...(phone ? [{ phone, brandId }] : []),
-      ],
+      where: [{ email }, { username }, ...(phone ? [{ phone, brandId }] : [])],
     });
 
     if (existingUser) {
@@ -107,33 +110,36 @@ export class UsersService {
     return await this.userRepository.save(user);
   }
 
-  async findAll(queryDto: QueryUserDto, currentUser: User): Promise<PaginatedResult<User>> {
-    const { 
-      page = 1, 
-      limit = 20, 
-      search, 
-      status, 
-      brandId, 
+  async findAll(
+    queryDto: QueryUserDto,
+    currentUser: User,
+  ): Promise<PaginatedResult<User>> {
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      status,
+      brandId,
       storeId,
       roleName,
-      sortBy = 'createdAt', 
-      sortOrder = 'DESC' 
+      sortBy = 'createdAt',
+      sortOrder = 'DESC',
     } = queryDto;
-    
+
     // 构建查询条件
     const where: FindOptionsWhere<User> = {};
-    
+
     if (search) {
       // 这里可以使用更复杂的搜索逻辑
       where.username = Like(`%${search}%`);
     }
-    
+
     if (status) {
       where.status = status;
     }
 
     // 权限控制：根据用户角色限制查询范围
-    if (currentUser.roles?.some(role => role.name === 'ADMIN')) {
+    if (currentUser.roles?.some((role) => role.name === 'ADMIN')) {
       // 系统管理员可以查看所有用户
       if (brandId) {
         where.brandId = brandId;
@@ -141,7 +147,9 @@ export class UsersService {
       if (storeId) {
         where.storeId = storeId;
       }
-    } else if (currentUser.roles?.some(role => role.name === 'BRAND_MANAGER')) {
+    } else if (
+      currentUser.roles?.some((role) => role.name === 'BRAND_MANAGER')
+    ) {
       // 品牌管理员只能查看自己品牌的用户
       where.brandId = currentUser.brandId;
       if (storeId) {
@@ -167,8 +175,8 @@ export class UsersService {
 
     // 如果需要按角色过滤
     if (roleName) {
-      data = data.filter(user => 
-        user.roles?.some(role => role.name === roleName)
+      data = data.filter((user) =>
+        user.roles?.some((role) => role.name === roleName),
       );
       total = data.length;
     }
@@ -193,12 +201,14 @@ export class UsersService {
     }
 
     // 权限检查
-    const canView = currentUser.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && currentUser.brandId === user.brandId) ||
-      (currentUser.brandId === user.brandId && 
-       (!currentUser.storeId || currentUser.storeId === user.storeId)) ||
-      currentUser.id === user.id // 用户可以查看自己
+    const canView = currentUser.roles?.some(
+      (role) =>
+        role.name === 'ADMIN' ||
+        (role.name === 'BRAND_MANAGER' &&
+          currentUser.brandId === user.brandId) ||
+        (currentUser.brandId === user.brandId &&
+          (!currentUser.storeId || currentUser.storeId === user.storeId)) ||
+        currentUser.id === user.id, // 用户可以查看自己
     );
 
     if (!canView) {
@@ -208,14 +218,20 @@ export class UsersService {
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto, currentUser: User): Promise<User> {
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    currentUser: User,
+  ): Promise<User> {
     const user = await this.findOne(id, currentUser);
 
     // 权限检查
-    const canUpdate = currentUser.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && currentUser.brandId === user.brandId) ||
-      currentUser.id === user.id // 用户可以更新自己的部分信息
+    const canUpdate = currentUser.roles?.some(
+      (role) =>
+        role.name === 'ADMIN' ||
+        (role.name === 'BRAND_MANAGER' &&
+          currentUser.brandId === user.brandId) ||
+        currentUser.id === user.id, // 用户可以更新自己的部分信息
     );
 
     if (!canUpdate) {
@@ -264,16 +280,17 @@ export class UsersService {
   }
 
   async updateStatus(
-    id: string, 
-    updateStatusDto: UpdateUserStatusDto, 
-    currentUser: User
+    id: string,
+    updateStatusDto: UpdateUserStatusDto,
+    currentUser: User,
   ): Promise<User> {
     const user = await this.findOne(id, currentUser);
 
     // 权限检查：只有系统管理员和品牌管理员可以更新用户状态
-    const canUpdateStatus = currentUser.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && currentUser.brandId === user.brandId)
+    const canUpdateStatus = currentUser.roles?.some(
+      (role) =>
+        role.name === 'ADMIN' ||
+        (role.name === 'BRAND_MANAGER' && currentUser.brandId === user.brandId),
     );
 
     if (!canUpdateStatus) {
@@ -287,16 +304,17 @@ export class UsersService {
   }
 
   async updateRoles(
-    id: string, 
-    updateRolesDto: UpdateUserRolesDto, 
-    currentUser: User
+    id: string,
+    updateRolesDto: UpdateUserRolesDto,
+    currentUser: User,
   ): Promise<User> {
     const user = await this.findOne(id, currentUser);
 
     // 权限检查：只有系统管理员和品牌管理员可以更新用户角色
-    const canUpdateRoles = currentUser.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && currentUser.brandId === user.brandId)
+    const canUpdateRoles = currentUser.roles?.some(
+      (role) =>
+        role.name === 'ADMIN' ||
+        (role.name === 'BRAND_MANAGER' && currentUser.brandId === user.brandId),
     );
 
     if (!canUpdateRoles) {
@@ -321,7 +339,7 @@ export class UsersService {
     const user = await this.findOne(id, currentUser);
 
     // 权限检查：只有系统管理员可以删除用户
-    if (!currentUser.roles?.some(role => role.name === 'ADMIN')) {
+    if (!currentUser.roles?.some((role) => role.name === 'ADMIN')) {
       throw new ForbiddenException('只有系统管理员可以删除用户');
     }
 

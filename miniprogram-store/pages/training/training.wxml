@@ -1,0 +1,242 @@
+<!--训练记录页面-->
+<view class="container">
+  <!-- 页面头部 -->
+  <view class="header">
+    <view class="course-info" wx:if="{{courseInfo}}">
+      <text class="course-title">{{courseInfo.courseType}}</text>
+      <text class="course-time">{{courseInfo.startTime}} - {{courseInfo.endTime}}</text>
+      <text class="member-name" wx:if="{{courseInfo.member}}">学员：{{courseInfo.member.name}}</text>
+    </view>
+    
+    <view class="timer-section" wx:if="{{isRecording}}">
+      <text class="timer-label">训练时长</text>
+      <text class="timer">{{formatTime(trainingDuration)}}</text>
+    </view>
+  </view>
+
+  <!-- 训练动作记录 -->
+  <view class="training-section">
+    <view class="section-header">
+      <text class="section-title">训练动作</text>
+      <van-button size="small" type="primary" icon="plus" bind:click="addExercise">
+        添加动作
+      </van-button>
+    </view>
+
+    <view class="exercise-list">
+      <view wx:for="{{exercises}}" wx:key="id" class="exercise-item">
+        <view class="exercise-header">
+          <text class="exercise-name">{{item.name}}</text>
+          <view class="exercise-actions">
+            <van-icon name="edit" size="20px" bind:click="editExercise" data-index="{{index}}" />
+            <van-icon name="delete" size="20px" bind:click="deleteExercise" data-index="{{index}}" />
+          </view>
+        </view>
+        
+        <view class="sets-list">
+          <view wx:for="{{item.sets}}" wx:for-item="set" wx:for-index="setIndex" wx:key="setIndex" class="set-item">
+            <text class="set-number">第{{setIndex + 1}}组</text>
+            <view class="set-data">
+              <view class="data-item">
+                <text class="data-label">重量</text>
+                <text class="data-value">{{set.weight}}kg</text>
+              </view>
+              <view class="data-item">
+                <text class="data-label">次数</text>
+                <text class="data-value">{{set.reps}}次</text>
+              </view>
+              <view class="data-item" wx:if="{{set.duration}}">
+                <text class="data-label">时长</text>
+                <text class="data-value">{{set.duration}}s</text>
+              </view>
+            </view>
+          </view>
+          
+          <van-button size="small" plain bind:click="addSet" data-index="{{index}}">
+            添加组数
+          </van-button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 身体数据记录 -->
+  <view class="body-data-section">
+    <view class="section-header">
+      <text class="section-title">身体数据</text>
+      <van-button size="small" type="primary" icon="edit" bind:click="editBodyData">
+        编辑
+      </van-button>
+    </view>
+    
+    <view class="body-data-grid">
+      <view class="data-card">
+        <text class="data-title">体重</text>
+        <text class="data-value">{{bodyData.weight || '--'}}kg</text>
+      </view>
+      <view class="data-card">
+        <text class="data-title">体脂率</text>
+        <text class="data-value">{{bodyData.bodyFat || '--'}}%</text>
+      </view>
+      <view class="data-card">
+        <text class="data-title">肌肉量</text>
+        <text class="data-value">{{bodyData.muscle || '--'}}kg</text>
+      </view>
+      <view class="data-card">
+        <text class="data-title">心率</text>
+        <text class="data-value">{{bodyData.heartRate || '--'}}bpm</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 训练照片/视频 -->
+  <view class="media-section">
+    <view class="section-header">
+      <text class="section-title">训练记录</text>
+      <van-button size="small" type="primary" icon="photograph" bind:click="addMedia">
+        添加照片
+      </van-button>
+    </view>
+    
+    <view class="media-grid">
+      <view wx:for="{{mediaList}}" wx:key="id" class="media-item" bind:tap="previewMedia" data-index="{{index}}">
+        <image wx:if="{{item.type === 'image'}}" src="{{item.url}}" class="media-image" mode="aspectFill" />
+        <video wx:if="{{item.type === 'video'}}" src="{{item.url}}" class="media-video" />
+        <view class="media-delete" bind:tap="deleteMedia" data-index="{{index}}">
+          <van-icon name="cross" size="16px" color="#fff" />
+        </view>
+      </view>
+      
+      <view class="add-media-btn" bind:tap="addMedia">
+        <van-icon name="plus" size="32px" color="#ccc" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 训练备注 -->
+  <view class="notes-section">
+    <view class="section-header">
+      <text class="section-title">训练备注</text>
+    </view>
+    
+    <van-field
+      value="{{trainingNotes}}"
+      placeholder="记录训练感受、注意事项等..."
+      type="textarea"
+      autosize
+      border="{{false}}"
+      bind:change="onNotesChange"
+      custom-style="background: rgba(255,255,255,0.9); border-radius: 12rpx; padding: 20rpx;"
+    />
+  </view>
+
+  <!-- 底部操作按钮 -->
+  <view class="bottom-actions">
+    <van-button wx:if="{{!isRecording}}" type="primary" block bind:click="startRecording">
+      开始记录
+    </van-button>
+    <view wx:else class="recording-actions">
+      <van-button type="default" bind:click="pauseRecording">
+        {{isPaused ? '继续' : '暂停'}}
+      </van-button>
+      <van-button type="primary" bind:click="completeTraining">
+        完成训练
+      </van-button>
+    </view>
+  </view>
+</view>
+
+<!-- 添加动作弹窗 -->
+<van-popup show="{{showExercisePopup}}" position="bottom" custom-style="height: 60%;" bind:close="closeExercisePopup">
+  <view class="exercise-popup">
+    <view class="popup-header">
+      <text class="popup-title">{{editingExercise ? '编辑动作' : '添加动作'}}</text>
+      <van-icon name="cross" size="20px" bind:click="closeExercisePopup" />
+    </view>
+    
+    <view class="popup-content">
+      <van-field
+        label="动作名称"
+        value="{{exerciseForm.name}}"
+        placeholder="请输入动作名称"
+        bind:change="onExerciseNameChange"
+      />
+      
+      <view class="form-section">
+        <text class="form-title">第一组数据</text>
+        <van-field
+          label="重量(kg)"
+          value="{{exerciseForm.weight}}"
+          type="number"
+          placeholder="0"
+          bind:change="onWeightChange"
+        />
+        <van-field
+          label="次数"
+          value="{{exerciseForm.reps}}"
+          type="number"
+          placeholder="0"
+          bind:change="onRepsChange"
+        />
+        <van-field
+          label="时长(秒)"
+          value="{{exerciseForm.duration}}"
+          type="number"
+          placeholder="可选"
+          bind:change="onDurationChange"
+        />
+      </view>
+      
+      <view class="popup-actions">
+        <van-button type="default" bind:click="closeExercisePopup">取消</van-button>
+        <van-button type="primary" bind:click="saveExercise">保存</van-button>
+      </view>
+    </view>
+  </view>
+</van-popup>
+
+<!-- 身体数据编辑弹窗 -->
+<van-popup show="{{showBodyDataPopup}}" position="bottom" custom-style="height: 50%;" bind:close="closeBodyDataPopup">
+  <view class="body-data-popup">
+    <view class="popup-header">
+      <text class="popup-title">编辑身体数据</text>
+      <van-icon name="cross" size="20px" bind:click="closeBodyDataPopup" />
+    </view>
+    
+    <view class="popup-content">
+      <van-field
+        label="体重(kg)"
+        value="{{bodyDataForm.weight}}"
+        type="digit"
+        placeholder="0.0"
+        bind:change="onBodyWeightChange"
+      />
+      <van-field
+        label="体脂率(%)"
+        value="{{bodyDataForm.bodyFat}}"
+        type="digit"
+        placeholder="0.0"
+        bind:change="onBodyFatChange"
+      />
+      <van-field
+        label="肌肉量(kg)"
+        value="{{bodyDataForm.muscle}}"
+        type="digit"
+        placeholder="0.0"
+        bind:change="onMuscleChange"
+      />
+      <van-field
+        label="心率(bpm)"
+        value="{{bodyDataForm.heartRate}}"
+        type="number"
+        placeholder="0"
+        bind:change="onHeartRateChange"
+      />
+      
+      <view class="popup-actions">
+        <van-button type="default" bind:click="closeBodyDataPopup">取消</van-button>
+        <van-button type="primary" bind:click="saveBodyData">保存</van-button>
+      </view>
+    </view>
+  </view>
+</van-popup>

@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEnum, IsUUID, IsNumberString, IsDateString } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsUUID,
+  IsNumberString,
+  IsDateString,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class QueryBookingDto {
@@ -15,15 +22,18 @@ export class QueryBookingDto {
   @Transform(({ value }) => parseInt(value))
   limit?: number;
 
-  @ApiProperty({ required: false, description: '搜索关键字(预约编号/会员姓名)' })
+  @ApiProperty({
+    required: false,
+    description: '搜索关键字(预约编号/会员姓名)',
+  })
   @IsOptional()
   @IsString()
   search?: string;
 
-  @ApiProperty({ 
-    required: false, 
-    description: '预约状态', 
-    enum: ['pending', 'confirmed', 'cancelled', 'completed', 'no_show'] 
+  @ApiProperty({
+    required: false,
+    description: '预约状态',
+    enum: ['pending', 'confirmed', 'cancelled', 'completed', 'no_show'],
   })
   @IsOptional()
   @IsEnum(['pending', 'confirmed', 'cancelled', 'completed', 'no_show'])
@@ -59,21 +69,21 @@ export class QueryBookingDto {
   @IsDateString()
   endDate?: string;
 
-  @ApiProperty({ 
-    required: false, 
-    description: '排序字段', 
+  @ApiProperty({
+    required: false,
+    description: '排序字段',
     enum: ['bookingNumber', 'startTime', 'endTime', 'status', 'createdAt'],
-    default: 'startTime'
+    default: 'startTime',
   })
   @IsOptional()
   @IsEnum(['bookingNumber', 'startTime', 'endTime', 'status', 'createdAt'])
   sortBy?: string;
 
-  @ApiProperty({ 
-    required: false, 
-    description: '排序方向', 
+  @ApiProperty({
+    required: false,
+    description: '排序方向',
     enum: ['ASC', 'DESC'],
-    default: 'DESC'
+    default: 'DESC',
   })
   @IsOptional()
   @IsEnum(['ASC', 'DESC'])

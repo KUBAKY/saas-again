@@ -159,6 +159,9 @@ export class Store extends BaseEntity {
   @OneToMany('Course', (course: any) => course.store)
   courses: any[];
 
+  @OneToMany('CourseSchedule', (schedule: any) => schedule.store)
+  schedules: any[];
+
   // 业务方法
   isActive(): boolean {
     return this.status === 'active' && !this.deletedAt;

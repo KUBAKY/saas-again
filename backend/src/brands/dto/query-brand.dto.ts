@@ -1,6 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsOptional, IsNumber, Min, Max, IsIn, IsString } from 'class-validator';
+import {
+  IsOptional,
+  IsNumber,
+  Min,
+  Max,
+  IsIn,
+  IsString,
+} from 'class-validator';
 
 export class QueryBrandDto {
   @ApiPropertyOptional({ description: '页码', example: 1, default: 1 })
@@ -23,18 +30,31 @@ export class QueryBrandDto {
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ description: '状态', example: 'active', enum: ['active', 'inactive'] })
+  @ApiPropertyOptional({
+    description: '状态',
+    example: 'active',
+    enum: ['active', 'inactive'],
+  })
   @IsOptional()
   @IsIn(['active', 'inactive'])
   status?: 'active' | 'inactive';
 
-  @ApiPropertyOptional({ description: '排序字段', example: 'createdAt', default: 'createdAt' })
+  @ApiPropertyOptional({
+    description: '排序字段',
+    example: 'createdAt',
+    default: 'createdAt',
+  })
   @IsOptional()
   @IsString()
   @IsIn(['createdAt', 'updatedAt', 'name', 'code'])
   sortBy?: string = 'createdAt';
 
-  @ApiPropertyOptional({ description: '排序方向', example: 'DESC', default: 'DESC', enum: ['ASC', 'DESC'] })
+  @ApiPropertyOptional({
+    description: '排序方向',
+    example: 'DESC',
+    default: 'DESC',
+    enum: ['ASC', 'DESC'],
+  })
   @IsOptional()
   @Transform(({ value }) => value.toUpperCase())
   @IsIn(['ASC', 'DESC'])

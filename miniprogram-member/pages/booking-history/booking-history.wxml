@@ -1,0 +1,264 @@
+<!-- 预约历史页面 -->
+<view class="page-container">
+  <!-- 搜索栏 -->
+  <view class="search-section">
+    <view class="search-bar">
+      <van-search
+        value="{{searchKeyword}}"
+        placeholder="搜索课程、教练或课程类型"
+        bind:change="onSearchInput"
+        show-action="{{false}}"
+        background="#f8f9fa"
+      />
+      <view class="filter-btn" bindtap="showFilter">
+        <van-icon name="filter-o" size="20" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 标签页 -->
+  <view class="tabs-container">
+    <view class="tabs">
+      <view 
+        class="tab-item {{activeTab === 0 ? 'active' : ''}}"
+        bindtap="switchTab"
+        data-index="0"
+      >
+        全部
+      </view>
+      <view 
+        class="tab-item {{activeTab === 1 ? 'active' : ''}}"
+        bindtap="switchTab"
+        data-index="1"
+      >
+        已预约
+      </view>
+      <view 
+        class="tab-item {{activeTab === 2 ? 'active' : ''}}"
+        bindtap="switchTab"
+        data-index="2"
+      >
+        已完成
+      </view>
+      <view 
+        class="tab-item {{activeTab === 3 ? 'active' : ''}}"
+        bindtap="switchTab"
+        data-index="3"
+      >
+        已取消
+      </view>
+    </view>
+  </view>
+
+  <!-- 预约列表 -->
+  <view class="booking-list" wx:if="{{filteredBookings.length}}">
+    <view 
+      class="booking-card"
+      wx:for="{{filteredBookings}}" 
+      wx:key="id"
+    >
+      <!-- 卡片头部 -->
+      <view class="card-header">
+        <view class="course-info">
+          <view class="course-name">{{item.courseName}}</view>
+          <view class="course-meta">
+            <text class="course-type">{{item.courseType}}</text>
+            <text class="separator">·</text>
+            <text class="coach-name">{{item.coachName}}</text>
+          </view>
+        </view>
+        <view class="status-badge status-{{item.status}}">
+          {{item.statusText}}
+        </view>
+      </view>
+
+      <!-- 预约详情 -->
+      <view class="booking-details">
+        <view class="detail-row">
+          <van-icon name="clock-o" size="16" />
+          <text class="label">时间：</text>
+          <text class="value">{{item.bookingDate}} {{item.bookingTime}}</text>
+        </view>
+        <view class="detail-row">
+          <van-icon name="location-o" size="16" />
+          <text class="label">地点：</text>
+          <text class="value">{{item.location}}</text>
+        </view>
+        <view class="detail-row">
+          <van-icon name="friends-o" size="16" />
+          <text class="label">人数：</text>
+          <text class="value">{{item.participants}}</text>
+        </view>
+        <view class="detail-row">
+          <van-icon name="gold-coin-o" size="16" />
+          <text class="label">费用：</text>
+          <text class="value price">¥{{item.price}}</text>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="card-actions">
+        <view class="action-buttons">
+          <!-- 查看详情按钮 -->
+          <button 
+            class="action-btn secondary"
+            bindtap="viewCourseDetail"
+            data-courseid="{{item.courseId}}"
+          >
+            查看详情
+          </button>
+
+          <!-- 根据状态显示不同操作 -->
+          <!-- 已预约状态 -->
+          <view wx:if="{{item.status === 'upcoming'}}">
+            <button 
+              wx:if="{{item.canCancel}}"
+              class="action-btn danger"
+              bindtap="showCancelDialog"
+              data-booking="{{item}}"
+            >
+              取消预约
+            </button>
+            <button 
+              wx:else
+              class="action-btn disabled"
+              disabled
+            >
+              无法取消
+            </button>
+          </view>
+
+          <!-- 已完成状态 -->
+          <view wx:elif="{{item.status === 'completed'}}">
+            <button 
+              wx:if="{{item.canReview}}"
+              class="action-btn primary"
+              bindtap="goToReview"
+              data-booking="{{item}}"
+            >
+              去评价
+            </button>
+            <button 
+              class="action-btn secondary"
+              bindtap="rebookCourse"
+              data-courseid="{{item.courseId}}"
+            >
+              再次预约
+            </button>
+          </view>
+
+          <!-- 已取消状态 -->
+          <view wx:elif="{{item.status === 'cancelled'}}">
+            <button 
+              class="action-btn primary"
+              bindtap="rebookCourse"
+              data-courseid="{{item.courseId}}"
+            >
+              重新预约
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!filteredBookings.length && !loading}}">
+    <view class="empty-icon">📅</view>
+    <view class="empty-text">暂无预约记录</view>
+    <view class="empty-desc">去首页预约你喜欢的课程吧</view>
+    <button 
+      class="empty-btn"
+      bindtap="navigateTo"
+      data-url="/pages/index/index"
+    >
+      去预约
+    </button>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-more" wx:if="{{loading}}">
+    <van-loading size="20" />
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 没有更多数据 -->
+  <view class="no-more" wx:if="{{!hasMore && filteredBookings.length}}">
+    <text>没有更多记录了</text>
+  </view>
+</view>
+
+<!-- 取消预约确认对话框 -->
+<van-dialog
+  show="{{showCancelDialog}}"
+  title="取消预约"
+  message="确定要取消这次预约吗？取消后不可恢复"
+  show-cancel-button
+  bind:confirm="confirmCancel"
+  bind:cancel="closeCancelDialog"
+  confirm-button-text="确定取消"
+  cancel-button-text="我再想想"
+  confirm-button-color="#f56c6c"
+/>
+
+<!-- 筛选弹窗 -->
+<van-popup 
+  show="{{showFilterPopup}}" 
+  position="bottom" 
+  round
+  bind:close="closeFilter"
+>
+  <view class="filter-popup">
+    <view class="popup-header">
+      <text class="popup-title">筛选条件</text>
+      <text class="reset-btn" bindtap="resetFilter">重置</text>
+    </view>
+    
+    <view class="filter-content">
+      <!-- 日期范围 -->
+      <view class="filter-group">
+        <view class="group-title">预约日期</view>
+        <view class="date-options">
+          <view class="date-option">今天</view>
+          <view class="date-option">本周</view>
+          <view class="date-option">本月</view>
+          <view class="date-option">自定义</view>
+        </view>
+      </view>
+
+      <!-- 课程类型 -->
+      <view class="filter-group">
+        <view class="group-title">课程类型</view>
+        <view class="type-options">
+          <view class="type-option">力量训练</view>
+          <view class="type-option">有氧运动</view>
+          <view class="type-option">瑜伽</view>
+          <view class="type-option">普拉提</view>
+          <view class="type-option">格斗</view>
+        </view>
+      </view>
+
+      <!-- 预约状态 -->
+      <view class="filter-group">
+        <view class="group-title">预约状态</view>
+        <view class="status-options">
+          <view class="status-option">已预约</view>
+          <view class="status-option">已完成</view>
+          <view class="status-option">已取消</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="popup-actions">
+      <button class="cancel-btn" bindtap="closeFilter">取消</button>
+      <button class="confirm-btn" bindtap="applyFilter">确定</button>
+    </view>
+  </view>
+</van-popup>
+
+<!-- Vant组件 -->
+<van-search />
+<van-icon />
+<van-loading />
+<van-dialog />
+<van-popup />

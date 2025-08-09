@@ -2,6 +2,8 @@ import { BaseEntity } from './base.entity';
 import { Store } from './store.entity';
 import { Course } from './course.entity';
 import { Booking } from './booking.entity';
+import { CourseSchedule } from './course-schedule.entity';
+import { PersonalTrainingCard } from './personal-training-card.entity';
 export declare class Coach extends BaseEntity {
     employeeNumber: string;
     name: string;
@@ -37,6 +39,8 @@ export declare class Coach extends BaseEntity {
     store: Store;
     courses: Course[];
     bookings: Booking[];
+    schedules: CourseSchedule[];
+    personalTrainingCards: PersonalTrainingCard[];
     isActive(): boolean;
     isAvailable(): boolean;
     getAge(): number | null;

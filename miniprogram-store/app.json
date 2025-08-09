@@ -2,8 +2,11 @@
   "pages": [
     "pages/index/index",
     "pages/login/login",
+    "pages/courses/courses",
+    "pages/training/training",
     "pages/members/members",
     "pages/checkin/checkin",
+    "pages/profile/profile",
     "pages/sales/sales"
   ],
   "tabBar": {
@@ -19,6 +22,12 @@
         "text": "首页"
       },
       {
+        "pagePath": "pages/courses/courses",
+        "iconPath": "images/courses.png",
+        "selectedIconPath": "images/courses-active.png",
+        "text": "课程"
+      },
+      {
         "pagePath": "pages/members/members",
         "iconPath": "images/members.png",
         "selectedIconPath": "images/members-active.png",
@@ -31,10 +40,10 @@
         "text": "签到"
       },
       {
-        "pagePath": "pages/sales/sales",
-        "iconPath": "images/sales.png",
-        "selectedIconPath": "images/sales-active.png",
-        "text": "销售"
+        "pagePath": "pages/profile/profile",
+        "iconPath": "images/profile.png",
+        "selectedIconPath": "images/profile-active.png",
+        "text": "我的"
       }
     ]
   },

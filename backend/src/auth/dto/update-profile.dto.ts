@@ -8,18 +8,30 @@ export class UpdateProfileDto {
   @Length(1, 50)
   realName?: string;
 
-  @ApiProperty({ description: '手机号', example: '13800138000', required: false })
+  @ApiProperty({
+    description: '手机号',
+    example: '13800138000',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   @Length(11, 11)
   phone?: string;
 
-  @ApiProperty({ description: '邮箱', example: 'user@example.com', required: false })
+  @ApiProperty({
+    description: '邮箱',
+    example: 'user@example.com',
+    required: false,
+  })
   @IsOptional()
   @IsEmail()
   email?: string;
 
-  @ApiProperty({ description: '头像URL', example: 'https://example.com/avatar.jpg', required: false })
+  @ApiProperty({
+    description: '头像URL',
+    example: 'https://example.com/avatar.jpg',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   avatar?: string;

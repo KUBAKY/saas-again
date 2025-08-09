@@ -1,0 +1,191 @@
+<!-- 个人中心页面 -->
+<view class="container">
+  <!-- 用户信息头部 -->
+  <view class="user-section glass-card">
+    <view class="user-avatar-wrapper" bindtap="changeAvatar">
+      <image src="{{userInfo.avatar || '/images/default-avatar.svg'}}" class="user-avatar" />
+      <view class="avatar-edit-icon">
+        <van-icon name="edit" size="12px" />
+      </view>
+    </view>
+    
+    <view class="user-details">
+      <text class="user-name">{{memberInfo.name || '未设置姓名'}}</text>
+      <text class="member-info">{{memberInfo.memberNumber}} | {{levelText}}</text>
+      <view class="user-stats">
+        <view class="stat-item">
+          <text class="stat-number">{{memberStats.points}}</text>
+          <text class="stat-label">积分</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-number">{{memberStats.checkInDays}}</text>
+          <text class="stat-label">签到天数</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="level-badge {{memberInfo.level}}">
+      <text class="level-text">{{levelText}}</text>
+    </view>
+  </view>
+
+  <!-- 会员权益 -->
+  <view class="benefits-section">
+    <text class="section-title">会员权益</text>
+    <view class="benefits-grid">
+      <view class="benefit-item glass-card" bindtap="showBenefitDetail" data-type="free-courses">
+        <van-icon name="award-o" size="24px" />
+        <text class="benefit-title">免费课程</text>
+        <text class="benefit-desc">每月3次免费团课</text>
+      </view>
+      <view class="benefit-item glass-card" bindtap="showBenefitDetail" data-type="personal-training">
+        <van-icon name="user-o" size="24px" />
+        <text class="benefit-title">私教优惠</text>
+        <text class="benefit-desc">私教课程9折优惠</text>
+      </view>
+      <view class="benefit-item glass-card" bindtap="showBenefitDetail" data-type="guest-pass">
+        <van-icon name="friends-o" size="24px" />
+        <text class="benefit-title">访客通行</text>
+        <text class="benefit-desc">每月2次访客权限</text>
+      </view>
+      <view class="benefit-item glass-card" bindtap="showBenefitDetail" data-type="equipment">
+        <van-icon name="medal-o" size="24px" />
+        <text class="benefit-title">器械优先</text>
+        <text class="benefit-desc">高峰期器械优先使用</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="menu-group glass-card">
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/my-bookings/my-bookings">
+        <view class="menu-icon">
+          <van-icon name="calendar-o" />
+        </view>
+        <text class="menu-title">我的预约</text>
+        <view class="menu-extra">
+          <text class="menu-badge" wx:if="{{upcomingBookings > 0}}">{{upcomingBookings}}</text>
+          <van-icon name="arrow" />
+        </view>
+      </view>
+      
+      <view class="menu-divider"></view>
+      
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/checkin-history/checkin-history">
+        <view class="menu-icon">
+          <van-icon name="location-o" />
+        </view>
+        <text class="menu-title">签到记录</text>
+        <view class="menu-extra">
+          <van-icon name="arrow" />
+        </view>
+      </view>
+      
+      <view class="menu-divider"></view>
+      
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/membership-card/membership-card">
+        <view class="menu-icon">
+          <van-icon name="card" />
+        </view>
+        <text class="menu-title">我的会员卡</text>
+        <view class="menu-extra">
+          <text class="menu-note">{{membershipStatus}}</text>
+          <van-icon name="arrow" />
+        </view>
+      </view>
+    </view>
+    
+    <view class="menu-group glass-card">
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/body-data/body-data">
+        <view class="menu-icon">
+          <van-icon name="chart-trending-o" />
+        </view>
+        <text class="menu-title">身体数据</text>
+        <view class="menu-extra">
+          <van-icon name="arrow" />
+        </view>
+      </view>
+      
+      <view class="menu-divider"></view>
+      
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/workout-plan/workout-plan">
+        <view class="menu-icon">
+          <van-icon name="star-o" />
+        </view>
+        <text class="menu-title">训练计划</text>
+        <view class="menu-extra">
+          <van-icon name="arrow" />
+        </view>
+      </view>
+      
+      <view class="menu-divider"></view>
+      
+      <view class="menu-item" bindtap="navigateTo" data-url="/pages/points-history/points-history">
+        <view class="menu-icon">
+          <van-icon name="gift-o" />
+        </view>
+        <text class="menu-title">积分明细</text>
+        <view class="menu-extra">
+          <van-icon name="arrow" />
+        </view>
+      </view>
+    </view>
+    
+    <view class="menu-group glass-card">
+      <view class="menu-item" bindtap="showSettings">
+        <view class="menu-icon">
+          <van-icon name="setting-o" />
+        </view>
+        <text class="menu-title">设置</text>
+        <view class="menu-extra">
+          <van-icon name="arrow" />
+        </view>
+      </view>
+      
+      <view class="menu-divider"></view>
+      
+      <view class="menu-item" bindtap="showHelp">
+        <view class="menu-icon">
+          <van-icon name="question-o" />
+        </view>
+        <text class="menu-title">帮助中心</text>
+        <view class="menu-extra">
+          <van-icon name="arrow" />
+        </view>
+      </view>
+      
+      <view class="menu-divider"></view>
+      
+      <view class="menu-item" bindtap="contactService">
+        <view class="menu-icon">
+          <van-icon name="service-o" />
+        </view>
+        <text class="menu-title">联系客服</text>
+        <view class="menu-extra">
+          <van-icon name="arrow" />
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 权益详情弹窗 -->
+<van-popup show="{{showBenefitPopup}}" bind:close="closeBenefitPopup" position="bottom" round>
+  <view class="benefit-popup">
+    <view class="popup-header">
+      <text class="popup-title">{{currentBenefit.title}}</text>
+    </view>
+    <view class="popup-content">
+      <text class="popup-desc">{{currentBenefit.description}}</text>
+      <view class="benefit-rules">
+        <text class="rules-title">使用规则：</text>
+        <text class="rules-content" wx:for="{{currentBenefit.rules}}" wx:key="*this">• {{item}}</text>
+      </view>
+    </view>
+    <view class="popup-actions">
+      <van-button size="large" type="primary" bind:click="closeBenefitPopup">我知道了</van-button>
+    </view>
+  </view>
+</van-popup>

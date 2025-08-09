@@ -61,7 +61,7 @@ let CoachesService = class CoachesService {
         const coach = this.coachRepository.create({
             ...createCoachDto,
             status: 'active',
-            certifications: createCoachDto.certifications?.map(cert => ({
+            certifications: createCoachDto.certifications?.map((cert) => ({
                 name: cert,
                 issuer: '待完善',
                 issueDate: new Date().toISOString().split('T')[0],
@@ -70,7 +70,7 @@ let CoachesService = class CoachesService {
         return await this.coachRepository.save(coach);
     }
     async findAll(queryDto, currentUser) {
-        const { page = 1, limit = 20, search, status, storeId, gender, specialty, minExperience, sortBy = 'createdAt', sortOrder = 'DESC' } = queryDto;
+        const { page = 1, limit = 20, search, status, storeId, gender, specialty, minExperience, sortBy = 'createdAt', sortOrder = 'DESC', } = queryDto;
         const where = {};
         if (search) {
             where.name = (0, typeorm_2.Like)(`%${search}%`);
@@ -83,29 +83,32 @@ let CoachesService = class CoachesService {
         }
         if (minExperience) {
         }
-        if (currentUser.roles?.some(role => role.name === 'ADMIN')) {
+        if (currentUser.roles?.some((role) => role.name === 'ADMIN')) {
             if (storeId) {
                 where.storeId = storeId;
             }
         }
-        else if (currentUser.roles?.some(role => role.name === 'BRAND_MANAGER')) {
+        else if (currentUser.roles?.some((role) => role.name === 'BRAND_MANAGER')) {
             const stores = await this.storeRepository.find({
                 where: { brandId: currentUser.brandId },
                 select: ['id'],
             });
-            const storeIds = stores.map(s => s.id);
+            const storeIds = stores.map((s) => s.id);
             if (storeId && storeIds.includes(storeId)) {
                 where.storeId = storeId;
             }
             else {
-                const queryBuilder = this.coachRepository.createQueryBuilder('coach')
+                const queryBuilder = this.coachRepository
+                    .createQueryBuilder('coach')
                     .leftJoinAndSelect('coach.store', 'store')
                     .where('coach.storeId IN (:...storeIds)', { storeIds })
                     .orderBy(`coach.${sortBy}`, sortOrder)
                     .skip((page - 1) * limit)
                     .take(limit);
                 if (search) {
-                    queryBuilder.andWhere('coach.name LIKE :search', { search: `%${search}%` });
+                    queryBuilder.andWhere('coach.name LIKE :search', {
+                        search: `%${search}%`,
+                    });
                 }
                 if (status) {
                     queryBuilder.andWhere('coach.status = :status', { status });
@@ -114,10 +117,14 @@ let CoachesService = class CoachesService {
                     queryBuilder.andWhere('coach.gender = :gender', { gender });
                 }
                 if (specialty) {
-                    queryBuilder.andWhere('coach.specialties LIKE :specialty', { specialty: `%${specialty}%` });
+                    queryBuilder.andWhere('coach.specialties LIKE :specialty', {
+                        specialty: `%${specialty}%`,
+                    });
                 }
                 if (minExperience) {
-                    queryBuilder.andWhere('coach.experienceYears >= :minExperience', { minExperience });
+                    queryBuilder.andWhere('coach.experienceYears >= :minExperience', {
+                        minExperience,
+                    });
                 }
                 const [data, total] = await queryBuilder.getManyAndCount();
                 return {
@@ -134,16 +141,21 @@ let CoachesService = class CoachesService {
                 where.storeId = currentUser.storeId;
             }
         }
-        const queryBuilder = this.coachRepository.createQueryBuilder('coach')
+        const queryBuilder = this.coachRepository
+            .createQueryBuilder('coach')
             .leftJoinAndSelect('coach.store', 'store')
             .orderBy(`coach.${sortBy}`, sortOrder)
             .skip((page - 1) * limit)
             .take(limit);
         if (where.storeId) {
-            queryBuilder.andWhere('coach.storeId = :storeId', { storeId: where.storeId });
+            queryBuilder.andWhere('coach.storeId = :storeId', {
+                storeId: where.storeId,
+            });
         }
         if (search) {
-            queryBuilder.andWhere('coach.name LIKE :search', { search: `%${search}%` });
+            queryBuilder.andWhere('coach.name LIKE :search', {
+                search: `%${search}%`,
+            });
         }
         if (status) {
             queryBuilder.andWhere('coach.status = :status', { status });
@@ -152,10 +164,14 @@ let CoachesService = class CoachesService {
             queryBuilder.andWhere('coach.gender = :gender', { gender });
         }
         if (specialty) {
-            queryBuilder.andWhere('coach.specialties LIKE :specialty', { specialty: `%${specialty}%` });
+            queryBuilder.andWhere('coach.specialties LIKE :specialty', {
+                specialty: `%${specialty}%`,
+            });
         }
         if (minExperience) {
-            queryBuilder.andWhere('coach.experienceYears >= :minExperience', { minExperience });
+            queryBuilder.andWhere('coach.experienceYears >= :minExperience', {
+                minExperience,
+            });
         }
         const [data, total] = await queryBuilder.getManyAndCount();
         return {
@@ -208,8 +224,9 @@ let CoachesService = class CoachesService {
     }
     async remove(id, currentUser) {
         const coach = await this.findOne(id, currentUser);
-        const canDelete = currentUser.roles?.some(role => role.name === 'ADMIN' ||
-            (role.name === 'BRAND_MANAGER' && currentUser.brandId === coach.store.brandId));
+        const canDelete = currentUser.roles?.some((role) => role.name === 'ADMIN' ||
+            (role.name === 'BRAND_MANAGER' &&
+                currentUser.brandId === coach.store.brandId));
         if (!canDelete) {
             throw new common_1.ForbiddenException('无权限删除此教练');
         }
@@ -219,16 +236,16 @@ let CoachesService = class CoachesService {
     }
     async getStats(currentUser) {
         let storeIds = [];
-        if (currentUser.roles?.some(role => role.name === 'ADMIN')) {
+        if (currentUser.roles?.some((role) => role.name === 'ADMIN')) {
             const stores = await this.storeRepository.find({ select: ['id'] });
-            storeIds = stores.map(s => s.id);
+            storeIds = stores.map((s) => s.id);
         }
-        else if (currentUser.roles?.some(role => role.name === 'BRAND_MANAGER')) {
+        else if (currentUser.roles?.some((role) => role.name === 'BRAND_MANAGER')) {
             const stores = await this.storeRepository.find({
                 where: { brandId: currentUser.brandId },
                 select: ['id'],
             });
-            storeIds = stores.map(s => s.id);
+            storeIds = stores.map((s) => s.id);
         }
         else {
             storeIds = currentUser.storeId ? [currentUser.storeId] : [];
@@ -257,7 +274,9 @@ let CoachesService = class CoachesService {
             .where('coach.storeId IN (:...storeIds)', { storeIds })
             .andWhere('coach.experienceYears IS NOT NULL')
             .getRawOne();
-        const averageExperience = avgResult?.avg ? parseFloat(avgResult.avg).toFixed(1) : 0;
+        const averageExperience = avgResult?.avg
+            ? parseFloat(avgResult.avg).toFixed(1)
+            : 0;
         return {
             totalCoaches,
             activeCoaches,
@@ -267,9 +286,10 @@ let CoachesService = class CoachesService {
         };
     }
     checkStorePermission(user, brandId, storeId) {
-        return user.roles?.some(role => role.name === 'ADMIN' ||
+        return (user.roles?.some((role) => role.name === 'ADMIN' ||
             (role.name === 'BRAND_MANAGER' && user.brandId === brandId) ||
-            (user.brandId === brandId && (!user.storeId || user.storeId === storeId))) || false;
+            (user.brandId === brandId &&
+                (!user.storeId || user.storeId === storeId))) || false);
     }
     async getCoachesBySpecialty(storeIds) {
         const coaches = await this.coachRepository
@@ -279,9 +299,9 @@ let CoachesService = class CoachesService {
             .andWhere('coach.specialties IS NOT NULL')
             .getMany();
         const specialtyCount = {};
-        coaches.forEach(coach => {
+        coaches.forEach((coach) => {
             if (coach.specialties) {
-                coach.specialties.forEach(specialty => {
+                coach.specialties.forEach((specialty) => {
                     specialtyCount[specialty] = (specialtyCount[specialty] || 0) + 1;
                 });
             }

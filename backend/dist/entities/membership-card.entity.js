@@ -13,6 +13,8 @@ exports.MembershipCard = void 0;
 const typeorm_1 = require("typeorm");
 const base_entity_1 = require("./base.entity");
 const member_entity_1 = require("./member.entity");
+const group_class_card_entity_1 = require("./group-class-card.entity");
+const personal_training_card_entity_1 = require("./personal-training-card.entity");
 let MembershipCard = class MembershipCard extends base_entity_1.BaseEntity {
     cardNumber;
     type;
@@ -29,6 +31,8 @@ let MembershipCard = class MembershipCard extends base_entity_1.BaseEntity {
     settings;
     memberId;
     member;
+    groupClassCards;
+    personalTrainingCards;
     isActive() {
         return this.status === 'active' && !this.deletedAt && !this.isExpired();
     }
@@ -227,6 +231,14 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: 'member_id' }),
     __metadata("design:type", member_entity_1.Member)
 ], MembershipCard.prototype, "member", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => group_class_card_entity_1.GroupClassCard, (card) => card.membershipCard),
+    __metadata("design:type", Array)
+], MembershipCard.prototype, "groupClassCards", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => personal_training_card_entity_1.PersonalTrainingCard, (card) => card.membershipCard),
+    __metadata("design:type", Array)
+], MembershipCard.prototype, "personalTrainingCards", void 0);
 exports.MembershipCard = MembershipCard = __decorate([
     (0, typeorm_1.Entity)('membership_cards'),
     (0, typeorm_1.Index)(['cardNumber'], { unique: true })

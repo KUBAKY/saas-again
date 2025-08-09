@@ -1,0 +1,37 @@
+import { BaseEntity } from './base.entity';
+import { Course } from './course.entity';
+import { Coach } from './coach.entity';
+import { Store } from './store.entity';
+import { Booking } from './booking.entity';
+export declare class CourseSchedule extends BaseEntity {
+    startTime: Date;
+    endTime: Date;
+    location?: string;
+    maxParticipants: number;
+    currentParticipants: number;
+    price?: number;
+    status: 'scheduled' | 'ongoing' | 'completed' | 'cancelled';
+    notes?: string;
+    cancelledAt?: Date;
+    cancellationReason?: string;
+    courseId: string;
+    coachId: string;
+    storeId: string;
+    course: Course;
+    coach: Coach;
+    store: Store;
+    bookings: Booking[];
+    isAvailable(): boolean;
+    isFull(): boolean;
+    canCancel(): boolean;
+    addParticipant(): boolean;
+    removeParticipant(): boolean;
+    getActualPrice(): number;
+    getDuration(): number;
+    isUpcoming(): boolean;
+    isOngoing(): boolean;
+    isPast(): boolean;
+    cancel(reason?: string): boolean;
+    complete(): void;
+    start(): void;
+}

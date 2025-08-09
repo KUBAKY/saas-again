@@ -47,6 +47,7 @@ const typeorm_1 = require("typeorm");
 const base_entity_1 = require("./base.entity");
 const brand_entity_1 = require("./brand.entity");
 const store_entity_1 = require("./store.entity");
+const role_entity_1 = require("./role.entity");
 const bcrypt = __importStar(require("bcryptjs"));
 let User = class User extends base_entity_1.BaseEntity {
     username;
@@ -100,14 +101,14 @@ let User = class User extends base_entity_1.BaseEntity {
         return !!this.phoneVerifiedAt;
     }
     hasRole(roleName) {
-        return this.roles?.some(role => role.name === roleName) || false;
+        return this.roles?.some((role) => role.name === roleName) || false;
     }
     getPermissions() {
         if (!this.roles)
             return [];
         return this.roles.reduce((permissions, role) => {
             if (role.permissions) {
-                permissions.push(...role.permissions.map(p => p.name));
+                permissions.push(...role.permissions.map((p) => p.name));
             }
             return permissions;
         }, []);
@@ -348,7 +349,7 @@ __decorate([
     __metadata("design:type", store_entity_1.Store)
 ], User.prototype, "store", void 0);
 __decorate([
-    (0, typeorm_1.ManyToMany)('Role', (role) => role.users, {
+    (0, typeorm_1.ManyToMany)(() => role_entity_1.Role, (role) => role.users, {
         cascade: true,
     }),
     (0, typeorm_1.JoinTable)({

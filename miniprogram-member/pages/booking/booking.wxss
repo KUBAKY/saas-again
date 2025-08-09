@@ -1,0 +1,244 @@
+/* 课程预约页面样式 */
+.container {
+  padding: 20rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+/* 磨砂玻璃效果 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.18);
+  border-radius: 32rpx;
+  box-shadow: 0 16rpx 64rpx 0 rgba(31, 38, 135, 0.37);
+}
+
+/* 日期选择器 */
+.date-selector {
+  margin-bottom: 24rpx;
+  padding: 20rpx;
+}
+
+.date-scroll {
+  white-space: nowrap;
+}
+
+.date-item {
+  display: inline-block;
+  text-align: center;
+  padding: 20rpx 32rpx;
+  margin-right: 16rpx;
+  border-radius: 20rpx;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.date-item.active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.date-day {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.date-date {
+  color: white;
+  font-size: 28rpx;
+  font-weight: 600;
+  display: block;
+}
+
+.date-item.active .date-day,
+.date-item.active .date-date {
+  color: white;
+}
+
+/* 筛选条件 */
+.filter-bar {
+  margin-bottom: 32rpx;
+  padding: 20rpx;
+}
+
+.filter-scroll {
+  white-space: nowrap;
+}
+
+.filter-item {
+  display: inline-block;
+  padding: 16rpx 32rpx;
+  margin-right: 16rpx;
+  border-radius: 40rpx;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 26rpx;
+  transition: all 0.3s ease;
+}
+
+.filter-item.active {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+  font-weight: 600;
+}
+
+/* 课程列表 */
+.course-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.course-item {
+  padding: 32rpx;
+}
+
+.course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24rpx;
+}
+
+.course-info {
+  flex: 1;
+}
+
+.course-name {
+  color: white;
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+  display: block;
+}
+
+.course-type {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 24rpx;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  display: inline-block;
+}
+
+.course-status {
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+}
+
+.course-status.available {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+}
+
+.course-status.full {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
+.course-status.cancelled {
+  background: rgba(158, 158, 158, 0.2);
+  color: #9e9e9e;
+}
+
+/* 课程详情 */
+.course-details {
+  margin-bottom: 24rpx;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.detail-text {
+  margin-left: 16rpx;
+  font-size: 26rpx;
+}
+
+/* 课程操作 */
+.course-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.course-price {
+  color: #ffd700;
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400rpx;
+}
+
+/* 预约弹窗 */
+.booking-popup {
+  background: white;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 40rpx 32rpx 60rpx;
+}
+
+.popup-header {
+  text-align: center;
+  margin-bottom: 40rpx;
+  position: relative;
+}
+
+.popup-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.booking-details {
+  margin-bottom: 40rpx;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: #666;
+  font-size: 28rpx;
+}
+
+.detail-value {
+  color: #333;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.detail-value.price {
+  color: #ff6b35;
+  font-weight: 600;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 24rpx;
+}
+
+.popup-actions .van-button {
+  flex: 1;
+}

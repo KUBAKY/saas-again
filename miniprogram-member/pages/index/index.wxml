@@ -1,0 +1,108 @@
+<!-- 会员端小程序首页 -->
+<view class="container">
+  <!-- 顶部用户信息 -->
+  <view class="user-header glass-card">
+    <view class="user-avatar">
+      <image src="{{userInfo.avatar || '/images/default-avatar.svg'}}" class="avatar" />
+      <view class="status-badge" wx:if="{{memberInfo.status === 'active'}}">
+        <text class="status-text">VIP</text>
+      </view>
+    </view>
+    <view class="user-info">
+      <text class="username">{{memberInfo.name || '未设置姓名'}}</text>
+      <text class="member-number">会员号: {{memberInfo.memberNumber}}</text>
+      <text class="member-level">{{levelText}}</text>
+    </view>
+    <view class="quick-checkin" bindtap="quickCheckIn">
+      <van-icon name="location-o" size="20px" />
+      <text>签到</text>
+    </view>
+  </view>
+
+  <!-- 会员状态卡片 -->
+  <view class="status-cards">
+    <view class="status-item glass-card">
+      <text class="status-number">{{memberStats.points}}</text>
+      <text class="status-label">积分</text>
+    </view>
+    <view class="status-item glass-card">
+      <text class="status-number">{{memberStats.checkInDays}}</text>
+      <text class="status-label">签到天数</text>
+    </view>
+    <view class="status-item glass-card">
+      <text class="status-number">{{memberStats.courseCount}}</text>
+      <text class="status-label">已预约课程</text>
+    </view>
+  </view>
+
+  <!-- 快捷功能 -->
+  <view class="quick-actions">
+    <text class="section-title">快捷功能</text>
+    <view class="action-grid">
+      <view class="action-item glass-card" bindtap="navigateTo" data-url="/pages/booking/booking">
+        <van-icon name="calendar-o" size="24px" />
+        <text>课程预约</text>
+      </view>
+      <view class="action-item glass-card" bindtap="navigateTo" data-url="/pages/checkin/checkin">
+        <van-icon name="location-o" size="24px" />
+        <text>健身签到</text>
+      </view>
+      <view class="action-item glass-card" bindtap="navigateTo" data-url="/pages/coaches/coaches">
+        <van-icon name="friends-o" size="24px" />
+        <text>教练团队</text>
+      </view>
+      <view class="action-item glass-card" bindtap="showComingSoon">
+        <van-icon name="shop-o" size="24px" />
+        <text>会员商城</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 我的课程 -->
+  <view class="my-courses" wx:if="{{upcomingCourses.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">即将开始的课程</text>
+      <text class="more-link" bindtap="navigateTo" data-url="/pages/booking/booking">查看更多</text>
+    </view>
+    <scroll-view class="course-scroll" scroll-x>
+      <view class="course-item glass-card" wx:for="{{upcomingCourses}}" wx:key="id">
+        <text class="course-name">{{item.courseName}}</text>
+        <text class="course-time">{{item.startTime}}</text>
+        <text class="course-coach">教练: {{item.coachName}}</text>
+        <van-button size="small" type="primary" bind:click="enterCourse" data-id="{{item.id}}">
+          进入课程
+        </van-button>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 健身记录 -->
+  <view class="fitness-records">
+    <text class="section-title">本周健身记录</text>
+    <view class="record-chart glass-card">
+      <view class="chart-item" wx:for="{{weeklyRecords}}" wx:key="day">
+        <view class="chart-bar {{item.hasWorkout ? 'active' : ''}}" style="height: {{item.intensity * 60}}px;"></view>
+        <text class="chart-day">{{item.day}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 通知公告 -->
+  <view class="notices" wx:if="{{notices.length > 0}}">
+    <text class="section-title">通知公告</text>
+    <view class="notice-item glass-card" wx:for="{{notices}}" wx:key="id" bindtap="showNoticeDetail" data-notice="{{item}}">
+      <text class="notice-title">{{item.title}}</text>
+      <text class="notice-date">{{item.date}}</text>
+    </view>
+  </view>
+</view>
+
+<!-- 签到成功弹窗 -->
+<van-popup show="{{showCheckInPopup}}" bind:close="closeCheckInPopup" round>
+  <view class="checkin-popup">
+    <van-icon name="success" size="48px" color="#07c160" />
+    <text class="popup-title">签到成功!</text>
+    <text class="popup-desc">获得 {{checkInReward}} 积分奖励</text>
+    <van-button type="primary" bind:click="closeCheckInPopup">继续健身</van-button>
+  </view>
+</van-popup>

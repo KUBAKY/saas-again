@@ -39,7 +39,18 @@ let AuthService = class AuthService {
         const user = await this.userRepository.findOne({
             where: { email },
             relations: ['roles', 'brand', 'store'],
-            select: ['id', 'email', 'username', 'password', 'realName', 'brandId', 'storeId', 'failedLoginAttempts', 'lockedAt', 'status'],
+            select: [
+                'id',
+                'email',
+                'username',
+                'password',
+                'realName',
+                'brandId',
+                'storeId',
+                'failedLoginAttempts',
+                'lockedAt',
+                'status',
+            ],
         });
         if (!user) {
             throw new common_1.UnauthorizedException('邮箱或密码错误');
@@ -66,18 +77,14 @@ let AuthService = class AuthService {
                 realName: user.realName,
                 brandId: user.brandId,
                 storeId: user.storeId,
-                roles: user.roles?.map(role => role.name) || [],
+                roles: user.roles?.map((role) => role.name) || [],
             },
         };
     }
     async register(registerDto) {
         const { username, email, password, realName, phone, brandId, storeId } = registerDto;
         const existingUser = await this.userRepository.findOne({
-            where: [
-                { email },
-                { username },
-                ...(phone ? [{ phone }] : []),
-            ],
+            where: [{ email }, { username }, ...(phone ? [{ phone }] : [])],
         });
         if (existingUser) {
             if (existingUser.email === email) {
@@ -129,7 +136,8 @@ let AuthService = class AuthService {
                 realName: userWithRelations.realName,
                 brandId: userWithRelations.brandId,
                 storeId: userWithRelations.storeId,
-                roles: userWithRelations.roles?.map(role => role.name) || [],
+                roles: userWithRelations.roles?.map((role) => role.name) ||
+                    [],
             },
         };
     }
@@ -159,7 +167,7 @@ let AuthService = class AuthService {
             username: user.username,
             brandId: user.brandId,
             storeId: user.storeId,
-            roles: user.roles?.map(role => role.name) || [],
+            roles: user.roles?.map((role) => role.name) || [],
         };
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(payload, {
@@ -183,7 +191,7 @@ let AuthService = class AuthService {
             username: user.username,
             brandId: user.brandId,
             storeId: user.storeId,
-            roles: user.roles?.map(role => role.name) || [],
+            roles: user.roles?.map((role) => role.name) || [],
         };
         return this.jwtService.signAsync(payload, {
             secret: this.configService.get('jwt.secret'),
@@ -195,7 +203,7 @@ let AuthService = class AuthService {
             where: { email },
             select: ['id', 'email', 'password', 'status'],
         });
-        if (user && await user.validatePassword(password) && user.isActive()) {
+        if (user && (await user.validatePassword(password)) && user.isActive()) {
             return user;
         }
         return null;

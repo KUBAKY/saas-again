@@ -12,7 +12,7 @@ import {
 import { BaseEntity } from './base.entity';
 import { Brand } from './brand.entity';
 import { Store } from './store.entity';
-// Forward declarations to avoid circular imports
+import { Role } from './role.entity';
 import * as bcrypt from 'bcryptjs';
 
 @Entity('users')
@@ -213,7 +213,7 @@ export class User extends BaseEntity {
   @JoinColumn({ name: 'store_id' })
   store?: Store;
 
-  @ManyToMany('Role', (role: any) => role.users, {
+  @ManyToMany(() => Role, (role) => role.users, {
     cascade: true,
   })
   @JoinTable({
@@ -227,7 +227,7 @@ export class User extends BaseEntity {
       referencedColumnName: 'id',
     },
   })
-  roles: any[];
+  roles?: Role[];
 
   // 生命周期钩子
   @BeforeInsert()
@@ -250,7 +250,7 @@ export class User extends BaseEntity {
 
   isLocked(): boolean {
     if (!this.lockedAt) return false;
-    
+
     // 锁定时间超过30分钟自动解锁
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
     return this.lockedAt > thirtyMinutesAgo;
@@ -265,15 +265,15 @@ export class User extends BaseEntity {
   }
 
   hasRole(roleName: string): boolean {
-    return this.roles?.some(role => role.name === roleName) || false;
+    return this.roles?.some((role: Role) => role.name === roleName) || false;
   }
 
   getPermissions(): string[] {
     if (!this.roles) return [];
-    
-    return this.roles.reduce((permissions, role) => {
+
+    return this.roles.reduce((permissions: string[], role: Role) => {
       if (role.permissions) {
-        permissions.push(...role.permissions.map(p => p.name));
+        permissions.push(...role.permissions.map((p) => p.name));
       }
       return permissions;
     }, [] as string[]);
@@ -282,10 +282,10 @@ export class User extends BaseEntity {
   canAccessStore(storeId: string): boolean {
     // 总部管理员可以访问所有门店
     if (this.hasRole('ADMIN')) return true;
-    
+
     // 品牌管理员可以访问品牌下所有门店
     if (this.hasRole('BRAND_MANAGER')) return true;
-    
+
     // 门店相关角色只能访问自己的门店
     return this.storeId === storeId;
   }
@@ -297,7 +297,7 @@ export class User extends BaseEntity {
 
   incrementFailedLoginAttempts() {
     this.failedLoginAttempts += 1;
-    
+
     // 连续失败5次锁定账户
     if (this.failedLoginAttempts >= 5) {
       this.lockedAt = new Date();

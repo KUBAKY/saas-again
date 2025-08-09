@@ -5,7 +5,13 @@
     "pages/profile/profile",
     "pages/booking/booking",
     "pages/checkin/checkin",
-    "pages/coaches/coaches"
+    "pages/coaches/coaches",
+    "pages/course-detail/course-detail",
+    "pages/booking-history/booking-history",
+    "pages/body-metrics/body-metrics",
+    "pages/membership-card/membership-card",
+    "pages/profile-edit/profile-edit",
+    "pages/coach-detail/coach-detail"
   ],
   "tabBar": {
     "color": "#666666",

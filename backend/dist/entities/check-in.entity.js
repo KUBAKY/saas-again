@@ -27,7 +27,8 @@ let CheckIn = class CheckIn extends base_entity_1.BaseEntity {
     getDuration() {
         if (!this.checkOutTime)
             return null;
-        const diffMs = new Date(this.checkOutTime).getTime() - new Date(this.checkInTime).getTime();
+        const diffMs = new Date(this.checkOutTime).getTime() -
+            new Date(this.checkInTime).getTime();
         return Math.floor(diffMs / (1000 * 60));
     }
     isCurrentlyInside() {

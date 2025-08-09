@@ -1,0 +1,121 @@
+<!-- 门店工作人员个人中心 -->
+<view class="container">
+  <!-- 用户信息头部 -->
+  <view class="user-header glass-card">
+    <view class="user-avatar">
+      <image src="{{userInfo.avatar}}" class="avatar-img" />
+    </view>
+    <view class="user-info">
+      <text class="user-name">{{userInfo.name}}</text>
+      <view class="user-details">
+        <van-tag type="primary" size="medium">{{userInfo.role}}</van-tag>
+        <text class="work-id">工号: {{userInfo.workId}}</text>
+      </view>
+      <text class="store-info">{{userInfo.storeName}}</text>
+    </view>
+    <view class="edit-btn" bindtap="editProfile">
+      <van-icon name="edit" size="20px" color="white" />
+    </view>
+  </view>
+
+  <!-- 今日工作数据 -->
+  <view class="today-stats">
+    <text class="section-title">今日工作</text>
+    <view class="stats-grid glass-card">
+      <view class="stats-item" bindtap="viewWorkStats">
+        <text class="stats-number">{{todayStats.checkInCount}}</text>
+        <text class="stats-label">处理签到</text>
+      </view>
+      <view class="stats-item" bindtap="viewWorkStats">
+        <text class="stats-number">¥{{todayStats.salesAmount}}</text>
+        <text class="stats-label">销售金额</text>
+      </view>
+      <view class="stats-item" bindtap="viewWorkStats">
+        <text class="stats-number">{{todayStats.newMembers}}</text>
+        <text class="stats-label">新增会员</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷功能 -->
+  <view class="quick-functions">
+    <text class="section-title">快捷功能</text>
+    <view class="function-grid">
+      <view class="function-item glass-card" bindtap="showSalesPage">
+        <van-icon name="shopping-cart-o" size="32px" color="white" />
+        <text class="function-title">销售开单</text>
+        <text class="function-desc">办卡续费销售</text>
+      </view>
+      
+      <view class="function-item glass-card" bindtap="navigateTo" data-url="/pages/members/members">
+        <van-icon name="user-o" size="32px" color="white" />
+        <text class="function-title">会员管理</text>
+        <text class="function-desc">查看会员信息</text>
+      </view>
+      
+      <view class="function-item glass-card" bindtap="navigateTo" data-url="/pages/checkin/checkin">
+        <van-icon name="scan" size="32px" color="white" />
+        <text class="function-title">会员签到</text>
+        <text class="function-desc">扫码快速签到</text>
+      </view>
+      
+      <view class="function-item glass-card" bindtap="viewWorkStats">
+        <van-icon name="chart-trending-o" size="32px" color="white" />
+        <text class="function-title">工作统计</text>
+        <text class="function-desc">查看工作数据</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 设置选项 -->
+  <view class="settings-section">
+    <text class="section-title">设置</text>
+    <view class="glass-card">
+      <van-cell-group>
+        <van-cell 
+          title="个人设置" 
+          icon="setting-o" 
+          is-link 
+          bind:click="showSettings"
+          custom-class="setting-cell"
+        />
+        <van-cell 
+          title="帮助与反馈" 
+          icon="question-o" 
+          is-link 
+          bind:click="showHelp"
+          custom-class="setting-cell"
+        />
+        <van-cell 
+          title="关于我们" 
+          icon="info-o" 
+          is-link 
+          bind:click="showAbout"
+          custom-class="setting-cell"
+        />
+      </van-cell-group>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-section">
+    <van-button 
+      type="danger" 
+      size="large" 
+      bind:click="showLogout"
+      custom-class="logout-btn"
+    >
+      退出登录
+    </van-button>
+  </view>
+</view>
+
+<!-- 退出登录确认对话框 -->
+<van-dialog
+  show="{{showLogoutDialog}}"
+  title="确认退出"
+  message="确定要退出登录吗？"
+  show-cancel-button
+  bind:confirm="confirmLogout"
+  bind:cancel="closeLogoutDialog"
+/>

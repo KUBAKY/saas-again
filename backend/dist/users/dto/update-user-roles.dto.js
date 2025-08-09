@@ -19,7 +19,10 @@ exports.UpdateUserRolesDto = UpdateUserRolesDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: '角色ID列表',
-        example: ['123e4567-e89b-12d3-a456-426614174002', '123e4567-e89b-12d3-a456-426614174003']
+        example: [
+            '123e4567-e89b-12d3-a456-426614174002',
+            '123e4567-e89b-12d3-a456-426614174003',
+        ],
     }),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.IsUUID)(undefined, { each: true }),

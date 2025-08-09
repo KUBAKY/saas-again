@@ -1,0 +1,124 @@
+<!-- 课程预约页面 -->
+<view class="container">
+  <!-- 日期选择 -->
+  <view class="date-selector glass-card">
+    <scroll-view class="date-scroll" scroll-x>
+      <view 
+        class="date-item {{selectedDate === item.date ? 'active' : ''}}"
+        wx:for="{{dateList}}" 
+        wx:key="date"
+        bindtap="selectDate"
+        data-date="{{item.date}}"
+      >
+        <text class="date-day">{{item.day}}</text>
+        <text class="date-date">{{item.date}}</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 筛选条件 -->
+  <view class="filter-bar glass-card">
+    <scroll-view class="filter-scroll" scroll-x>
+      <view 
+        class="filter-item {{selectedCategory === item.value ? 'active' : ''}}"
+        wx:for="{{categoryList}}"
+        wx:key="value"
+        bindtap="selectCategory"
+        data-category="{{item.value}}"
+      >
+        {{item.label}}
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 课程列表 -->
+  <view class="course-list">
+    <view class="course-item glass-card" wx:for="{{filteredCourses}}" wx:key="id">
+      <view class="course-header">
+        <view class="course-info">
+          <text class="course-name">{{item.name}}</text>
+          <text class="course-type">{{item.category}}</text>
+        </view>
+        <view class="course-status {{item.status}}">
+          <text>{{item.statusText}}</text>
+        </view>
+      </view>
+      
+      <view class="course-details">
+        <view class="detail-row">
+          <van-icon name="clock-o" size="16px" />
+          <text class="detail-text">{{item.startTime}} - {{item.endTime}}</text>
+        </view>
+        <view class="detail-row">
+          <van-icon name="friends-o" size="16px" />
+          <text class="detail-text">{{item.coachName}}</text>
+        </view>
+        <view class="detail-row">
+          <van-icon name="location-o" size="16px" />
+          <text class="detail-text">{{item.location}}</text>
+        </view>
+        <view class="detail-row">
+          <van-icon name="user-o" size="16px" />
+          <text class="detail-text">{{item.currentMembers}}/{{item.maxMembers}}人</text>
+        </view>
+      </view>
+      
+      <view class="course-actions">
+        <text class="course-price">{{item.price > 0 ? '¥' + item.price : '免费'}}</text>
+        <van-button 
+          size="small" 
+          type="primary" 
+          disabled="{{item.status !== 'available'}}"
+          bind:click="bookCourse"
+          data-course="{{item}}"
+        >
+          {{item.actionText}}
+        </van-button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{filteredCourses.length === 0}}">
+    <van-empty description="暂无课程" />
+  </view>
+</view>
+
+<!-- 预约确认弹窗 -->
+<van-popup show="{{showBookingPopup}}" bind:close="closeBookingPopup" position="bottom" round>
+  <view class="booking-popup">
+    <view class="popup-header">
+      <text class="popup-title">确认预约</text>
+    </view>
+    
+    <view class="booking-details" wx:if="{{selectedCourse}}">
+      <view class="detail-item">
+        <text class="detail-label">课程名称</text>
+        <text class="detail-value">{{selectedCourse.name}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="detail-label">上课时间</text>
+        <text class="detail-value">{{selectedDate}} {{selectedCourse.startTime}}-{{selectedCourse.endTime}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="detail-label">授课教练</text>
+        <text class="detail-value">{{selectedCourse.coachName}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="detail-label">上课地点</text>
+        <text class="detail-value">{{selectedCourse.location}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="detail-label">课程费用</text>
+        <text class="detail-value price">{{selectedCourse.price > 0 ? '¥' + selectedCourse.price : '免费'}}</text>
+      </view>
+    </view>
+    
+    <view class="popup-actions">
+      <van-button size="large" bind:click="closeBookingPopup">取消</van-button>
+      <van-button size="large" type="primary" bind:click="confirmBooking" loading="{{bookingLoading}}">
+        确认预约
+      </van-button>
+    </view>
+  </view>
+</van-popup>

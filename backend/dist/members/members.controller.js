@@ -66,7 +66,11 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 200, description: '获取成功' }),
     (0, swagger_1.ApiQuery)({ name: 'page', required: false, description: '页码' }),
     (0, swagger_1.ApiQuery)({ name: 'limit', required: false, description: '每页数量' }),
-    (0, swagger_1.ApiQuery)({ name: 'search', required: false, description: '搜索关键字(姓名/手机号/会员号)' }),
+    (0, swagger_1.ApiQuery)({
+        name: 'search',
+        required: false,
+        description: '搜索关键字(姓名/手机号/会员号)',
+    }),
     (0, swagger_1.ApiQuery)({ name: 'status', required: false, description: '状态过滤' }),
     (0, swagger_1.ApiQuery)({ name: 'storeId', required: false, description: '门店ID' }),
     (0, swagger_1.ApiQuery)({ name: 'level', required: false, description: '会员等级' }),

@@ -1,0 +1,180 @@
+<!--pages/members/members.wxml-->
+<view class="container">
+  <!-- 搜索栏 -->
+  <view class="search-section">
+    <van-search
+      value="{{ searchKeyword }}"
+      placeholder="搜索会员姓名或手机号"
+      use-action-slot
+      bind:change="onSearchChange"
+      bind:search="onSearch"
+      bind:clear="onSearchClear"
+    >
+      <view slot="action" bind:tap="onSearch">搜索</view>
+    </van-search>
+  </view>
+
+  <!-- 筛选标签 -->
+  <view class="tabs-section">
+    <van-tabs active="{{ activeTab }}" bind:change="onTabChange" color="#667eea">
+      <van-tab title="全部" name="all"></van-tab>
+      <van-tab title="正常" name="active"></van-tab>
+      <van-tab title="过期" name="expired"></van-tab>
+      <van-tab title="冻结" name="frozen"></van-tab>
+      <van-tab title="私教会员" name="personal"></van-tab>
+    </van-tabs>
+  </view>
+
+  <!-- 快捷筛选 -->
+  <view class="filter-section">
+    <view class="filter-row">
+      <van-button size="small" type="{{ genderFilter === 'all' ? 'primary' : 'default' }}" bind:tap="onGenderFilter" data-gender="all">全部</van-button>
+      <van-button size="small" type="{{ genderFilter === 'male' ? 'primary' : 'default' }}" bind:tap="onGenderFilter" data-gender="male">男</van-button>
+      <van-button size="small" type="{{ genderFilter === 'female' ? 'primary' : 'default' }}" bind:tap="onGenderFilter" data-gender="female">女</van-button>
+      <van-button size="small" type="{{ sortBy === 'joinDate' ? 'primary' : 'default' }}" bind:tap="onSortChange" data-sort="joinDate">按入会时间</van-button>
+      <van-button size="small" type="{{ sortBy === 'expireDate' ? 'primary' : 'default' }}" bind:tap="onSortChange" data-sort="expireDate">按到期时间</van-button>
+    </view>
+  </view>
+
+  <!-- 统计信息 -->
+  <view class="stats-section">
+    <view class="stats-card">
+      <view class="stats-item">
+        <text class="stats-number">{{ memberStats.total }}</text>
+        <text class="stats-label">总会员</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-number">{{ memberStats.active }}</text>
+        <text class="stats-label">正常</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-number">{{ memberStats.expired }}</text>
+        <text class="stats-label">过期</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-number">{{ memberStats.frozen }}</text>
+        <text class="stats-label">冻结</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 会员列表 -->
+  <view class="member-list" wx:if="{{ memberList.length > 0 }}">
+    <view class="member-item" wx:for="{{ memberList }}" wx:key="id" bind:tap="onMemberTap" data-member="{{ item }}">
+      <image src="{{ item.avatar || '/images/default-avatar.png' }}" class="member-avatar" />
+      <view class="member-info">
+        <text class="member-name">{{ item.name }}</text>
+        <text class="member-phone">{{ item.phone }}</text>
+        <view class="member-status">
+          <van-tag 
+            type="{{ item.status === 'active' ? 'success' : item.status === 'expired' ? 'warning' : 'danger' }}"
+            size="small"
+          >
+            {{ item.statusText }}
+          </van-tag>
+          <text class="member-expire" wx:if="{{ item.expireDate }}">{{ item.expireDate }}</text>
+        </view>
+        <view class="member-extra">
+          <text class="member-type">{{ item.membershipType }}</text>
+          <text class="member-remaining" wx:if="{{ item.remainingDays }}">剩余{{ item.remainingDays }}天</text>
+          <text class="member-coach" wx:if="{{ item.personalCoach }}">教练: {{ item.personalCoach }}</text>
+        </view>
+      </view>
+      <view class="member-actions">
+        <van-button size="mini" type="primary" bind:tap="onRenewTap" data-member="{{ item }}" catch:tap="stopPropagation">续费</van-button>
+        <van-button size="mini" plain bind:tap="onDetailTap" data-member="{{ item }}" catch:tap="stopPropagation">详情</van-button>
+        <van-button size="mini" plain bind:tap="onTrainingRecord" data-member="{{ item }}" catch:tap="stopPropagation" wx:if="{{ item.personalCoach }}">训练</van-button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:else>
+    <van-empty description="暂无会员数据" />
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{ hasMore && memberList.length > 0 }}">
+    <van-loading wx:if="{{ loading }}" size="24px">加载中...</van-loading>
+    <text wx:else class="load-more-text" bind:tap="loadMore">点击加载更多</text>
+  </view>
+
+  <!-- 浮动操作按钮 -->
+  <view class="fab-container">
+    <van-button round type="primary" size="large" bind:tap="onAddMember">
+      <van-icon name="plus" />
+      新增会员
+    </van-button>
+  </view>
+</view>
+
+<!-- 会员详情弹窗 -->
+<van-popup show="{{ showMemberDetail }}" position="bottom" custom-style="height: 70%" bind:close="closeMemberDetail">
+  <view class="member-detail-popup">
+    <view class="popup-header">
+      <text class="popup-title">会员详情</text>
+      <van-icon name="cross" bind:tap="closeMemberDetail" />
+    </view>
+    
+    <view class="member-detail-content" wx:if="{{ selectedMember }}">
+      <view class="detail-avatar-section">
+        <image src="{{ selectedMember.avatar || '/images/default-avatar.png' }}" class="detail-avatar" />
+        <view class="detail-basic-info">
+          <text class="detail-name">{{ selectedMember.name }}</text>
+          <text class="detail-phone">{{ selectedMember.phone }}</text>
+          <van-tag type="{{ selectedMember.status === 'active' ? 'success' : selectedMember.status === 'expired' ? 'warning' : 'danger' }}">
+            {{ selectedMember.statusText }}
+          </van-tag>
+        </view>
+      </view>
+
+      <view class="detail-info-section">
+        <view class="detail-item">
+          <text class="detail-label">会员类型</text>
+          <text class="detail-value">{{ selectedMember.membershipType }}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">开始日期</text>
+          <text class="detail-value">{{ selectedMember.startDate }}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">到期日期</text>
+          <text class="detail-value">{{ selectedMember.expireDate }}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">剩余天数</text>
+          <text class="detail-value">{{ selectedMember.remainingDays }}天</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">入会时间</text>
+          <text class="detail-value">{{ selectedMember.joinDate }}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">累计消费</text>
+          <text class="detail-value">¥{{ selectedMember.totalSpent }}</text>
+        </view>
+        <view class="detail-item" wx:if="{{ selectedMember.personalCoach }}">
+          <text class="detail-label">专属教练</text>
+          <text class="detail-value">{{ selectedMember.personalCoach }}</text>
+        </view>
+        <view class="detail-item" wx:if="{{ selectedMember.remainingClasses }}">
+          <text class="detail-label">剩余课时</text>
+          <text class="detail-value">{{ selectedMember.remainingClasses }}节</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">签到次数</text>
+          <text class="detail-value">{{ selectedMember.checkinCount || 0 }}次</text>
+        </view>
+      </view>
+
+      <view class="detail-actions">
+        <van-button type="primary" block bind:tap="onRenewMember">续费</van-button>
+        <van-button plain block bind:tap="onAssignCoach" wx:if="{{ !selectedMember.personalCoach }}">分配教练</van-button>
+        <van-button plain block bind:tap="onViewTrainingRecord" wx:if="{{ selectedMember.personalCoach }}">训练记录</van-button>
+        <van-button plain block bind:tap="onFreezeMember" wx:if="{{ selectedMember.status === 'active' }}">冻结</van-button>
+        <van-button plain block bind:tap="onUnfreezeMember" wx:if="{{ selectedMember.status === 'frozen' }}">解冻</van-button>
+        <van-button plain block bind:tap="onEditMember">编辑信息</van-button>
+      </view>
+    </view>
+  </view>
+</van-popup>

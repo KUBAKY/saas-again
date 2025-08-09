@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Course } from '../entities/course.entity';
@@ -13,14 +17,18 @@ export class CoursesService {
   ) {}
 
   async create(createCourseDto: CreateCourseDto, user: User): Promise<Course> {
+    const userRole = user.roles?.[0]?.name || '';
+    
     // 权限检查：只有门店管理员及以上可以创建课程
-    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(user.roles?.[0]?.name)) {
+    if (
+      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
+    ) {
       throw new ForbiddenException('权限不足，无法创建课程');
     }
 
     // 数据隔离：根据用户角色确定门店ID
     let storeId = createCourseDto.storeId;
-    if (user.roles?.[0]?.name === 'STORE_MANAGER' && user.storeId) {
+    if (userRole === 'STORE_MANAGER' && user.storeId) {
       storeId = user.storeId;
     }
 
@@ -50,10 +58,9 @@ export class CoursesService {
 
     // 搜索过滤
     if (search) {
-      queryBuilder.andWhere(
-        'course.name ILIKE :search',
-        { search: `%${search}%` }
-      );
+      queryBuilder.andWhere('course.name ILIKE :search', {
+        search: `%${search}%`,
+      });
     }
 
     // 类型过滤
@@ -82,9 +89,19 @@ export class CoursesService {
     }
 
     // 排序
-    const validSortFields = ['name', 'type', 'price', 'rating', 'totalParticipants', 'createdAt'];
+    const validSortFields = [
+      'name',
+      'type',
+      'price',
+      'rating',
+      'totalParticipants',
+      'createdAt',
+    ];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
-    queryBuilder.orderBy(`course.${sortField}`, sortOrder === 'ASC' ? 'ASC' : 'DESC');
+    queryBuilder.orderBy(
+      `course.${sortField}`,
+      sortOrder === 'ASC' ? 'ASC' : 'DESC',
+    );
 
     // 分页
     const offset = (page - 1) * limit;
@@ -108,7 +125,7 @@ export class CoursesService {
     queryBuilder.andWhere('course.id = :id', { id });
 
     const course = await queryBuilder.getOne();
-    
+
     if (!course) {
       throw new NotFoundException('课程不存在');
     }
@@ -116,16 +133,27 @@ export class CoursesService {
     return course;
   }
 
-  async update(id: string, updateCourseDto: UpdateCourseDto, user: User): Promise<Course> {
+  async update(
+    id: string,
+    updateCourseDto: UpdateCourseDto,
+    user: User,
+  ): Promise<Course> {
     const course = await this.findOne(id, user);
 
+    const userRole = user.roles?.[0]?.name || '';
+    
     // 权限检查
-    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(user.roles?.[0]?.name)) {
+    if (
+      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
+    ) {
       throw new ForbiddenException('权限不足，无法修改课程');
     }
 
     // 门店管理员只能修改自己门店的课程
-    if (user.roles?.[0]?.name === 'STORE_MANAGER' && course.storeId !== user.storeId) {
+    if (
+      userRole === 'STORE_MANAGER' &&
+      course.storeId !== user.storeId
+    ) {
       throw new ForbiddenException('权限不足，只能修改自己门店的课程');
     }
 
@@ -135,11 +163,19 @@ export class CoursesService {
     return await this.courseRepository.save(course);
   }
 
-  async updateStatus(id: string, status: 'active' | 'inactive' | 'suspended', user: User): Promise<Course> {
+  async updateStatus(
+    id: string,
+    status: 'active' | 'inactive' | 'suspended',
+    user: User,
+  ): Promise<Course> {
     const course = await this.findOne(id, user);
 
+    const userRole = user.roles?.[0]?.name || '';
+    
     // 权限检查
-    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(user.roles?.[0]?.name)) {
+    if (
+      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
+    ) {
       throw new ForbiddenException('权限不足，无法修改课程状态');
     }
 
@@ -152,8 +188,12 @@ export class CoursesService {
   async remove(id: string, user: User): Promise<{ message: string }> {
     const course = await this.findOne(id, user);
 
+    const userRole = user.roles?.[0]?.name || '';
+    
     // 权限检查
-    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(user.roles?.[0]?.name)) {
+    if (
+      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
+    ) {
       throw new ForbiddenException('权限不足，无法删除课程');
     }
 
@@ -166,21 +206,30 @@ export class CoursesService {
   async getStats(user: User) {
     const queryBuilder = this.createBaseQuery(user, false);
 
-    const [
-      total,
-      active,
-      inactive,
-      personalTraining,
-      groupClasses,
-      workshops,
-    ] = await Promise.all([
-      queryBuilder.clone().getCount(),
-      queryBuilder.clone().andWhere('course.status = :status', { status: 'active' }).getCount(),
-      queryBuilder.clone().andWhere('course.status = :status', { status: 'inactive' }).getCount(),
-      queryBuilder.clone().andWhere('course.type = :type', { type: 'personal' }).getCount(),
-      queryBuilder.clone().andWhere('course.type = :type', { type: 'group' }).getCount(),
-      queryBuilder.clone().andWhere('course.type = :type', { type: 'workshop' }).getCount(),
-    ]);
+    const [total, active, inactive, personalTraining, groupClasses, workshops] =
+      await Promise.all([
+        queryBuilder.clone().getCount(),
+        queryBuilder
+          .clone()
+          .andWhere('course.status = :status', { status: 'active' })
+          .getCount(),
+        queryBuilder
+          .clone()
+          .andWhere('course.status = :status', { status: 'inactive' })
+          .getCount(),
+        queryBuilder
+          .clone()
+          .andWhere('course.type = :type', { type: 'personal' })
+          .getCount(),
+        queryBuilder
+          .clone()
+          .andWhere('course.type = :type', { type: 'group' })
+          .getCount(),
+        queryBuilder
+          .clone()
+          .andWhere('course.type = :type', { type: 'workshop' })
+          .getCount(),
+      ]);
 
     // 获取平均评分
     const avgRatingResult = await queryBuilder
@@ -203,7 +252,7 @@ export class CoursesService {
 
   async getPopularCourses(limit: number, user: User) {
     const queryBuilder = this.createBaseQuery(user);
-    
+
     queryBuilder
       .andWhere('course.status = :status', { status: 'active' })
       .andWhere('course.rating >= :minRating', { minRating: 4.0 })
@@ -216,14 +265,8 @@ export class CoursesService {
 
   async getCourseBookings(id: string, query: any, user: User) {
     const course = await this.findOne(id, user);
-    
-    const {
-      page = 1,
-      limit = 20,
-      status,
-      startDate,
-      endDate,
-    } = query;
+
+    const { page = 1, limit = 20, status, startDate, endDate } = query;
 
     const queryBuilder = this.courseRepository
       .createQueryBuilder('course')
@@ -251,7 +294,7 @@ export class CoursesService {
 
     const result = await queryBuilder.getOne();
     const bookings = result?.bookings || [];
-    
+
     return {
       data: bookings,
       meta: {
@@ -263,7 +306,10 @@ export class CoursesService {
     };
   }
 
-  private createBaseQuery(user: User, withRelations: boolean = true): SelectQueryBuilder<Course> {
+  private createBaseQuery(
+    user: User,
+    withRelations: boolean = true,
+  ): SelectQueryBuilder<Course> {
     const queryBuilder = this.courseRepository.createQueryBuilder('course');
 
     if (withRelations) {
@@ -272,10 +318,14 @@ export class CoursesService {
         .leftJoinAndSelect('course.coach', 'coach');
     }
 
+    const userRole = user.roles?.[0]?.name || '';
+    
     // 数据隔离
-    if (user.roles?.[0]?.name === 'STORE_MANAGER' && user.storeId) {
-      queryBuilder.andWhere('course.storeId = :storeId', { storeId: user.storeId });
-    } else if (user.roles?.[0]?.name === 'BRAND_MANAGER' && user.brandId) {
+    if (userRole === 'STORE_MANAGER' && user.storeId) {
+      queryBuilder.andWhere('course.storeId = :storeId', {
+        storeId: user.storeId,
+      });
+    } else if (userRole === 'BRAND_MANAGER' && user.brandId) {
       queryBuilder
         .leftJoin('course.store', 'filterStore')
         .andWhere('filterStore.brandId = :brandId', { brandId: user.brandId });

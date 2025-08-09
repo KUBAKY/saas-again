@@ -1,0 +1,280 @@
+<!-- 课程详情页面 -->
+<view class="page-container">
+  <!-- 课程封面 -->
+  <view class="course-header">
+    <image 
+      class="course-cover" 
+      src="{{courseDetail.coverImage || '/images/course-cover.jpg'}}"
+      mode="aspectFill"
+    />
+    <view class="course-info-overlay">
+      <view class="course-title">{{courseDetail.name}}</view>
+      <view class="course-meta">
+        <text class="level-tag level-{{courseDetail.level}}">{{courseDetail.levelText}}</text>
+        <text class="category">{{courseDetail.category}}</text>
+        <text class="duration">{{courseDetail.duration}}分钟</text>
+      </view>
+      <view class="course-stats">
+        <view class="stat-item">
+          <text class="stat-number">{{courseDetail.rating}}</text>
+          <text class="stat-label">评分</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-number">{{courseDetail.currentParticipants}}/{{courseDetail.maxParticipants}}</text>
+          <text class="stat-label">人数</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-number">{{courseDetail.totalSessions}}</text>
+          <text class="stat-label">总课时</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 课程描述 -->
+  <view class="section">
+    <view class="section-title">课程介绍</view>
+    <view class="course-description">{{courseDetail.description}}</view>
+    
+    <!-- 标签 -->
+    <view class="tags-container" wx:if="{{courseDetail.tags.length}}">
+      <view 
+        class="tag-item"
+        wx:for="{{courseDetail.tags}}" 
+        wx:key="*this"
+      >
+        {{item}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 教练信息 -->
+  <view class="section">
+    <view class="section-title">
+      <text>授课教练</text>
+      <text class="view-more" bindtap="viewCoachDetail">查看详情 ></text>
+    </view>
+    <view class="coach-card" bindtap="viewCoachDetail">
+      <image class="coach-avatar" src="{{coachInfo.avatar}}" />
+      <view class="coach-info">
+        <view class="coach-name">{{coachInfo.name}}</view>
+        <view class="coach-specialties">
+          <text wx:for="{{coachInfo.specialties}}" wx:key="*this" class="specialty">
+            {{item}}{{index < coachInfo.specialties.length - 1 ? ' · ' : ''}}
+          </text>
+        </view>
+        <view class="coach-stats">
+          <text class="experience">{{coachInfo.experience}}年经验</text>
+          <text class="rating">⭐ {{coachInfo.rating}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 课程效果 -->
+  <view class="section" wx:if="{{courseDetail.benefits.length}}">
+    <view class="section-title">课程效果</view>
+    <view class="benefits-list">
+      <view 
+        class="benefit-item"
+        wx:for="{{courseDetail.benefits}}" 
+        wx:key="index"
+      >
+        <text class="benefit-icon">✓</text>
+        <text class="benefit-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 适用人群与要求 -->
+  <view class="section" wx:if="{{courseDetail.requirements.length}}">
+    <view class="section-title">适用人群</view>
+    <view class="requirements-list">
+      <view 
+        class="requirement-item"
+        wx:for="{{courseDetail.requirements}}" 
+        wx:key="index"
+      >
+        <text class="requirement-dot">•</text>
+        <text class="requirement-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 所需器材 -->
+  <view class="section" wx:if="{{courseDetail.equipment.length}}">
+    <view class="section-title">所需器材</view>
+    <view class="equipment-list">
+      <text 
+        class="equipment-item"
+        wx:for="{{courseDetail.equipment}}" 
+        wx:key="*this"
+      >
+        {{item}}{{index < courseDetail.equipment.length - 1 ? '、' : ''}}
+      </text>
+    </view>
+  </view>
+
+  <!-- 可预约时间段 -->
+  <view class="section">
+    <view class="section-title">可预约时间</view>
+    <scroll-view class="time-slots-container" scroll-x>
+      <view 
+        class="time-slot-item {{selectedTimeSlot && selectedTimeSlot.id === item.id ? 'selected' : ''}} {{!item.available ? 'disabled' : ''}}"
+        wx:for="{{availableTimeSlots}}" 
+        wx:key="id"
+        bindtap="selectTimeSlot"
+        data-slot="{{item}}"
+      >
+        <view class="slot-date">{{item.dateText}}</view>
+        <view class="slot-time">{{item.startTime}}-{{item.endTime}}</view>
+        <view class="slot-participants">{{item.currentParticipants}}/{{item.maxParticipants}}人</view>
+        <view class="slot-status" wx:if="{{!item.available}}">已满</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 学员评价 -->
+  <view class="section">
+    <view class="section-title">
+      <text>学员评价 ({{reviews.length}})</text>
+      <text class="add-review" bindtap="showReviewDialog">写评价</text>
+    </view>
+    <view class="reviews-list" wx:if="{{reviews.length}}">
+      <view 
+        class="review-item"
+        wx:for="{{reviews}}" 
+        wx:key="id"
+      >
+        <view class="review-header">
+          <image class="member-avatar" src="{{item.memberAvatar}}" />
+          <view class="review-info">
+            <view class="member-name">{{item.memberName}}</view>
+            <view class="review-meta">
+              <van-rate value="{{item.rating}}" readonly size="12" />
+              <text class="review-date">{{item.date}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="review-content">{{item.comment}}</view>
+        <view class="review-actions">
+          <text 
+            class="like-btn" 
+            bindtap="likeReview" 
+            data-id="{{item.id}}"
+          >
+            👍 {{item.helpful}}
+          </text>
+        </view>
+      </view>
+    </view>
+    <view class="no-reviews" wx:else>
+      <text>暂无评价，来写第一条评价吧~</text>
+    </view>
+  </view>
+</view>
+
+<!-- 底部操作栏 -->
+<view class="bottom-actions">
+  <view class="price-section">
+    <view class="price-info">
+      <text class="current-price">¥{{courseDetail.price}}</text>
+      <text class="original-price" wx:if="{{courseDetail.originalPrice > courseDetail.price}}">¥{{courseDetail.originalPrice}}</text>
+    </view>
+  </view>
+  
+  <view class="action-buttons">
+    <button 
+      class="contact-btn"
+      bindtap="contactService"
+    >
+      咨询
+    </button>
+    <button 
+      class="book-btn {{isBooked ? 'booked' : ''}}"
+      bindtap="{{isBooked ? 'cancelBooking' : 'bookCourse'}}"
+    >
+      {{isBooked ? '取消预约' : '立即预约'}}
+    </button>
+  </view>
+</view>
+
+<!-- 预约确认弹窗 -->
+<van-popup 
+  show="{{showBookingPopup}}" 
+  position="bottom" 
+  round
+  bind:close="closeBookingPopup"
+>
+  <view class="booking-popup">
+    <view class="popup-title">确认预约</view>
+    <view class="booking-info" wx:if="{{selectedTimeSlot}}">
+      <view class="info-item">
+        <text class="label">课程：</text>
+        <text class="value">{{courseDetail.name}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">时间：</text>
+        <text class="value">{{selectedTimeSlot.dateText}} {{selectedTimeSlot.startTime}}-{{selectedTimeSlot.endTime}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">地点：</text>
+        <text class="value">{{courseDetail.location}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">费用：</text>
+        <text class="value price">¥{{courseDetail.price}}</text>
+      </view>
+    </view>
+    <view class="popup-actions">
+      <button class="cancel-btn" bindtap="closeBookingPopup">取消</button>
+      <button 
+        class="confirm-btn"
+        loading="{{bookingLoading}}"
+        bindtap="confirmBooking"
+      >
+        确认预约
+      </button>
+    </view>
+  </view>
+</van-popup>
+
+<!-- 评价弹窗 -->
+<van-popup 
+  show="{{showReviewPopup}}" 
+  position="center" 
+  round
+  bind:close="closeReviewPopup"
+>
+  <view class="review-popup">
+    <view class="popup-title">课程评价</view>
+    <view class="rating-section">
+      <text class="rating-label">课程评分</text>
+      <van-rate 
+        value="{{newReview.rating}}" 
+        bind:change="onRatingChange"
+        allow-half
+        size="24"
+      />
+    </view>
+    <view class="comment-section">
+      <textarea 
+        class="comment-input"
+        placeholder="分享您的上课感受..."
+        value="{{newReview.comment}}"
+        bindinput="onCommentInput"
+        maxlength="200"
+      />
+    </view>
+    <view class="popup-actions">
+      <button class="cancel-btn" bindtap="closeReviewPopup">取消</button>
+      <button class="submit-btn" bindtap="submitReview">提交评价</button>
+    </view>
+  </view>
+</van-popup>
+
+<!-- Vant组件导入 -->
+<van-rate />
+<van-popup />

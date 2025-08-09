@@ -1,0 +1,413 @@
+/* 课程管理页面样式 */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding-bottom: 120rpx;
+}
+
+/* 角色切换标签 */
+.role-tabs {
+  display: flex;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  margin: 20rpx;
+  border-radius: 16rpx;
+  padding: 8rpx;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 28rpx;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.tab-item.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 时间选择器 */
+.time-selector {
+  margin: 20rpx;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16rpx;
+  padding: 20rpx;
+}
+
+.time-tabs {
+  display: flex;
+  margin-bottom: 20rpx;
+}
+
+.time-tab {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx;
+  border-radius: 12rpx;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 26rpx;
+  transition: all 0.3s ease;
+}
+
+.time-tab.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.date-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12rpx;
+}
+
+.current-date {
+  color: #fff;
+  font-size: 28rpx;
+  margin-right: 12rpx;
+}
+
+/* 统计卡片 */
+.stats-section {
+  margin: 20rpx;
+}
+
+.stats-card {
+  display: flex;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 16rpx;
+  padding: 30rpx 20rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+}
+
+.stats-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stats-number {
+  display: block;
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.stats-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
+}
+
+/* 课程列表 */
+.course-list {
+  margin: 20rpx;
+}
+
+.course-item, .group-course-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.course-item:active, .group-course-item:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 课程时间和状态 */
+.course-time {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.time {
+  color: #333;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.status-badge {
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  color: #fff;
+}
+
+.status-upcoming {
+  background: #4CAF50;
+}
+
+.status-ongoing {
+  background: #FF9800;
+}
+
+.status-completed {
+  background: #9E9E9E;
+}
+
+.status-cancelled {
+  background: #F44336;
+}
+
+/* 课程信息 */
+.course-info {
+  margin-bottom: 20rpx;
+}
+
+.member-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.member-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+  background: #f0f0f0;
+}
+
+.member-details {
+  flex: 1;
+}
+
+.member-name {
+  display: block;
+  color: #333;
+  font-size: 28rpx;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.member-phone {
+  color: #666;
+  font-size: 24rpx;
+}
+
+.course-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.course-type, .course-duration, .course-location {
+  background: #f5f5f5;
+  color: #666;
+  font-size: 22rpx;
+  padding: 8rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+/* 团课特有样式 */
+.course-header {
+  margin-bottom: 20rpx;
+}
+
+.course-capacity {
+  margin-top: 16rpx;
+}
+
+.capacity-text {
+  color: #666;
+  font-size: 24rpx;
+  margin-bottom: 8rpx;
+  display: block;
+}
+
+.course-name {
+  color: #333;
+  font-size: 30rpx;
+  font-weight: bold;
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+.course-instructor {
+  color: #666;
+  font-size: 24rpx;
+  display: block;
+}
+
+/* 课程操作按钮 */
+.course-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.course-actions .van-button {
+  flex: 1;
+}
+
+/* 空状态 */
+.empty-state {
+  margin-top: 100rpx;
+}
+
+/* 浮动按钮 */
+.fab-container {
+  position: fixed;
+  bottom: 40rpx;
+  right: 40rpx;
+  z-index: 100;
+}
+
+/* 弹窗样式 */
+.course-detail-popup, .members-popup {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.popup-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.course-detail-content {
+  flex: 1;
+  padding: 30rpx;
+  overflow-y: auto;
+}
+
+.detail-section {
+  margin-bottom: 40rpx;
+}
+
+.section-title {
+  color: #333;
+  font-size: 28rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.detail-label {
+  color: #666;
+  font-size: 26rpx;
+}
+
+.detail-value {
+  color: #333;
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.member-detail {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+}
+
+.detail-avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+  background: #f0f0f0;
+}
+
+.detail-name {
+  display: block;
+  color: #333;
+  font-size: 30rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.detail-phone {
+  display: block;
+  color: #666;
+  font-size: 24rpx;
+  margin-bottom: 8rpx;
+}
+
+.detail-goal {
+  display: block;
+  color: #666;
+  font-size: 24rpx;
+}
+
+.detail-actions {
+  padding: 30rpx;
+  border-top: 1rpx solid #eee;
+}
+
+/* 学员列表 */
+.members-list {
+  flex: 1;
+  padding: 20rpx;
+  overflow-y: auto;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.member-item .member-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+  background: #f0f0f0;
+}
+
+.member-item .member-info {
+  flex: 1;
+}
+
+.member-item .member-name {
+  display: block;
+  color: #333;
+  font-size: 28rpx;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.member-item .member-phone {
+  color: #666;
+  font-size: 24rpx;
+}
+
+.member-status {
+  margin-left: 20rpx;
+}

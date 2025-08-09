@@ -15,6 +15,8 @@ const base_entity_1 = require("./base.entity");
 const store_entity_1 = require("./store.entity");
 const course_entity_1 = require("./course.entity");
 const booking_entity_1 = require("./booking.entity");
+const course_schedule_entity_1 = require("./course-schedule.entity");
+const personal_training_card_entity_1 = require("./personal-training-card.entity");
 let Coach = class Coach extends base_entity_1.BaseEntity {
     employeeNumber;
     name;
@@ -40,6 +42,8 @@ let Coach = class Coach extends base_entity_1.BaseEntity {
     store;
     courses;
     bookings;
+    schedules;
+    personalTrainingCards;
     isActive() {
         return this.status === 'active' && !this.deletedAt;
     }
@@ -53,7 +57,8 @@ let Coach = class Coach extends base_entity_1.BaseEntity {
         const birthDate = new Date(this.birthday);
         let age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        if (monthDiff < 0 ||
+            (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
             age--;
         }
         return age;
@@ -91,7 +96,7 @@ let Coach = class Coach extends base_entity_1.BaseEntity {
         return this.courses?.length || 0;
     }
     getActiveCourses() {
-        return this.courses?.filter(course => course.isActive()) || [];
+        return this.courses?.filter((course) => course.isActive()) || [];
     }
 };
 exports.Coach = Coach;
@@ -294,6 +299,14 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => booking_entity_1.Booking, (booking) => booking.coach),
     __metadata("design:type", Array)
 ], Coach.prototype, "bookings", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => course_schedule_entity_1.CourseSchedule, (schedule) => schedule.coach),
+    __metadata("design:type", Array)
+], Coach.prototype, "schedules", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => personal_training_card_entity_1.PersonalTrainingCard, (card) => card.coach),
+    __metadata("design:type", Array)
+], Coach.prototype, "personalTrainingCards", void 0);
 exports.Coach = Coach = __decorate([
     (0, typeorm_1.Entity)('coaches'),
     (0, typeorm_1.Index)(['employeeNumber'], { unique: true })

@@ -11,7 +11,12 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { Brand } from '../entities/brand.entity';
 import { Store } from '../entities/store.entity';
-import { LoginDto, RegisterDto, UpdateProfileDto, ChangePasswordDto } from './dto';
+import {
+  LoginDto,
+  RegisterDto,
+  UpdateProfileDto,
+  ChangePasswordDto,
+} from './dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 
 export interface AuthResponse {
@@ -48,7 +53,18 @@ export class AuthService {
     const user = await this.userRepository.findOne({
       where: { email },
       relations: ['roles', 'brand', 'store'],
-      select: ['id', 'email', 'username', 'password', 'realName', 'brandId', 'storeId', 'failedLoginAttempts', 'lockedAt', 'status'],
+      select: [
+        'id',
+        'email',
+        'username',
+        'password',
+        'realName',
+        'brandId',
+        'storeId',
+        'failedLoginAttempts',
+        'lockedAt',
+        'status',
+      ],
     });
 
     if (!user) {
@@ -66,7 +82,7 @@ export class AuthService {
       // 增加失败次数
       user.incrementFailedLoginAttempts();
       await this.userRepository.save(user);
-      
+
       throw new UnauthorizedException('邮箱或密码错误');
     }
 
@@ -87,21 +103,18 @@ export class AuthService {
         realName: user.realName,
         brandId: user.brandId,
         storeId: user.storeId,
-        roles: user.roles?.map(role => role.name) || [],
+        roles: user.roles?.map((role) => role.name) || ([] as string[]),
       },
     };
   }
 
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
-    const { username, email, password, realName, phone, brandId, storeId } = registerDto;
+    const { username, email, password, realName, phone, brandId, storeId } =
+      registerDto;
 
     // 检查用户是否已存在
     const existingUser = await this.userRepository.findOne({
-      where: [
-        { email },
-        { username },
-        ...(phone ? [{ phone }] : []),
-      ],
+      where: [{ email }, { username }, ...(phone ? [{ phone }] : [])],
     });
 
     if (existingUser) {
@@ -168,12 +181,16 @@ export class AuthService {
         realName: userWithRelations!.realName,
         brandId: userWithRelations!.brandId,
         storeId: userWithRelations!.storeId,
-        roles: userWithRelations!.roles?.map(role => role.name) || [],
+        roles:
+          userWithRelations!.roles?.map((role) => role.name) ||
+          ([] as string[]),
       },
     };
   }
 
-  async refreshToken(refreshToken: string): Promise<Pick<AuthResponse, 'access_token'>> {
+  async refreshToken(
+    refreshToken: string,
+  ): Promise<Pick<AuthResponse, 'access_token'>> {
     try {
       const payload = this.jwtService.verify(refreshToken, {
         secret: this.configService.get<string>('jwt.refreshSecret'),
@@ -189,21 +206,23 @@ export class AuthService {
       }
 
       const accessToken = await this.generateAccessToken(user);
-      
+
       return { access_token: accessToken };
     } catch (error) {
       throw new UnauthorizedException('刷新令牌无效');
     }
   }
 
-  private async generateTokens(user: User): Promise<Pick<AuthResponse, 'access_token' | 'refresh_token'>> {
+  private async generateTokens(
+    user: User,
+  ): Promise<Pick<AuthResponse, 'access_token' | 'refresh_token'>> {
     const payload: Omit<JwtPayload, 'iat' | 'exp'> = {
       sub: user.id,
       email: user.email,
       username: user.username,
       brandId: user.brandId,
       storeId: user.storeId,
-      roles: user.roles?.map(role => role.name) || [],
+      roles: user.roles?.map((role) => role.name) || [],
     };
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -211,10 +230,13 @@ export class AuthService {
         secret: this.configService.get<string>('jwt.secret'),
         expiresIn: this.configService.get<string>('jwt.expiresIn'),
       }),
-      this.jwtService.signAsync({ sub: user.id }, {
-        secret: this.configService.get<string>('jwt.refreshSecret'),
-        expiresIn: this.configService.get<string>('jwt.refreshExpiresIn'),
-      }),
+      this.jwtService.signAsync(
+        { sub: user.id },
+        {
+          secret: this.configService.get<string>('jwt.refreshSecret'),
+          expiresIn: this.configService.get<string>('jwt.refreshExpiresIn'),
+        },
+      ),
     ]);
 
     return {
@@ -230,7 +252,7 @@ export class AuthService {
       username: user.username,
       brandId: user.brandId,
       storeId: user.storeId,
-      roles: user.roles?.map(role => role.name) || [],
+      roles: user.roles?.map((role) => role.name) || [],
     };
 
     return this.jwtService.signAsync(payload, {
@@ -245,14 +267,17 @@ export class AuthService {
       select: ['id', 'email', 'password', 'status'],
     });
 
-    if (user && await user.validatePassword(password) && user.isActive()) {
+    if (user && (await user.validatePassword(password)) && user.isActive()) {
       return user;
     }
 
     return null;
   }
 
-  async updateProfile(userId: string, updateProfileDto: UpdateProfileDto): Promise<User> {
+  async updateProfile(
+    userId: string,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['roles', 'brand', 'store'],
@@ -290,7 +315,10 @@ export class AuthService {
     return await this.userRepository.save(user);
   }
 
-  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<void> {
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<void> {
     const { currentPassword, newPassword, confirmPassword } = changePasswordDto;
 
     if (newPassword !== confirmPassword) {

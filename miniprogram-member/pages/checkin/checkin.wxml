@@ -1,0 +1,91 @@
+<!--pages/checkin/checkin.wxml-->
+<view class="container">
+  <!-- 头部信息 -->
+  <view class="header glass-card">
+    <view class="date-info">
+      <text class="current-date">{{currentDate}}</text>
+      <text class="week-day">{{weekDay}}</text>
+    </view>
+    <view class="weather-info" wx:if="{{weather}}">
+      <text class="weather">{{weather.text}} {{weather.temperature}}°C</text>
+    </view>
+  </view>
+
+  <!-- 签到按钮区域 -->
+  <view class="checkin-section">
+    <view class="checkin-button-wrapper">
+      <view class="checkin-button {{isCheckedIn ? 'checked' : ''}}" bindtap="handleCheckIn">
+        <view class="button-inner">
+          <van-icon name="{{isCheckedIn ? 'success' : 'location-o'}}" size="60rpx" color="{{isCheckedIn ? '#fff' : '#667eea'}}" />
+          <text class="button-text">{{isCheckedIn ? '已签到' : '点击签到'}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="checkin-time" wx:if="{{todayCheckIn}}">
+      <text>签到时间：{{todayCheckIn.time}}</text>
+    </view>
+  </view>
+
+  <!-- 统计信息 -->
+  <view class="stats-section glass-card">
+    <view class="stats-title">
+      <text>本月统计</text>
+    </view>
+    <view class="stats-grid">
+      <view class="stat-item">
+        <text class="stat-number">{{monthStats.checkInDays}}</text>
+        <text class="stat-label">签到天数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-number">{{monthStats.continuousDays}}</text>
+        <text class="stat-label">连续天数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-number">{{monthStats.totalMinutes}}</text>
+        <text class="stat-label">运动时长(分钟)</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 签到历史 -->
+  <view class="history-section glass-card">
+    <view class="history-title">
+      <text>最近签到</text>
+    </view>
+    <view class="history-list">
+      <view class="history-item" wx:for="{{recentCheckIns}}" wx:key="id">
+        <view class="history-date">
+          <text class="date">{{item.date}}</text>
+          <text class="time">{{item.time}}</text>
+        </view>
+        <view class="history-info">
+          <text class="location">{{item.location}}</text>
+          <text class="duration" wx:if="{{item.duration}}">运动{{item.duration}}分钟</text>
+        </view>
+        <view class="history-status">
+          <van-icon name="success" size="32rpx" color="#52c41a" />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 签到成功弹窗 -->
+  <van-popup show="{{showCheckInSuccess}}" position="center" round bind:close="closeCheckInPopup">
+    <view class="checkin-popup">
+      <view class="popup-icon">
+        <van-icon name="success" size="120rpx" color="#52c41a" />
+      </view>
+      <view class="popup-title">签到成功！</view>
+      <view class="popup-content">
+        <text>签到时间：{{todayCheckIn.time}}</text>
+        <text>连续签到：{{monthStats.continuousDays}}天</text>
+      </view>
+      <view class="popup-actions">
+        <van-button type="primary" round block bind:click="closeCheckInPopup">
+          继续加油
+        </van-button>
+      </view>
+    </view>
+  </van-popup>
+</view>

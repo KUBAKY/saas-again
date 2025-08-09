@@ -35,9 +35,10 @@ export class StoresService {
     }
 
     // 权限检查：系统管理员可以为任何品牌创建门店，品牌管理员只能为自己的品牌创建门店
-    const canCreate = user.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && user.brandId === brandId)
+    const canCreate = user.roles?.some(
+      (role) =>
+        role.name === 'ADMIN' ||
+        (role.name === 'BRAND_MANAGER' && user.brandId === brandId),
     );
 
     if (!canCreate) {
@@ -61,25 +62,28 @@ export class StoresService {
     return await this.storeRepository.save(store);
   }
 
-  async findAll(queryDto: QueryStoreDto, user: User): Promise<PaginatedResult<Store>> {
-    const { 
-      page = 1, 
-      limit = 20, 
-      search, 
-      status, 
-      brandId, 
+  async findAll(
+    queryDto: QueryStoreDto,
+    user: User,
+  ): Promise<PaginatedResult<Store>> {
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      status,
+      brandId,
       city,
-      sortBy = 'createdAt', 
-      sortOrder = 'DESC' 
+      sortBy = 'createdAt',
+      sortOrder = 'DESC',
     } = queryDto;
-    
+
     // 构建查询条件
     const where: FindOptionsWhere<Store> = {};
-    
+
     if (search) {
       where.name = Like(`%${search}%`);
     }
-    
+
     if (status) {
       where.status = status;
     }
@@ -89,12 +93,12 @@ export class StoresService {
     }
 
     // 权限控制：根据用户角色限制查询范围
-    if (user.roles?.some(role => role.name === 'ADMIN')) {
+    if (user.roles?.some((role) => role.name === 'ADMIN')) {
       // 系统管理员可以查看所有门店
       if (brandId) {
         where.brandId = brandId;
       }
-    } else if (user.roles?.some(role => role.name === 'BRAND_MANAGER')) {
+    } else if (user.roles?.some((role) => role.name === 'BRAND_MANAGER')) {
       // 品牌管理员只能查看自己品牌的门店
       where.brandId = user.brandId;
     } else {
@@ -135,10 +139,12 @@ export class StoresService {
     }
 
     // 权限检查
-    const canView = user.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && user.brandId === store.brandId) ||
-      (user.brandId === store.brandId && (!user.storeId || user.storeId === store.id))
+    const canView = user.roles?.some(
+      (role) =>
+        role.name === 'ADMIN' ||
+        (role.name === 'BRAND_MANAGER' && user.brandId === store.brandId) ||
+        (user.brandId === store.brandId &&
+          (!user.storeId || user.storeId === store.id)),
     );
 
     if (!canView) {
@@ -148,14 +154,19 @@ export class StoresService {
     return store;
   }
 
-  async update(id: string, updateStoreDto: UpdateStoreDto, user: User): Promise<Store> {
+  async update(
+    id: string,
+    updateStoreDto: UpdateStoreDto,
+    user: User,
+  ): Promise<Store> {
     const store = await this.findOne(id, user);
 
     // 权限检查：系统管理员、品牌管理员或门店管理员可以更新门店
-    const canUpdate = user.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && user.brandId === store.brandId) ||
-      (role.name === 'STORE_MANAGER' && user.storeId === store.id)
+    const canUpdate = user.roles?.some(
+      (role) =>
+        role.name === 'ADMIN' ||
+        (role.name === 'BRAND_MANAGER' && user.brandId === store.brandId) ||
+        (role.name === 'STORE_MANAGER' && user.storeId === store.id),
     );
 
     if (!canUpdate) {
@@ -172,9 +183,10 @@ export class StoresService {
     const store = await this.findOne(id, user);
 
     // 权限检查：只有系统管理员和品牌管理员可以删除门店
-    const canDelete = user.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && user.brandId === store.brandId)
+    const canDelete = user.roles?.some(
+      (role) =>
+        role.name === 'ADMIN' ||
+        (role.name === 'BRAND_MANAGER' && user.brandId === store.brandId),
     );
 
     if (!canDelete) {
@@ -211,9 +223,8 @@ export class StoresService {
 
   async findByBrand(brandId: string, user: User): Promise<Store[]> {
     // 权限检查
-    const canView = user.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (user.brandId === brandId)
+    const canView = user.roles?.some(
+      (role) => role.name === 'ADMIN' || user.brandId === brandId,
     );
 
     if (!canView) {

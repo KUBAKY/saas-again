@@ -23,7 +23,7 @@ let BrandsService = class BrandsService {
         this.brandRepository = brandRepository;
     }
     async create(createBrandDto, user) {
-        const isAdmin = user.roles?.some(role => role.name === 'ADMIN');
+        const isAdmin = user.roles?.some((role) => role.name === 'ADMIN');
         if (!isAdmin) {
             throw new common_1.ForbiddenException('只有系统管理员可以创建品牌');
         }
@@ -40,7 +40,7 @@ let BrandsService = class BrandsService {
         return await this.brandRepository.save(brand);
     }
     async findAll(queryDto, user) {
-        const { page = 1, limit = 20, search, status, sortBy = 'createdAt', sortOrder = 'DESC' } = queryDto;
+        const { page = 1, limit = 20, search, status, sortBy = 'createdAt', sortOrder = 'DESC', } = queryDto;
         const where = {};
         if (search) {
             where.name = (0, typeorm_2.Like)(`%${search}%`);
@@ -48,7 +48,7 @@ let BrandsService = class BrandsService {
         if (status) {
             where.status = status;
         }
-        if (!user.roles?.some(role => role.name === 'ADMIN')) {
+        if (!user.roles?.some((role) => role.name === 'ADMIN')) {
             where.id = user.brandId;
         }
         const findOptions = {
@@ -75,14 +75,15 @@ let BrandsService = class BrandsService {
         if (!brand) {
             throw new common_1.NotFoundException('品牌不存在');
         }
-        if (!user.roles?.some(role => role.name === 'ADMIN') && brand.id !== user.brandId) {
+        if (!user.roles?.some((role) => role.name === 'ADMIN') &&
+            brand.id !== user.brandId) {
             throw new common_1.ForbiddenException('无权限查看此品牌');
         }
         return brand;
     }
     async update(id, updateBrandDto, user) {
         const brand = await this.findOne(id, user);
-        const canUpdate = user.roles?.some(role => role.name === 'ADMIN' ||
+        const canUpdate = user.roles?.some((role) => role.name === 'ADMIN' ||
             (role.name === 'BRAND_MANAGER' && user.brandId === brand.id));
         if (!canUpdate) {
             throw new common_1.ForbiddenException('无权限更新此品牌');
@@ -93,7 +94,7 @@ let BrandsService = class BrandsService {
     }
     async remove(id, user) {
         const brand = await this.findOne(id, user);
-        if (!user.roles?.some(role => role.name === 'ADMIN')) {
+        if (!user.roles?.some((role) => role.name === 'ADMIN')) {
             throw new common_1.ForbiddenException('只有系统管理员可以删除品牌');
         }
         brand.status = 'inactive';
@@ -103,7 +104,7 @@ let BrandsService = class BrandsService {
     async getStats(id, user) {
         const brand = await this.findOne(id, user);
         const storeCount = brand.stores?.length || 0;
-        const activeStoreCount = brand.stores?.filter(store => store.status === 'active').length || 0;
+        const activeStoreCount = brand.stores?.filter((store) => store.status === 'active').length || 0;
         return {
             storeCount,
             activeStoreCount,

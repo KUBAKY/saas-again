@@ -11,6 +11,8 @@ import { Store } from './store.entity';
 import { MembershipCard } from './membership-card.entity';
 import { CheckIn } from './check-in.entity';
 import { Booking } from './booking.entity';
+import { GroupClassCard } from './group-class-card.entity';
+import { PersonalTrainingCard } from './personal-training-card.entity';
 
 @Entity('members')
 @Index(['phone'], { unique: true })
@@ -234,6 +236,12 @@ export class Member extends BaseEntity {
   @OneToMany(() => Booking, (booking) => booking.member)
   bookings: Booking[];
 
+  @OneToMany(() => GroupClassCard, (card) => card.member)
+  groupClassCards: GroupClassCard[];
+
+  @OneToMany(() => PersonalTrainingCard, (card) => card.member)
+  personalTrainingCards: PersonalTrainingCard[];
+
   // 业务方法
   isActive(): boolean {
     return this.status === 'active' && !this.deletedAt;
@@ -241,28 +249,33 @@ export class Member extends BaseEntity {
 
   getAge(): number | null {
     if (!this.birthday) return null;
-    
+
     const today = new Date();
     const birthDate = new Date(this.birthday);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
-    
+
     return age;
   }
 
   getBMI(): number | null {
     if (!this.height || !this.weight) return null;
-    
+
     const heightInMeters = this.height / 100;
-    return Math.round((this.weight / (heightInMeters * heightInMeters)) * 100) / 100;
+    return (
+      Math.round((this.weight / (heightInMeters * heightInMeters)) * 100) / 100
+    );
   }
 
   getActiveMembershipCards(): MembershipCard[] {
-    return this.membershipCards?.filter(card => card.isActive()) || [];
+    return this.membershipCards?.filter((card) => card.isActive()) || [];
   }
 
   hasActiveMembership(): boolean {
@@ -278,7 +291,8 @@ export class Member extends BaseEntity {
 
     // 按日期排序
     const sortedCheckIns = this.checkIns.sort(
-      (a, b) => new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime()
+      (a, b) =>
+        new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime(),
     );
 
     let streak = 0;
@@ -290,7 +304,7 @@ export class Member extends BaseEntity {
       checkInDate.setHours(0, 0, 0, 0);
 
       const diffDays = Math.floor(
-        (currentDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
+        (currentDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24),
       );
 
       if (diffDays === 0 || diffDays === 1) {
@@ -326,9 +340,9 @@ export class Member extends BaseEntity {
 
   getLatestBodyMetric() {
     if (!this.bodyMetrics || this.bodyMetrics.length === 0) return null;
-    
+
     return this.bodyMetrics.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     )[0];
   }
 }

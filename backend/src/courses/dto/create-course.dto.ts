@@ -24,15 +24,18 @@ export class CreateCourseDto {
   @IsString()
   description?: string;
 
-  @ApiProperty({ description: '课程类型', enum: ['personal', 'group', 'workshop'] })
+  @ApiProperty({
+    description: '课程类型',
+    enum: ['personal', 'group', 'workshop'],
+  })
   @IsEnum(['personal', 'group', 'workshop'])
   @IsNotEmpty()
   type: 'personal' | 'group' | 'workshop';
 
-  @ApiProperty({ 
-    description: '适合级别', 
+  @ApiProperty({
+    description: '适合级别',
     enum: ['beginner', 'intermediate', 'advanced', 'all'],
-    default: 'all' 
+    default: 'all',
   })
   @IsOptional()
   @IsEnum(['beginner', 'intermediate', 'advanced', 'all'])
@@ -55,7 +58,11 @@ export class CreateCourseDto {
   @Min(0)
   price: number;
 
-  @ApiProperty({ description: '课程封面图URL', required: false, maxLength: 500 })
+  @ApiProperty({
+    description: '课程封面图URL',
+    required: false,
+    maxLength: 500,
+  })
   @IsOptional()
   @IsString()
   @MaxLength(500)
@@ -78,7 +85,11 @@ export class CreateCourseDto {
   @IsString()
   requirements?: string;
 
-  @ApiProperty({ description: '消耗卡路里（估算）', required: false, minimum: 0 })
+  @ApiProperty({
+    description: '消耗卡路里（估算）',
+    required: false,
+    minimum: 0,
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)

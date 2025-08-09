@@ -36,6 +36,7 @@ let Store = class Store extends base_entity_1.BaseEntity {
     members;
     coaches;
     courses;
+    schedules;
     isActive() {
         return this.status === 'active' && !this.deletedAt;
     }
@@ -232,6 +233,10 @@ __decorate([
     (0, typeorm_1.OneToMany)('Course', (course) => course.store),
     __metadata("design:type", Array)
 ], Store.prototype, "courses", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)('CourseSchedule', (schedule) => schedule.store),
+    __metadata("design:type", Array)
+], Store.prototype, "schedules", void 0);
 exports.Store = Store = __decorate([
     (0, typeorm_1.Entity)('stores'),
     (0, typeorm_1.Index)(['brandId', 'code'], { unique: true })

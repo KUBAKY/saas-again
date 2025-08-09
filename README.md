@@ -48,32 +48,73 @@
 
 ### 环境要求
 
-- **Node.js**: >= 18.0.0
-- **npm**: >= 8.0.0
-- **PostgreSQL**: >= 14.0
-- **Redis**: >= 6.0
-- **Docker**: >= 20.0.0 (可选)
+- **Node.js**: >= 20.0.0
+- **npm**: >= 9.0.0
+- **PostgreSQL**: >= 15.0
+- **Redis**: >= 7.0
+- **Docker**: >= 24.0.0 (推荐)
 
-### 安装步骤
+### 🐳 Docker快速启动 (推荐)
 
 ```bash
 # 1. 克隆项目
 git clone <repository-url>
-cd saas
+cd saas-again
 
-# 2. 安装依赖
-npm install
-
-# 3. 环境配置
+# 2. 环境配置
 cp .env.example .env
-# 编辑 .env 文件，配置数据库等信息
+# 编辑 .env 文件，配置密码等信息
 
-# 4. 数据库初始化
-npm run db:migrate
-npm run db:seed
+# 3. 一键启动开发环境
+./deploy.sh dev --build
 
-# 5. 启动开发服务
-npm run dev
+# 4. 访问应用
+# 前端: http://localhost:5173
+# 后端API: http://localhost:3000
+# Nginx代理: http://localhost:80
+```
+
+### 📦 传统方式安装
+
+```bash
+# 1. 克隆项目
+git clone <repository-url>
+cd saas-again
+
+# 2. 安装后端依赖
+cd backend
+npm install
+cd ..
+
+# 3. 安装前端依赖
+cd frontend
+npm install
+cd ..
+
+# 4. 环境配置
+cp .env.example .env
+
+# 5. 启动数据库 (需要本地安装)
+# PostgreSQL和Redis需要本地运行
+
+# 6. 启动开发服务
+# 后端
+cd backend && npm run start:dev &
+# 前端
+cd frontend && npm run dev
+```
+
+### 🧪 运行测试
+
+```bash
+# 运行所有测试
+./test.sh
+
+# 运行特定测试
+./test.sh backend    # 后端测试
+./test.sh frontend   # 前端测试
+./test.sh docker     # Docker配置测试
+./test.sh api        # API测试
 ```
 
 ### 🤖 AI开发模式
@@ -305,51 +346,66 @@ saas/
 
 ### 开发环境
 ```bash
-# 本地开发
-npm run dev
+# Docker开发环境 (推荐)
+./deploy.sh dev --build
 
-# Docker开发环境
-docker-compose up -d
-```
+# 或者手动启动
+docker-compose -f docker-compose.dev.yml up -d
 
-### 测试环境
-```bash
-# 构建测试镜像
-npm run build:test
-docker build -t saas:test .
+# 查看服务状态
+docker-compose -f docker-compose.dev.yml ps
 
-# 部署到测试环境
-kubectl apply -f k8s/test/
+# 查看日志
+./deploy.sh logs dev [service_name]
 ```
 
 ### 生产环境
 ```bash
-# 构建生产镜像
-npm run build:prod
-docker build -t saas:prod .
+# 1. 配置环境变量
+cp .env.example .env
+# 编辑 .env 文件，设置生产环境配置
 
-# 部署到生产环境
-kubectl apply -f k8s/prod/
+# 2. 部署生产环境
+./deploy.sh prod --build
+
+# 3. 健康检查
+curl http://localhost/health        # 前端健康检查
+curl http://localhost:3000/health   # 后端健康检查
+
+# 4. 停止服务
+./deploy.sh stop prod
+```
+
+### 部署脚本说明
+```bash
+# 部署脚本帮助
+./deploy.sh help
+
+# 支持的命令
+./deploy.sh dev --build     # 开发环境部署并构建镜像
+./deploy.sh prod            # 生产环境部署
+./deploy.sh stop dev        # 停止开发环境
+./deploy.sh logs dev backend # 查看后端日志
 ```
 
 ### CI/CD流程
 ```yaml
-# .github/workflows/deploy.yml
-name: Deploy
+# .github/workflows/ci.yml - 已配置完整的CI/CD流程
+# 包括：代码质量检查、安全扫描、Docker构建、集成测试、自动部署
+name: CI/CD Pipeline
 on:
   push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: AI Code Review
-        run: ./.ai/scripts/ai-workflow.sh review
-      - name: Run Tests
-        run: npm test
-      - name: Build & Deploy
-        run: npm run deploy
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# 主要步骤：
+# 1. 代码质量检查 (ESLint, TypeScript)
+# 2. 安全扫描 (Trivy)
+# 3. Docker镜像构建测试
+# 4. 集成测试 (PostgreSQL + Redis)
+# 5. Docker Compose配置验证
+# 6. 自动部署 (develop -> dev, main -> prod)
 ```
 
 ## 📈 监控与运维

@@ -12,7 +12,10 @@ export { Permission } from './permission.entity';
 export { Member } from './member.entity';
 export { Coach } from './coach.entity';
 export { Course } from './course.entity';
+export { CourseSchedule } from './course-schedule.entity';
 export { MembershipCard } from './membership-card.entity';
+export { GroupClassCard } from './group-class-card.entity';
+export { PersonalTrainingCard } from './personal-training-card.entity';
 export { CheckIn } from './check-in.entity';
 export { Booking } from './booking.entity';
 
@@ -24,7 +27,10 @@ import { Permission } from './permission.entity';
 import { Member } from './member.entity';
 import { Coach } from './coach.entity';
 import { Course } from './course.entity';
+import { CourseSchedule } from './course-schedule.entity';
 import { MembershipCard } from './membership-card.entity';
+import { GroupClassCard } from './group-class-card.entity';
+import { PersonalTrainingCard } from './personal-training-card.entity';
 import { CheckIn } from './check-in.entity';
 import { Booking } from './booking.entity';
 
@@ -36,12 +42,15 @@ export const entities = [
   User,
   Role,
   Permission,
-  
+
   // Business entities
   Member,
   Coach,
   Course,
+  CourseSchedule,
   MembershipCard,
+  GroupClassCard,
+  PersonalTrainingCard,
   CheckIn,
   Booking,
 ];

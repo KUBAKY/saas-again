@@ -54,7 +54,7 @@ let MembersService = class MembersService {
         return await this.memberRepository.save(member);
     }
     async findAll(queryDto, currentUser) {
-        const { page = 1, limit = 20, search, status, storeId, level, gender, minAge, maxAge, sortBy = 'createdAt', sortOrder = 'DESC' } = queryDto;
+        const { page = 1, limit = 20, search, status, storeId, level, gender, minAge, maxAge, sortBy = 'createdAt', sortOrder = 'DESC', } = queryDto;
         const where = {};
         if (search) {
             where.name = (0, typeorm_2.Like)(`%${search}%`);
@@ -68,17 +68,17 @@ let MembersService = class MembersService {
         if (gender) {
             where.gender = gender;
         }
-        if (currentUser.roles?.some(role => role.name === 'ADMIN')) {
+        if (currentUser.roles?.some((role) => role.name === 'ADMIN')) {
             if (storeId) {
                 where.storeId = storeId;
             }
         }
-        else if (currentUser.roles?.some(role => role.name === 'BRAND_MANAGER')) {
+        else if (currentUser.roles?.some((role) => role.name === 'BRAND_MANAGER')) {
             const stores = await this.storeRepository.find({
                 where: { brandId: currentUser.brandId },
                 select: ['id'],
             });
-            const storeIds = stores.map(s => s.id);
+            const storeIds = stores.map((s) => s.id);
             if (storeId && storeIds.includes(storeId)) {
                 where.storeId = storeId;
             }
@@ -91,12 +91,13 @@ let MembersService = class MembersService {
             }
         }
         let findOptions;
-        if (currentUser.roles?.some(role => role.name === 'BRAND_MANAGER') && !storeId) {
+        if (currentUser.roles?.some((role) => role.name === 'BRAND_MANAGER') &&
+            !storeId) {
             const stores = await this.storeRepository.find({
                 where: { brandId: currentUser.brandId },
                 select: ['id'],
             });
-            const storeIds = stores.map(s => s.id);
+            const storeIds = stores.map((s) => s.id);
             findOptions = {
                 where: {
                     ...where,
@@ -107,14 +108,17 @@ let MembersService = class MembersService {
                 take: limit,
                 relations: ['store'],
             };
-            const queryBuilder = this.memberRepository.createQueryBuilder('member')
+            const queryBuilder = this.memberRepository
+                .createQueryBuilder('member')
                 .leftJoinAndSelect('member.store', 'store')
                 .where('member.storeId IN (:...storeIds)', { storeIds })
                 .orderBy(`member.${sortBy}`, sortOrder)
                 .skip((page - 1) * limit)
                 .take(limit);
             if (search) {
-                queryBuilder.andWhere('member.name LIKE :search', { search: `%${search}%` });
+                queryBuilder.andWhere('member.name LIKE :search', {
+                    search: `%${search}%`,
+                });
             }
             if (status) {
                 queryBuilder.andWhere('member.status = :status', { status });
@@ -186,8 +190,9 @@ let MembersService = class MembersService {
     }
     async remove(id, currentUser) {
         const member = await this.findOne(id, currentUser);
-        const canDelete = currentUser.roles?.some(role => role.name === 'ADMIN' ||
-            (role.name === 'BRAND_MANAGER' && currentUser.brandId === member.store.brandId));
+        const canDelete = currentUser.roles?.some((role) => role.name === 'ADMIN' ||
+            (role.name === 'BRAND_MANAGER' &&
+                currentUser.brandId === member.store.brandId));
         if (!canDelete) {
             throw new common_1.ForbiddenException('无权限删除此会员');
         }
@@ -197,14 +202,14 @@ let MembersService = class MembersService {
     }
     async getStats(currentUser) {
         let whereCondition = {};
-        if (currentUser.roles?.some(role => role.name === 'ADMIN')) {
+        if (currentUser.roles?.some((role) => role.name === 'ADMIN')) {
         }
-        else if (currentUser.roles?.some(role => role.name === 'BRAND_MANAGER')) {
+        else if (currentUser.roles?.some((role) => role.name === 'BRAND_MANAGER')) {
             const stores = await this.storeRepository.find({
                 where: { brandId: currentUser.brandId },
                 select: ['id'],
             });
-            const storeIds = stores.map(s => s.id);
+            const storeIds = stores.map((s) => s.id);
             const totalMembers = await this.memberRepository
                 .createQueryBuilder('member')
                 .where('member.storeId IN (:...storeIds)', { storeIds })
@@ -218,7 +223,7 @@ let MembersService = class MembersService {
                 .createQueryBuilder('member')
                 .where('member.storeId IN (:...storeIds)', { storeIds })
                 .andWhere('member.createdAt >= :startDate', {
-                startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+                startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
             })
                 .getCount();
             return {
@@ -231,15 +236,17 @@ let MembersService = class MembersService {
         }
         else {
             whereCondition = { storeId: currentUser.storeId };
-            const totalMembers = await this.memberRepository.count({ where: whereCondition });
+            const totalMembers = await this.memberRepository.count({
+                where: whereCondition,
+            });
             const activeMembers = await this.memberRepository.count({
-                where: { ...whereCondition, status: 'active' }
+                where: { ...whereCondition, status: 'active' },
             });
             const newMembersThisMonth = await this.memberRepository.count({
                 where: {
                     ...whereCondition,
-                    createdAt: (0, typeorm_2.Between)(new Date(new Date().getFullYear(), new Date().getMonth(), 1), new Date())
-                }
+                    createdAt: (0, typeorm_2.Between)(new Date(new Date().getFullYear(), new Date().getMonth(), 1), new Date()),
+                },
             });
             return {
                 totalMembers,
@@ -256,9 +263,10 @@ let MembersService = class MembersService {
         return `M${year}${(count + 1).toString().padStart(6, '0')}`;
     }
     checkStorePermission(user, brandId, storeId) {
-        return user.roles?.some(role => role.name === 'ADMIN' ||
+        return (user.roles?.some((role) => role.name === 'ADMIN' ||
             (role.name === 'BRAND_MANAGER' && user.brandId === brandId) ||
-            (user.brandId === brandId && (!user.storeId || user.storeId === storeId))) || false;
+            (user.brandId === brandId &&
+                (!user.storeId || user.storeId === storeId))) || false);
     }
     async getMembersByLevel(storeIds) {
         const result = await this.memberRepository

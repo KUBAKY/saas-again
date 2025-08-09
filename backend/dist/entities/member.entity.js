@@ -16,6 +16,8 @@ const store_entity_1 = require("./store.entity");
 const membership_card_entity_1 = require("./membership-card.entity");
 const check_in_entity_1 = require("./check-in.entity");
 const booking_entity_1 = require("./booking.entity");
+const group_class_card_entity_1 = require("./group-class-card.entity");
+const personal_training_card_entity_1 = require("./personal-training-card.entity");
 let Member = class Member extends base_entity_1.BaseEntity {
     memberNumber;
     name;
@@ -46,6 +48,8 @@ let Member = class Member extends base_entity_1.BaseEntity {
     membershipCards;
     checkIns;
     bookings;
+    groupClassCards;
+    personalTrainingCards;
     isActive() {
         return this.status === 'active' && !this.deletedAt;
     }
@@ -56,7 +60,8 @@ let Member = class Member extends base_entity_1.BaseEntity {
         const birthDate = new Date(this.birthday);
         let age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        if (monthDiff < 0 ||
+            (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
             age--;
         }
         return age;
@@ -65,10 +70,10 @@ let Member = class Member extends base_entity_1.BaseEntity {
         if (!this.height || !this.weight)
             return null;
         const heightInMeters = this.height / 100;
-        return Math.round((this.weight / (heightInMeters * heightInMeters)) * 100) / 100;
+        return (Math.round((this.weight / (heightInMeters * heightInMeters)) * 100) / 100);
     }
     getActiveMembershipCards() {
-        return this.membershipCards?.filter(card => card.isActive()) || [];
+        return this.membershipCards?.filter((card) => card.isActive()) || [];
     }
     hasActiveMembership() {
         return this.getActiveMembershipCards().length > 0;
@@ -352,6 +357,14 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => booking_entity_1.Booking, (booking) => booking.member),
     __metadata("design:type", Array)
 ], Member.prototype, "bookings", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => group_class_card_entity_1.GroupClassCard, (card) => card.member),
+    __metadata("design:type", Array)
+], Member.prototype, "groupClassCards", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => personal_training_card_entity_1.PersonalTrainingCard, (card) => card.member),
+    __metadata("design:type", Array)
+], Member.prototype, "personalTrainingCards", void 0);
 exports.Member = Member = __decorate([
     (0, typeorm_1.Entity)('members'),
     (0, typeorm_1.Index)(['phone'], { unique: true }),

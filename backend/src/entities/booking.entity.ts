@@ -1,15 +1,10 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  Index,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Member } from './member.entity';
 import { Coach } from './coach.entity';
 import { Course } from './course.entity';
 import { Store } from './store.entity';
+import { CourseSchedule } from './course-schedule.entity';
 
 @Entity('bookings')
 @Index(['memberId', 'startTime'])
@@ -41,11 +36,11 @@ export class Booking extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: ['pending', 'confirmed', 'cancelled', 'completed', 'no_show'],
+    enum: ['pending', 'confirmed', 'charged', 'checked_in', 'completed', 'cancelled', 'no_show'],
     default: 'pending',
     comment: '预约状态',
   })
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
+  status: 'pending' | 'confirmed' | 'charged' | 'checked_in' | 'completed' | 'cancelled' | 'no_show';
 
   @Column({
     type: 'decimal',
@@ -106,6 +101,20 @@ export class Booking extends BaseEntity {
   })
   reviewedAt?: Date;
 
+  @Column({
+    type: 'timestamp with time zone',
+    nullable: true,
+    comment: '扣费时间',
+  })
+  chargedAt?: Date;
+
+  @Column({
+    type: 'timestamp with time zone',
+    nullable: true,
+    comment: '签到时间',
+  })
+  checkedInAt?: Date;
+
   // 外键关联
   @Column({
     name: 'member_id',
@@ -135,6 +144,14 @@ export class Booking extends BaseEntity {
   })
   storeId: string;
 
+  @Column({
+    name: 'course_schedule_id',
+    type: 'uuid',
+    nullable: true,
+    comment: '课程排课ID（团课使用）',
+  })
+  courseScheduleId?: string;
+
   // 关联关系
   @ManyToOne(() => Member, (member) => member.bookings, {
     onDelete: 'CASCADE',
@@ -160,17 +177,23 @@ export class Booking extends BaseEntity {
   @JoinColumn({ name: 'store_id' })
   store: Store;
 
+  @ManyToOne(() => CourseSchedule, (schedule) => schedule.bookings, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'course_schedule_id' })
+  courseSchedule?: CourseSchedule;
+
   // 业务方法
   isConfirmed(): boolean {
     return this.status === 'confirmed';
   }
 
   isCancellable(): boolean {
-    if (this.status !== 'confirmed') return false;
-    
-    // 开始前2小时内不能取消
-    const twoHoursFromNow = new Date(Date.now() + 2 * 60 * 60 * 1000);
-    return new Date(this.startTime) > twoHoursFromNow;
+    if (this.status !== 'confirmed' && this.status !== 'charged') return false;
+
+    // 开始前3小时内不能取消
+    const threeHoursFromNow = new Date(Date.now() + 3 * 60 * 60 * 1000);
+    return new Date(this.startTime) > threeHoursFromNow;
   }
 
   isCompleted(): boolean {
@@ -191,7 +214,8 @@ export class Booking extends BaseEntity {
   }
 
   getDuration(): number {
-    const diffMs = new Date(this.endTime).getTime() - new Date(this.startTime).getTime();
+    const diffMs =
+      new Date(this.endTime).getTime() - new Date(this.startTime).getTime();
     return Math.floor(diffMs / (1000 * 60)); // 返回分钟数
   }
 
@@ -201,27 +225,71 @@ export class Booking extends BaseEntity {
     }
   }
 
-  cancel(reason?: string): boolean {
-    if (!this.isCancellable()) return false;
+  isCharged(): boolean {
+    return this.status === 'charged' || this.status === 'checked_in' || this.status === 'completed';
+  }
+
+  isCheckedIn(): boolean {
+    return this.status === 'checked_in' || this.status === 'completed';
+  }
+
+  needsCharging(): boolean {
+    if (this.status !== 'confirmed') return false;
     
-    this.status = 'cancelled';
-    this.cancelledAt = new Date();
-    this.cancellationReason = reason;
+    // 课前3小时需要扣费
+    const threeHoursFromNow = new Date(Date.now() + 3 * 60 * 60 * 1000);
+    return new Date(this.startTime) <= threeHoursFromNow;
+  }
+
+  charge(): boolean {
+    if (this.status !== 'confirmed') return false;
     
+    this.status = 'charged';
+    this.chargedAt = new Date();
     return true;
   }
 
-  complete(): void {
-    if (this.status === 'confirmed' && this.isPast()) {
-      this.status = 'completed';
-    }
+  checkIn(): boolean {
+    if (this.status !== 'charged') return false;
+    
+    this.status = 'checked_in';
+    this.checkedInAt = new Date();
+    return true;
   }
 
-  markNoShow(): void {
-    if (this.status === 'confirmed' && this.isPast()) {
-      this.status = 'no_show';
-    }
+  complete(): boolean {
+    if (this.status !== 'checked_in') return false;
+    
+    this.status = 'completed';
+    return true;
   }
+
+  markNoShow(): boolean {
+    if (this.status !== 'charged') return false;
+    
+    this.status = 'no_show';
+    return true;
+  }
+
+  isGroupClass(): boolean {
+    return this.courseScheduleId !== null && this.courseScheduleId !== undefined;
+  }
+
+  isPersonalTraining(): boolean {
+    return !this.isGroupClass();
+  }
+
+  cancel(reason?: string): boolean {
+    if (!this.isCancellable()) return false;
+
+    this.status = 'cancelled';
+    this.cancelledAt = new Date();
+    this.cancellationReason = reason;
+
+    return true;
+  }
+
+
 
   addReview(rating: number, review?: string): void {
     if (this.status === 'completed' && !this.rating) {

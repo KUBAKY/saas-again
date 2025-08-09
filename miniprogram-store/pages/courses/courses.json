@@ -1,0 +1,15 @@
+{
+  "navigationBarTitleText": "课程管理",
+  "navigationBarBackgroundColor": "#667eea",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "van-button": "@vant/weapp/button/index",
+    "van-icon": "@vant/weapp/icon/index",
+    "van-popup": "@vant/weapp/popup/index",
+    "van-empty": "@vant/weapp/empty/index",
+    "van-calendar": "@vant/weapp/calendar/index",
+    "van-progress": "@vant/weapp/progress/index",
+    "van-tag": "@vant/weapp/tag/index"
+  }
+}

@@ -1,0 +1,175 @@
+<!-- 门店端小程序首页 -->
+<view class="container">
+  <!-- 门店信息头部 -->
+  <view class="store-header glass-card">
+    <view class="store-info">
+      <text class="store-name">{{storeInfo.name}}</text>
+      <text class="store-address">{{storeInfo.address}}</text>
+    </view>
+    <view class="store-status {{storeInfo.status}}">
+      <text class="status-text">{{storeInfo.statusText}}</text>
+    </view>
+  </view>
+
+  <!-- 今日数据概览 -->
+  <view class="stats-overview">
+    <text class="section-title">今日数据</text>
+    <view class="stats-grid">
+      <view class="stats-item glass-card">
+        <text class="stats-number">{{dailyStats.checkIns}}</text>
+        <text class="stats-label">签到人数</text>
+        <text class="stats-change positive" wx:if="{{dailyStats.checkInsChange > 0}}">
+          +{{dailyStats.checkInsChange}}
+        </text>
+      </view>
+      
+      <view class="stats-item glass-card">
+        <text class="stats-number">{{dailyStats.newMembers}}</text>
+        <text class="stats-label">新增会员</text>
+        <text class="stats-change positive" wx:if="{{dailyStats.newMembersChange > 0}}">
+          +{{dailyStats.newMembersChange}}
+        </text>
+      </view>
+      
+      <view class="stats-item glass-card">
+        <text class="stats-number">¥{{dailyStats.revenue}}</text>
+        <text class="stats-label">今日收入</text>
+        <text class="stats-change positive" wx:if="{{dailyStats.revenueChange > 0}}">
+          +{{dailyStats.revenueChange}}%
+        </text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷操作 -->
+  <view class="quick-actions">
+    <text class="section-title">快捷操作</text>
+    <view class="action-grid">
+      <view class="action-item glass-card" bindtap="navigateTo" data-url="/pages/checkin/checkin">
+        <van-icon name="scan" size="32px" />
+        <text class="action-title">会员签到</text>
+        <text class="action-desc">扫码快速签到</text>
+      </view>
+      
+      <view class="action-item glass-card" bindtap="navigateTo" data-url="/pages/courses/courses">
+        <van-icon name="calendar-o" size="32px" />
+        <text class="action-title">课程管理</text>
+        <text class="action-desc">私教团课安排</text>
+      </view>
+      
+      <view class="action-item glass-card" bindtap="navigateTo" data-url="/pages/training/training">
+        <van-icon name="play-circle-o" size="32px" />
+        <text class="action-title">训练记录</text>
+        <text class="action-desc">记录训练数据</text>
+      </view>
+      
+      <view class="action-item glass-card" bindtap="navigateTo" data-url="/pages/members/members">
+        <van-icon name="user-o" size="32px" />
+        <text class="action-title">会员管理</text>
+        <text class="action-desc">查看会员信息</text>
+      </view>
+      
+      <view class="action-item glass-card" bindtap="navigateTo" data-url="/pages/sales/sales">
+        <van-icon name="shopping-cart-o" size="32px" />
+        <text class="action-title">销售开单</text>
+        <text class="action-desc">办卡续费销售</text>
+      </view>
+      
+      <view class="action-item glass-card" bindtap="showComingSoon">
+        <van-icon name="chart-trending-o" size="32px" />
+        <text class="action-title">数据报表</text>
+        <text class="action-desc">营收数据分析</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 今日课程安排 -->
+  <view class="today-courses" wx:if="{{todayCourses.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">今日课程</text>
+      <text class="more-link" bindtap="showAllCourses">查看全部</text>
+    </view>
+    <view class="courses-list">
+      <view class="course-item glass-card" wx:for="{{todayCourses}}" wx:key="id">
+        <view class="course-time-info">
+          <text class="course-time">{{item.startTime}}</text>
+          <text class="course-duration">{{item.duration}}分钟</text>
+        </view>
+        <view class="course-details">
+          <text class="course-name">{{item.name}}</text>
+          <text class="course-coach">教练: {{item.coachName}}</text>
+          <text class="course-members">{{item.bookedCount}}/{{item.maxCount}}人</text>
+        </view>
+        <view class="course-status {{item.status}}">
+          <text>{{item.statusText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最新会员动态 -->
+  <view class="member-activities">
+    <text class="section-title">最新动态</text>
+    <view class="activity-list">
+      <view class="activity-item glass-card" wx:for="{{recentActivities}}" wx:key="id">
+        <view class="activity-avatar">
+          <image src="{{item.avatar || '/images/default-avatar.png'}}" class="avatar" />
+        </view>
+        <view class="activity-content">
+          <text class="activity-member">{{item.memberName}}</text>
+          <text class="activity-action">{{item.action}}</text>
+          <text class="activity-time">{{item.time}}</text>
+        </view>
+        <view class="activity-type {{item.type}}">
+          <van-icon name="{{item.icon}}" size="16px" />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 待办事项提醒 -->
+  <view class="todo-reminders" wx:if="{{todoList.length > 0}}">
+    <text class="section-title">待办提醒</text>
+    <view class="todo-list">
+      <view class="todo-item glass-card" wx:for="{{todoList}}" wx:key="id" bindtap="handleTodo" data-todo="{{item}}">
+        <view class="todo-icon {{item.priority}}">
+          <van-icon name="{{item.icon}}" size="16px" />
+        </view>
+        <view class="todo-content">
+          <text class="todo-title">{{item.title}}</text>
+          <text class="todo-desc">{{item.description}}</text>
+        </view>
+        <view class="todo-action">
+          <van-icon name="arrow" />
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 课程详情弹窗 -->
+<van-popup show="{{showCourseDetail}}" bind:close="closeCourseDetail" position="bottom" round>
+  <view class="course-detail-popup" wx:if="{{selectedCourse}}">
+    <view class="popup-header">
+      <text class="popup-title">{{selectedCourse.name}}</text>
+    </view>
+    <view class="course-info">
+      <view class="info-row">
+        <text class="info-label">上课时间</text>
+        <text class="info-value">{{selectedCourse.startTime}} - {{selectedCourse.endTime}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">授课教练</text>
+        <text class="info-value">{{selectedCourse.coachName}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">预约人数</text>
+        <text class="info-value">{{selectedCourse.bookedCount}}/{{selectedCourse.maxCount}}人</text>
+      </view>
+    </view>
+    <view class="popup-actions">
+      <van-button size="large" bind:click="closeCourseDetail">关闭</van-button>
+      <van-button size="large" type="primary" bind:click="manageCourse">管理课程</van-button>
+    </view>
+  </view>
+</van-popup>

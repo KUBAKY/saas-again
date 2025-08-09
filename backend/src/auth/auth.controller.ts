@@ -17,7 +17,12 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { AuthService, AuthResponse } from './auth.service';
-import { LoginDto, RegisterDto, UpdateProfileDto, ChangePasswordDto } from './dto';
+import {
+  LoginDto,
+  RegisterDto,
+  UpdateProfileDto,
+  ChangePasswordDto,
+} from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '../entities/user.entity';
@@ -145,7 +150,7 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 401, description: '未认证' })
-  async getProfile(@CurrentUser() user: User) {
+  getProfile(@CurrentUser() user: User) {
     return {
       id: user.id,
       username: user.username,
@@ -154,7 +159,7 @@ export class AuthController {
       phone: user.phone,
       brandId: user.brandId,
       storeId: user.storeId,
-      roles: user.roles?.map(role => role.name) || [],
+      roles: user.roles?.map((role) => role.name) || ([] as string[]),
       permissions: user.getPermissions(),
       lastLoginAt: user.lastLoginAt,
     };

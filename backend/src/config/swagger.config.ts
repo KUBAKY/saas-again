@@ -6,7 +6,7 @@ export function setupSwagger(app: INestApplication): void {
     .setTitle('健身房多品牌管理SaaS系统 API')
     .setDescription(
       '健身房多品牌管理SaaS系统的RESTful API文档。' +
-      '支持多品牌、多门店的统一管理，包括会员服务、课程管理、教练管理、预约系统等核心功能。'
+        '支持多品牌、多门店的统一管理，包括会员服务、课程管理、教练管理、预约系统等核心功能。',
     )
     .setVersion('1.0.0')
     .addBearerAuth(
@@ -18,7 +18,7 @@ export function setupSwagger(app: INestApplication): void {
         name: 'Authorization',
         in: 'header',
       },
-      'bearer'
+      'bearer',
     )
     .addTag('认证', '用户认证相关接口')
     .addTag('品牌管理', '品牌管理相关接口')

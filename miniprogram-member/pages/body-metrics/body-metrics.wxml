@@ -1,0 +1,297 @@
+<!-- 身体数据记录页面 -->
+<view class="page-container">
+  <!-- 用户信息卡片 -->
+  <view class="profile-card">
+    <view class="profile-header">
+      <image class="profile-avatar" src="{{userProfile.avatar}}" />
+      <view class="profile-info">
+        <view class="profile-name">{{userProfile.name}}</view>
+        <view class="profile-details">
+          <text>{{userProfile.age}}岁</text>
+          <text class="separator">·</text>
+          <text>{{userProfile.height}}cm</text>
+        </view>
+      </view>
+      <view class="target-section" bindtap="showTargetDialog">
+        <view class="target-label">目标体重</view>
+        <view class="target-value">{{userProfile.targetWeight}}kg</view>
+        <van-icon name="edit" size="16" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 当前数据概览 -->
+  <view class="metrics-overview">
+    <view class="overview-header">
+      <text class="section-title">当前数据</text>
+      <text class="last-updated" wx:if="{{currentMetrics.lastUpdated}}">
+        更新于 {{currentMetrics.lastUpdated}}
+      </text>
+    </view>
+    
+    <view class="metrics-grid">
+      <view class="metric-item">
+        <view class="metric-value">{{currentMetrics.weight || '-'}}</view>
+        <view class="metric-label">体重 (kg)</view>
+      </view>
+      <view class="metric-item">
+        <view class="metric-value">{{currentMetrics.bodyFat || '-'}}</view>
+        <view class="metric-label">体脂率 (%)</view>
+      </view>
+      <view class="metric-item">
+        <view class="metric-value">{{currentMetrics.muscleMass || '-'}}</view>
+        <view class="metric-label">肌肉量 (kg)</view>
+      </view>
+      <view class="metric-item">
+        <view class="metric-value" style="color: {{getBMIStatus(currentMetrics.bmi).color}}">
+          {{currentMetrics.bmi || '-'}}
+        </view>
+        <view class="metric-label">
+          BMI 
+          <text class="bmi-status" style="color: {{getBMIStatus(currentMetrics.bmi).color}}">
+            {{getBMIStatus(currentMetrics.bmi).text}}
+          </text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 数据趋势图表 -->
+  <view class="chart-section">
+    <view class="chart-tabs">
+      <view 
+        class="chart-tab {{activeTab === 0 ? 'active' : ''}}"
+        bindtap="switchTab"
+        data-index="0"
+      >
+        体重
+      </view>
+      <view 
+        class="chart-tab {{activeTab === 1 ? 'active' : ''}}"
+        bindtap="switchTab"
+        data-index="1"
+      >
+        体脂率
+      </view>
+      <view 
+        class="chart-tab {{activeTab === 2 ? 'active' : ''}}"
+        bindtap="switchTab"
+        data-index="2"
+      >
+        肌肉量
+      </view>
+    </view>
+    
+    <!-- 图表占位符 -->
+    <view class="chart-placeholder">
+      <view class="chart-icon">📊</view>
+      <view class="chart-text">
+        {{activeTab === 0 ? '体重' : activeTab === 1 ? '体脂率' : '肌肉量'}}趋势图
+      </view>
+      <view class="chart-desc">记录更多数据以查看详细趋势</view>
+    </view>
+  </view>
+
+  <!-- 历史记录 -->
+  <view class="history-section">
+    <view class="section-header">
+      <text class="section-title">历史记录</text>
+      <button class="add-btn" bindtap="showAddDialog">
+        <van-icon name="plus" size="16" />
+        记录数据
+      </button>
+    </view>
+
+    <view class="history-list" wx:if="{{metricsHistory.length}}">
+      <view 
+        class="history-item"
+        wx:for="{{metricsHistory}}" 
+        wx:key="id"
+      >
+        <view class="history-date">{{item.date}}</view>
+        <view class="history-data">
+          <view class="data-row">
+            <text class="data-label">体重</text>
+            <text class="data-value">{{item.weight}}kg</text>
+          </view>
+          <view class="data-row">
+            <text class="data-label">体脂率</text>
+            <text class="data-value">{{item.bodyFat}}%</text>
+          </view>
+          <view class="data-row">
+            <text class="data-label">肌肉量</text>
+            <text class="data-value">{{item.muscleMass}}kg</text>
+          </view>
+          <view class="data-row">
+            <text class="data-label">BMI</text>
+            <text class="data-value">{{item.bmi}}</text>
+          </view>
+        </view>
+        <view class="history-note" wx:if="{{item.note}}">
+          💭 {{item.note}}
+        </view>
+        <view class="history-actions">
+          <text 
+            class="delete-btn" 
+            bindtap="deleteRecord"
+            data-id="{{item.id}}"
+          >
+            删除
+          </text>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-history" wx:else>
+      <view class="empty-icon">📋</view>
+      <view class="empty-text">暂无记录</view>
+      <view class="empty-desc">开始记录你的身体数据吧</view>
+    </view>
+  </view>
+
+  <!-- 成就系统 -->
+  <view class="achievements-section" wx:if="{{achievements.length}}">
+    <view class="section-title">我的成就</view>
+    <scroll-view class="achievements-scroll" scroll-x>
+      <view 
+        class="achievement-item {{item.unlocked ? 'unlocked' : 'locked'}}"
+        wx:for="{{achievements}}" 
+        wx:key="id"
+      >
+        <view class="achievement-icon">{{item.icon}}</view>
+        <view class="achievement-title">{{item.title}}</view>
+        <view class="achievement-desc">{{item.description}}</view>
+        <view class="achievement-date" wx:if="{{item.unlocked && item.date}}">
+          {{item.date}}
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+
+<!-- 添加数据弹窗 -->
+<van-popup 
+  show="{{showAddDialog}}" 
+  position="bottom" 
+  round
+  bind:close="closeAddDialog"
+>
+  <view class="add-dialog">
+    <view class="dialog-header">
+      <text class="dialog-title">记录身体数据</text>
+    </view>
+    
+    <view class="dialog-content">
+      <view class="input-group">
+        <text class="input-label">日期</text>
+        <picker 
+          mode="date" 
+          value="{{newMetrics.date}}" 
+          bindchange="onDateChange"
+        >
+          <view class="date-picker">
+            {{newMetrics.date || '选择日期'}}
+            <van-icon name="arrow-down" size="16" />
+          </view>
+        </picker>
+      </view>
+
+      <view class="input-group">
+        <text class="input-label">体重 (kg)</text>
+        <input 
+          class="metric-input"
+          type="digit"
+          placeholder="请输入体重"
+          value="{{newMetrics.weight}}"
+          data-field="weight"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="input-group">
+        <text class="input-label">体脂率 (%)</text>
+        <input 
+          class="metric-input"
+          type="digit"
+          placeholder="请输入体脂率"
+          value="{{newMetrics.bodyFat}}"
+          data-field="bodyFat"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="input-group">
+        <text class="input-label">肌肉量 (kg)</text>
+        <input 
+          class="metric-input"
+          type="digit"
+          placeholder="请输入肌肉量"
+          value="{{newMetrics.muscleMass}}"
+          data-field="muscleMass"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="input-group">
+        <text class="input-label">备注 (可选)</text>
+        <textarea 
+          class="note-input"
+          placeholder="记录今天的感受或训练情况..."
+          value="{{newMetrics.note}}"
+          data-field="note"
+          bindinput="onInputChange"
+          maxlength="100"
+        />
+      </view>
+    </view>
+
+    <view class="dialog-actions">
+      <button class="cancel-btn" bindtap="closeAddDialog">取消</button>
+      <button class="submit-btn" bindtap="submitMetrics">保存</button>
+    </view>
+  </view>
+</van-popup>
+
+<!-- 目标体重设置弹窗 -->
+<van-dialog
+  show="{{showTargetDialog}}"
+  title="设置目标体重"
+  show-cancel-button
+  bind:confirm="saveTargetWeight"
+  bind:cancel="closeTargetDialog"
+  confirm-button-text="保存"
+  cancel-button-text="取消"
+>
+  <view class="target-input-container">
+    <input 
+      class="target-input"
+      type="digit"
+      placeholder="请输入目标体重"
+      value="{{targetWeight}}"
+      bindinput="onTargetWeightInput"
+    />
+    <text class="target-unit">kg</text>
+  </view>
+</van-dialog>
+
+<!-- 成就解锁弹窗 -->
+<van-popup 
+  show="{{showAchievementPopup}}" 
+  position="center" 
+  round
+  bind:close="closeAchievementPopup"
+>
+  <view class="achievement-popup" wx:if="{{selectedAchievement}}">
+    <view class="achievement-popup-icon">{{selectedAchievement.icon}}</view>
+    <view class="achievement-popup-title">{{selectedAchievement.title}}</view>
+    <view class="achievement-popup-desc">{{selectedAchievement.description}}</view>
+    <button class="achievement-popup-btn" bindtap="closeAchievementPopup">
+      太棒了！
+    </button>
+  </view>
+</van-popup>
+
+<!-- Vant组件 -->
+<van-icon />
+<van-popup />
+<van-dialog />

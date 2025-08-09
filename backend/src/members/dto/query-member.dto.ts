@@ -1,6 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsOptional, IsNumber, Min, Max, IsIn, IsString, IsUUID } from 'class-validator';
+import {
+  IsOptional,
+  IsNumber,
+  Min,
+  Max,
+  IsIn,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class QueryMemberDto {
   @ApiPropertyOptional({ description: '页码', example: 1, default: 1 })
@@ -23,22 +31,37 @@ export class QueryMemberDto {
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ description: '状态', example: 'active', enum: ['active', 'inactive', 'suspended'] })
+  @ApiPropertyOptional({
+    description: '状态',
+    example: 'active',
+    enum: ['active', 'inactive', 'suspended'],
+  })
   @IsOptional()
   @IsIn(['active', 'inactive', 'suspended'])
   status?: 'active' | 'inactive' | 'suspended';
 
-  @ApiPropertyOptional({ description: '门店ID', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiPropertyOptional({
+    description: '门店ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   @IsOptional()
   @IsUUID()
   storeId?: string;
 
-  @ApiPropertyOptional({ description: '会员等级', example: 'gold', enum: ['bronze', 'silver', 'gold', 'platinum'] })
+  @ApiPropertyOptional({
+    description: '会员等级',
+    example: 'gold',
+    enum: ['bronze', 'silver', 'gold', 'platinum'],
+  })
   @IsOptional()
   @IsIn(['bronze', 'silver', 'gold', 'platinum'])
   level?: 'bronze' | 'silver' | 'gold' | 'platinum';
 
-  @ApiPropertyOptional({ description: '性别', example: 'male', enum: ['male', 'female'] })
+  @ApiPropertyOptional({
+    description: '性别',
+    example: 'male',
+    enum: ['male', 'female'],
+  })
   @IsOptional()
   @IsIn(['male', 'female'])
   gender?: 'male' | 'female';
@@ -59,13 +82,29 @@ export class QueryMemberDto {
   @Max(120)
   maxAge?: number;
 
-  @ApiPropertyOptional({ description: '排序字段', example: 'createdAt', default: 'createdAt' })
+  @ApiPropertyOptional({
+    description: '排序字段',
+    example: 'createdAt',
+    default: 'createdAt',
+  })
   @IsOptional()
   @IsString()
-  @IsIn(['createdAt', 'updatedAt', 'name', 'memberNumber', 'lastCheckInAt', 'points'])
+  @IsIn([
+    'createdAt',
+    'updatedAt',
+    'name',
+    'memberNumber',
+    'lastCheckInAt',
+    'points',
+  ])
   sortBy?: string = 'createdAt';
 
-  @ApiPropertyOptional({ description: '排序方向', example: 'DESC', default: 'DESC', enum: ['ASC', 'DESC'] })
+  @ApiPropertyOptional({
+    description: '排序方向',
+    example: 'DESC',
+    default: 'DESC',
+    enum: ['ASC', 'DESC'],
+  })
   @IsOptional()
   @Transform(({ value }) => value.toUpperCase())
   @IsIn(['ASC', 'DESC'])

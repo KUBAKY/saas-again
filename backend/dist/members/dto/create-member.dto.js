@@ -44,13 +44,21 @@ __decorate([
     __metadata("design:type", String)
 ], CreateMemberDto.prototype, "phone", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '邮箱', example: 'member@example.com', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '邮箱',
+        example: 'member@example.com',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEmail)(),
     __metadata("design:type", String)
 ], CreateMemberDto.prototype, "email", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '性别', example: 'male', enum: ['male', 'female'] }),
+    (0, swagger_1.ApiProperty)({
+        description: '性别',
+        example: 'male',
+        enum: ['male', 'female'],
+    }),
     (0, class_validator_1.IsIn)(['male', 'female']),
     __metadata("design:type", String)
 ], CreateMemberDto.prototype, "gender", void 0);
@@ -77,7 +85,10 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateMemberDto.prototype, "weight", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '门店ID', example: '123e4567-e89b-12d3-a456-426614174000' }),
+    (0, swagger_1.ApiProperty)({
+        description: '门店ID',
+        example: '123e4567-e89b-12d3-a456-426614174000',
+    }),
     (0, class_validator_1.IsUUID)(),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
@@ -87,14 +98,18 @@ __decorate([
         description: '会员等级',
         example: 'bronze',
         enum: ['bronze', 'silver', 'gold', 'platinum'],
-        default: 'bronze'
+        default: 'bronze',
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsIn)(['bronze', 'silver', 'gold', 'platinum']),
     __metadata("design:type", String)
 ], CreateMemberDto.prototype, "level", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '健身目标', example: '减肥塑形', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '健身目标',
+        example: '减肥塑形',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(0, 200),
@@ -108,14 +123,22 @@ __decorate([
     __metadata("design:type", String)
 ], CreateMemberDto.prototype, "emergencyContact", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '紧急联系人电话', example: '13900139000', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '紧急联系人电话',
+        example: '13900139000',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(0, 20),
     __metadata("design:type", String)
 ], CreateMemberDto.prototype, "emergencyPhone", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '会员头像URL', example: 'https://example.com/avatar.jpg', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '会员头像URL',
+        example: 'https://example.com/avatar.jpg',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)

@@ -22,7 +22,10 @@ export class CoachesService {
     private readonly storeRepository: Repository<Store>,
   ) {}
 
-  async create(createCoachDto: CreateCoachDto, currentUser: User): Promise<Coach> {
+  async create(
+    createCoachDto: CreateCoachDto,
+    currentUser: User,
+  ): Promise<Coach> {
     const { storeId, employeeNumber, phone, email } = createCoachDto;
 
     // 验证门店是否存在且用户有权限
@@ -36,7 +39,11 @@ export class CoachesService {
     }
 
     // 权限检查
-    const canCreate = this.checkStorePermission(currentUser, store.brandId, storeId);
+    const canCreate = this.checkStorePermission(
+      currentUser,
+      store.brandId,
+      storeId,
+    );
     if (!canCreate) {
       throw new ForbiddenException('无权限在此门店创建教练');
     }
@@ -74,7 +81,7 @@ export class CoachesService {
       ...createCoachDto,
       status: 'active',
       // 如果提供了certifications，转换为实体需要的格式
-      certifications: createCoachDto.certifications?.map(cert => ({
+      certifications: createCoachDto.certifications?.map((cert) => ({
         name: cert,
         issuer: '待完善',
         issueDate: new Date().toISOString().split('T')[0],
@@ -84,27 +91,30 @@ export class CoachesService {
     return await this.coachRepository.save(coach);
   }
 
-  async findAll(queryDto: QueryCoachDto, currentUser: User): Promise<PaginatedResult<Coach>> {
-    const { 
-      page = 1, 
-      limit = 20, 
-      search, 
-      status, 
-      storeId, 
+  async findAll(
+    queryDto: QueryCoachDto,
+    currentUser: User,
+  ): Promise<PaginatedResult<Coach>> {
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      status,
+      storeId,
       gender,
       specialty,
       minExperience,
-      sortBy = 'createdAt', 
-      sortOrder = 'DESC' 
+      sortBy = 'createdAt',
+      sortOrder = 'DESC',
     } = queryDto;
-    
+
     // 构建查询条件
     const where: FindOptionsWhere<Coach> = {};
-    
+
     if (search) {
       where.name = Like(`%${search}%`);
     }
-    
+
     if (status) {
       where.status = status;
     }
@@ -118,24 +128,27 @@ export class CoachesService {
     }
 
     // 权限控制：根据用户角色限制查询范围
-    if (currentUser.roles?.some(role => role.name === 'ADMIN')) {
+    if (currentUser.roles?.some((role) => role.name === 'ADMIN')) {
       // 系统管理员可以查看所有教练
       if (storeId) {
         where.storeId = storeId;
       }
-    } else if (currentUser.roles?.some(role => role.name === 'BRAND_MANAGER')) {
+    } else if (
+      currentUser.roles?.some((role) => role.name === 'BRAND_MANAGER')
+    ) {
       // 品牌管理员只能查看自己品牌的教练
       const stores = await this.storeRepository.find({
         where: { brandId: currentUser.brandId },
         select: ['id'],
       });
-      const storeIds = stores.map(s => s.id);
-      
+      const storeIds = stores.map((s) => s.id);
+
       if (storeId && storeIds.includes(storeId)) {
         where.storeId = storeId;
       } else {
         // 使用查询构建器处理多门店查询
-        const queryBuilder = this.coachRepository.createQueryBuilder('coach')
+        const queryBuilder = this.coachRepository
+          .createQueryBuilder('coach')
           .leftJoinAndSelect('coach.store', 'store')
           .where('coach.storeId IN (:...storeIds)', { storeIds })
           .orderBy(`coach.${sortBy}`, sortOrder)
@@ -143,7 +156,9 @@ export class CoachesService {
           .take(limit);
 
         if (search) {
-          queryBuilder.andWhere('coach.name LIKE :search', { search: `%${search}%` });
+          queryBuilder.andWhere('coach.name LIKE :search', {
+            search: `%${search}%`,
+          });
         }
         if (status) {
           queryBuilder.andWhere('coach.status = :status', { status });
@@ -152,14 +167,18 @@ export class CoachesService {
           queryBuilder.andWhere('coach.gender = :gender', { gender });
         }
         if (specialty) {
-          queryBuilder.andWhere('coach.specialties LIKE :specialty', { specialty: `%${specialty}%` });
+          queryBuilder.andWhere('coach.specialties LIKE :specialty', {
+            specialty: `%${specialty}%`,
+          });
         }
         if (minExperience) {
-          queryBuilder.andWhere('coach.experienceYears >= :minExperience', { minExperience });
+          queryBuilder.andWhere('coach.experienceYears >= :minExperience', {
+            minExperience,
+          });
         }
 
         const [data, total] = await queryBuilder.getManyAndCount();
-        
+
         return {
           data,
           total,
@@ -176,7 +195,8 @@ export class CoachesService {
     }
 
     // 使用查询构建器处理复杂条件
-    const queryBuilder = this.coachRepository.createQueryBuilder('coach')
+    const queryBuilder = this.coachRepository
+      .createQueryBuilder('coach')
       .leftJoinAndSelect('coach.store', 'store')
       .orderBy(`coach.${sortBy}`, sortOrder)
       .skip((page - 1) * limit)
@@ -184,10 +204,14 @@ export class CoachesService {
 
     // 应用where条件
     if (where.storeId) {
-      queryBuilder.andWhere('coach.storeId = :storeId', { storeId: where.storeId });
+      queryBuilder.andWhere('coach.storeId = :storeId', {
+        storeId: where.storeId,
+      });
     }
     if (search) {
-      queryBuilder.andWhere('coach.name LIKE :search', { search: `%${search}%` });
+      queryBuilder.andWhere('coach.name LIKE :search', {
+        search: `%${search}%`,
+      });
     }
     if (status) {
       queryBuilder.andWhere('coach.status = :status', { status });
@@ -196,10 +220,14 @@ export class CoachesService {
       queryBuilder.andWhere('coach.gender = :gender', { gender });
     }
     if (specialty) {
-      queryBuilder.andWhere('coach.specialties LIKE :specialty', { specialty: `%${specialty}%` });
+      queryBuilder.andWhere('coach.specialties LIKE :specialty', {
+        specialty: `%${specialty}%`,
+      });
     }
     if (minExperience) {
-      queryBuilder.andWhere('coach.experienceYears >= :minExperience', { minExperience });
+      queryBuilder.andWhere('coach.experienceYears >= :minExperience', {
+        minExperience,
+      });
     }
 
     const [data, total] = await queryBuilder.getManyAndCount();
@@ -224,7 +252,11 @@ export class CoachesService {
     }
 
     // 权限检查
-    const canView = this.checkStorePermission(currentUser, coach.store.brandId, coach.storeId);
+    const canView = this.checkStorePermission(
+      currentUser,
+      coach.store.brandId,
+      coach.storeId,
+    );
     if (!canView) {
       throw new ForbiddenException('无权限查看此教练');
     }
@@ -232,11 +264,19 @@ export class CoachesService {
     return coach;
   }
 
-  async update(id: string, updateCoachDto: UpdateCoachDto, currentUser: User): Promise<Coach> {
+  async update(
+    id: string,
+    updateCoachDto: UpdateCoachDto,
+    currentUser: User,
+  ): Promise<Coach> {
     const coach = await this.findOne(id, currentUser);
 
     // 权限检查
-    const canUpdate = this.checkStorePermission(currentUser, coach.store.brandId, coach.storeId);
+    const canUpdate = this.checkStorePermission(
+      currentUser,
+      coach.store.brandId,
+      coach.storeId,
+    );
     if (!canUpdate) {
       throw new ForbiddenException('无权限更新此教练');
     }
@@ -273,9 +313,11 @@ export class CoachesService {
     const coach = await this.findOne(id, currentUser);
 
     // 权限检查：只有系统管理员和品牌管理员可以删除教练
-    const canDelete = currentUser.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && currentUser.brandId === coach.store.brandId)
+    const canDelete = currentUser.roles?.some(
+      (role) =>
+        role.name === 'ADMIN' ||
+        (role.name === 'BRAND_MANAGER' &&
+          currentUser.brandId === coach.store.brandId),
     );
 
     if (!canDelete) {
@@ -292,17 +334,19 @@ export class CoachesService {
     // 根据用户权限获取统计信息
     let storeIds: string[] = [];
 
-    if (currentUser.roles?.some(role => role.name === 'ADMIN')) {
+    if (currentUser.roles?.some((role) => role.name === 'ADMIN')) {
       // 系统管理员可以查看全部统计
       const stores = await this.storeRepository.find({ select: ['id'] });
-      storeIds = stores.map(s => s.id);
-    } else if (currentUser.roles?.some(role => role.name === 'BRAND_MANAGER')) {
+      storeIds = stores.map((s) => s.id);
+    } else if (
+      currentUser.roles?.some((role) => role.name === 'BRAND_MANAGER')
+    ) {
       // 品牌管理员查看自己品牌的统计
       const stores = await this.storeRepository.find({
         where: { brandId: currentUser.brandId },
         select: ['id'],
       });
-      storeIds = stores.map(s => s.id);
+      storeIds = stores.map((s) => s.id);
     } else {
       // 门店级别统计
       storeIds = currentUser.storeId ? [currentUser.storeId] : [];
@@ -337,7 +381,9 @@ export class CoachesService {
       .andWhere('coach.experienceYears IS NOT NULL')
       .getRawOne();
 
-    const averageExperience = avgResult?.avg ? parseFloat(avgResult.avg).toFixed(1) : 0;
+    const averageExperience = avgResult?.avg
+      ? parseFloat(avgResult.avg).toFixed(1)
+      : 0;
 
     return {
       totalCoaches,
@@ -348,12 +394,20 @@ export class CoachesService {
     };
   }
 
-  private checkStorePermission(user: User, brandId: string, storeId: string): boolean {
-    return user.roles?.some(role => 
-      role.name === 'ADMIN' || 
-      (role.name === 'BRAND_MANAGER' && user.brandId === brandId) ||
-      (user.brandId === brandId && (!user.storeId || user.storeId === storeId))
-    ) || false;
+  private checkStorePermission(
+    user: User,
+    brandId: string,
+    storeId: string,
+  ): boolean {
+    return (
+      user.roles?.some(
+        (role) =>
+          role.name === 'ADMIN' ||
+          (role.name === 'BRAND_MANAGER' && user.brandId === brandId) ||
+          (user.brandId === brandId &&
+            (!user.storeId || user.storeId === storeId)),
+      ) || false
+    );
   }
 
   private async getCoachesBySpecialty(storeIds: string[]) {
@@ -365,10 +419,10 @@ export class CoachesService {
       .getMany();
 
     const specialtyCount: { [key: string]: number } = {};
-    
-    coaches.forEach(coach => {
+
+    coaches.forEach((coach) => {
       if (coach.specialties) {
-        coach.specialties.forEach(specialty => {
+        coach.specialties.forEach((specialty) => {
           specialtyCount[specialty] = (specialtyCount[specialty] || 0) + 1;
         });
       }

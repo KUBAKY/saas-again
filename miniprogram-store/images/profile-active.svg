@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 头部圆形 -->
+  <circle cx="32" cy="20" r="12" fill="#667eea"/>
+  <!-- 身体部分 -->
+  <path d="M32 36C20 36 12 44 12 52V56C12 58.2091 13.7909 60 16 60H48C50.2091 60 52 58.2091 52 56V52C52 44 44 36 32 36Z" fill="#667eea"/>
+</svg>

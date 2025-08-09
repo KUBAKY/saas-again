@@ -39,11 +39,16 @@ __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.Length)(2, 50),
-    (0, class_validator_1.Matches)(/^[A-Z0-9_]+$/, { message: '门店编码只能包含大写字母、数字和下划线' }),
+    (0, class_validator_1.Matches)(/^[A-Z0-9_]+$/, {
+        message: '门店编码只能包含大写字母、数字和下划线',
+    }),
     __metadata("design:type", String)
 ], CreateStoreDto.prototype, "code", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '品牌ID', example: '123e4567-e89b-12d3-a456-426614174000' }),
+    (0, swagger_1.ApiProperty)({
+        description: '品牌ID',
+        example: '123e4567-e89b-12d3-a456-426614174000',
+    }),
     (0, class_validator_1.IsUUID)(),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
@@ -66,30 +71,46 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: '开门时间', example: '06:00' }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.Matches)(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: '开门时间格式应为 HH:mm' }),
+    (0, class_validator_1.Matches)(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+        message: '开门时间格式应为 HH:mm',
+    }),
     __metadata("design:type", String)
 ], CreateStoreDto.prototype, "openTime", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ description: '关门时间', example: '23:00' }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.Matches)(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: '关门时间格式应为 HH:mm' }),
+    (0, class_validator_1.Matches)(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+        message: '关门时间格式应为 HH:mm',
+    }),
     __metadata("design:type", String)
 ], CreateStoreDto.prototype, "closeTime", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '门店描述', example: '位于CBD核心区域的旗舰店', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '门店描述',
+        example: '位于CBD核心区域的旗舰店',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(0, 500),
     __metadata("design:type", String)
 ], CreateStoreDto.prototype, "description", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '门店照片URL列表', example: ['https://example.com/store1.jpg'], required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '门店照片URL列表',
+        example: ['https://example.com/store1.jpg'],
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Array)
 ], CreateStoreDto.prototype, "images", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '设施列表', example: ['器械区', '有氧区', '团课室'], required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '设施列表',
+        example: ['器械区', '有氧区', '团课室'],
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Array)
 ], CreateStoreDto.prototype, "facilities", void 0);

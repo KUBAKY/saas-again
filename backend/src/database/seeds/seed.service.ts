@@ -45,28 +45,28 @@ export class SeedService {
     try {
       // 1. 创建权限数据
       await this.seedPermissions();
-      
+
       // 2. 创建角色数据
       await this.seedRoles();
-      
+
       // 3. 创建品牌数据
       await this.seedBrands();
-      
+
       // 4. 创建门店数据
       await this.seedStores();
-      
+
       // 5. 创建管理员用户
       await this.seedUsers();
-      
+
       // 6. 创建教练数据
       await this.seedCoaches();
-      
+
       // 7. 创建课程数据
       await this.seedCourses();
-      
+
       // 8. 创建会员数据
       await this.seedMembers();
-      
+
       // 9. 创建会员卡数据
       await this.seedMembershipCards();
 
@@ -80,46 +80,214 @@ export class SeedService {
   private async seedPermissions() {
     const permissions = [
       // 品牌管理权限
-      { name: 'brand:view', displayName: '查看品牌', group: '品牌管理', resource: 'brand', action: 'view' },
-      { name: 'brand:create', displayName: '创建品牌', group: '品牌管理', resource: 'brand', action: 'create' },
-      { name: 'brand:update', displayName: '更新品牌', group: '品牌管理', resource: 'brand', action: 'update' },
-      { name: 'brand:delete', displayName: '删除品牌', group: '品牌管理', resource: 'brand', action: 'delete' },
+      {
+        name: 'brand:view',
+        displayName: '查看品牌',
+        group: '品牌管理',
+        resource: 'brand',
+        action: 'view',
+      },
+      {
+        name: 'brand:create',
+        displayName: '创建品牌',
+        group: '品牌管理',
+        resource: 'brand',
+        action: 'create',
+      },
+      {
+        name: 'brand:update',
+        displayName: '更新品牌',
+        group: '品牌管理',
+        resource: 'brand',
+        action: 'update',
+      },
+      {
+        name: 'brand:delete',
+        displayName: '删除品牌',
+        group: '品牌管理',
+        resource: 'brand',
+        action: 'delete',
+      },
 
       // 门店管理权限
-      { name: 'store:view', displayName: '查看门店', group: '门店管理', resource: 'store', action: 'view' },
-      { name: 'store:create', displayName: '创建门店', group: '门店管理', resource: 'store', action: 'create' },
-      { name: 'store:update', displayName: '更新门店', group: '门店管理', resource: 'store', action: 'update' },
-      { name: 'store:delete', displayName: '删除门店', group: '门店管理', resource: 'store', action: 'delete' },
+      {
+        name: 'store:view',
+        displayName: '查看门店',
+        group: '门店管理',
+        resource: 'store',
+        action: 'view',
+      },
+      {
+        name: 'store:create',
+        displayName: '创建门店',
+        group: '门店管理',
+        resource: 'store',
+        action: 'create',
+      },
+      {
+        name: 'store:update',
+        displayName: '更新门店',
+        group: '门店管理',
+        resource: 'store',
+        action: 'update',
+      },
+      {
+        name: 'store:delete',
+        displayName: '删除门店',
+        group: '门店管理',
+        resource: 'store',
+        action: 'delete',
+      },
 
       // 用户管理权限
-      { name: 'user:view', displayName: '查看用户', group: '用户管理', resource: 'user', action: 'view' },
-      { name: 'user:create', displayName: '创建用户', group: '用户管理', resource: 'user', action: 'create' },
-      { name: 'user:update', displayName: '更新用户', group: '用户管理', resource: 'user', action: 'update' },
-      { name: 'user:delete', displayName: '删除用户', group: '用户管理', resource: 'user', action: 'delete' },
+      {
+        name: 'user:view',
+        displayName: '查看用户',
+        group: '用户管理',
+        resource: 'user',
+        action: 'view',
+      },
+      {
+        name: 'user:create',
+        displayName: '创建用户',
+        group: '用户管理',
+        resource: 'user',
+        action: 'create',
+      },
+      {
+        name: 'user:update',
+        displayName: '更新用户',
+        group: '用户管理',
+        resource: 'user',
+        action: 'update',
+      },
+      {
+        name: 'user:delete',
+        displayName: '删除用户',
+        group: '用户管理',
+        resource: 'user',
+        action: 'delete',
+      },
 
       // 会员管理权限
-      { name: 'member:view', displayName: '查看会员', group: '会员管理', resource: 'member', action: 'view' },
-      { name: 'member:create', displayName: '创建会员', group: '会员管理', resource: 'member', action: 'create' },
-      { name: 'member:update', displayName: '更新会员', group: '会员管理', resource: 'member', action: 'update' },
-      { name: 'member:delete', displayName: '删除会员', group: '会员管理', resource: 'member', action: 'delete' },
+      {
+        name: 'member:view',
+        displayName: '查看会员',
+        group: '会员管理',
+        resource: 'member',
+        action: 'view',
+      },
+      {
+        name: 'member:create',
+        displayName: '创建会员',
+        group: '会员管理',
+        resource: 'member',
+        action: 'create',
+      },
+      {
+        name: 'member:update',
+        displayName: '更新会员',
+        group: '会员管理',
+        resource: 'member',
+        action: 'update',
+      },
+      {
+        name: 'member:delete',
+        displayName: '删除会员',
+        group: '会员管理',
+        resource: 'member',
+        action: 'delete',
+      },
 
       // 教练管理权限
-      { name: 'coach:view', displayName: '查看教练', group: '教练管理', resource: 'coach', action: 'view' },
-      { name: 'coach:create', displayName: '创建教练', group: '教练管理', resource: 'coach', action: 'create' },
-      { name: 'coach:update', displayName: '更新教练', group: '教练管理', resource: 'coach', action: 'update' },
-      { name: 'coach:delete', displayName: '删除教练', group: '教练管理', resource: 'coach', action: 'delete' },
+      {
+        name: 'coach:view',
+        displayName: '查看教练',
+        group: '教练管理',
+        resource: 'coach',
+        action: 'view',
+      },
+      {
+        name: 'coach:create',
+        displayName: '创建教练',
+        group: '教练管理',
+        resource: 'coach',
+        action: 'create',
+      },
+      {
+        name: 'coach:update',
+        displayName: '更新教练',
+        group: '教练管理',
+        resource: 'coach',
+        action: 'update',
+      },
+      {
+        name: 'coach:delete',
+        displayName: '删除教练',
+        group: '教练管理',
+        resource: 'coach',
+        action: 'delete',
+      },
 
       // 课程管理权限
-      { name: 'course:view', displayName: '查看课程', group: '课程管理', resource: 'course', action: 'view' },
-      { name: 'course:create', displayName: '创建课程', group: '课程管理', resource: 'course', action: 'create' },
-      { name: 'course:update', displayName: '更新课程', group: '课程管理', resource: 'course', action: 'update' },
-      { name: 'course:delete', displayName: '删除课程', group: '课程管理', resource: 'course', action: 'delete' },
+      {
+        name: 'course:view',
+        displayName: '查看课程',
+        group: '课程管理',
+        resource: 'course',
+        action: 'view',
+      },
+      {
+        name: 'course:create',
+        displayName: '创建课程',
+        group: '课程管理',
+        resource: 'course',
+        action: 'create',
+      },
+      {
+        name: 'course:update',
+        displayName: '更新课程',
+        group: '课程管理',
+        resource: 'course',
+        action: 'update',
+      },
+      {
+        name: 'course:delete',
+        displayName: '删除课程',
+        group: '课程管理',
+        resource: 'course',
+        action: 'delete',
+      },
 
       // 预约管理权限
-      { name: 'booking:view', displayName: '查看预约', group: '预约管理', resource: 'booking', action: 'view' },
-      { name: 'booking:create', displayName: '创建预约', group: '预约管理', resource: 'booking', action: 'create' },
-      { name: 'booking:update', displayName: '更新预约', group: '预约管理', resource: 'booking', action: 'update' },
-      { name: 'booking:delete', displayName: '删除预约', group: '预约管理', resource: 'booking', action: 'delete' },
+      {
+        name: 'booking:view',
+        displayName: '查看预约',
+        group: '预约管理',
+        resource: 'booking',
+        action: 'view',
+      },
+      {
+        name: 'booking:create',
+        displayName: '创建预约',
+        group: '预约管理',
+        resource: 'booking',
+        action: 'create',
+      },
+      {
+        name: 'booking:update',
+        displayName: '更新预约',
+        group: '预约管理',
+        resource: 'booking',
+        action: 'update',
+      },
+      {
+        name: 'booking:delete',
+        displayName: '删除预约',
+        group: '预约管理',
+        resource: 'booking',
+        action: 'delete',
+      },
     ];
 
     for (const permissionData of permissions) {
@@ -186,7 +354,7 @@ export class SeedService {
     ];
 
     const allPermissions = await this.permissionRepository.find();
-    
+
     for (const roleData of rolesData) {
       let role = await this.roleRepository.findOne({
         where: { name: roleData.name },
@@ -195,30 +363,32 @@ export class SeedService {
 
       if (!role) {
         role = this.roleRepository.create(roleData);
-        
+
         // 分配权限
         if (roleData.name === 'ADMIN') {
           role.permissions = allPermissions;
         } else if (roleData.name === 'BRAND_MANAGER') {
-          role.permissions = allPermissions.filter(p => 
-            !p.name.startsWith('brand:delete') &&
-            !p.name.startsWith('user:delete')
+          role.permissions = allPermissions.filter(
+            (p) =>
+              !p.name.startsWith('brand:delete') &&
+              !p.name.startsWith('user:delete'),
           );
         } else if (roleData.name === 'STORE_MANAGER') {
-          role.permissions = allPermissions.filter(p => 
-            p.group !== '品牌管理' && 
-            !p.name.includes('delete')
+          role.permissions = allPermissions.filter(
+            (p) => p.group !== '品牌管理' && !p.name.includes('delete'),
           );
         } else if (roleData.name === 'COACH') {
-          role.permissions = allPermissions.filter(p => 
-            p.group === '会员管理' || 
-            p.group === '课程管理' || 
-            p.group === '预约管理'
-          ).filter(p => p.action === 'view' || p.action === 'update');
+          role.permissions = allPermissions
+            .filter(
+              (p) =>
+                p.group === '会员管理' ||
+                p.group === '课程管理' ||
+                p.group === '预约管理',
+            )
+            .filter((p) => p.action === 'view' || p.action === 'update');
         } else if (roleData.name === 'RECEPTIONIST') {
-          role.permissions = allPermissions.filter(p => 
-            p.group === '会员管理' || 
-            p.group === '预约管理'
+          role.permissions = allPermissions.filter(
+            (p) => p.group === '会员管理' || p.group === '预约管理',
           );
         } else {
           role.permissions = [];
@@ -267,7 +437,7 @@ export class SeedService {
 
   private async seedStores() {
     const brands = await this.brandRepository.find();
-    
+
     const storesData = [
       {
         brandCode: 'FITNESS_PRO',
@@ -309,7 +479,7 @@ export class SeedService {
     ];
 
     for (const brandStores of storesData) {
-      const brand = brands.find(b => b.code === brandStores.brandCode);
+      const brand = brands.find((b) => b.code === brandStores.brandCode);
       if (!brand) continue;
 
       for (const storeData of brandStores.stores) {
@@ -410,7 +580,7 @@ export class SeedService {
 
   private async seedCoaches() {
     const stores = await this.storeRepository.find({ relations: ['brand'] });
-    
+
     const coachesData = [
       {
         name: '张教练',
@@ -432,11 +602,12 @@ export class SeedService {
       },
     ];
 
-    for (const store of stores.slice(0, 2)) { // 为前两个门店添加教练
+    for (const store of stores.slice(0, 2)) {
+      // 为前两个门店添加教练
       for (let i = 0; i < coachesData.length; i++) {
         const coachData = coachesData[i];
         const employeeNumber = `${store.code}_COACH_${(i + 1).toString().padStart(3, '0')}`;
-        
+
         const existing = await this.coachRepository.findOne({
           where: { employeeNumber },
         });
@@ -502,8 +673,8 @@ export class SeedService {
     for (const store of stores.slice(0, 2)) {
       for (let i = 0; i < coursesData.length; i++) {
         const courseData = coursesData[i];
-        const coach = coaches.find(c => c.storeId === store.id);
-        
+        const coach = coaches.find((c) => c.storeId === store.id);
+
         const existing = await this.courseRepository.findOne({
           where: { name: courseData.name, storeId: store.id },
         });
@@ -567,7 +738,7 @@ export class SeedService {
       for (let i = 0; i < membersData.length; i++) {
         const memberData = membersData[i];
         const memberNumber = `M${new Date().getFullYear()}${(memberCounter++).toString().padStart(6, '0')}`;
-        
+
         const existing = await this.memberRepository.findOne({
           where: { phone: memberData.phone, storeId: store.id },
         });
@@ -613,18 +784,21 @@ export class SeedService {
     ];
 
     let cardCounter = 1;
-    for (const member of members.slice(0, 5)) { // 为前5个会员创建会员卡
+    for (const member of members.slice(0, 5)) {
+      // 为前5个会员创建会员卡
       const cardType = cardTypes[Math.floor(Math.random() * cardTypes.length)];
       const cardNumber = `C${new Date().getFullYear()}${(cardCounter++).toString().padStart(8, '0')}`;
-      
+
       const existing = await this.membershipCardRepository.findOne({
         where: { cardNumber },
       });
 
       if (!existing) {
         const issueDate = new Date();
-        const expiryDate = cardType.validityDays 
-          ? new Date(issueDate.getTime() + cardType.validityDays * 24 * 60 * 60 * 1000)
+        const expiryDate = cardType.validityDays
+          ? new Date(
+              issueDate.getTime() + cardType.validityDays * 24 * 60 * 60 * 1000,
+            )
           : undefined;
 
         const card = this.membershipCardRepository.create({

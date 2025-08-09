@@ -52,24 +52,39 @@ __decorate([
     __metadata("design:type", String)
 ], CreateCoachDto.prototype, "phone", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '邮箱', example: 'coach@gym.com', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '邮箱',
+        example: 'coach@gym.com',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEmail)(),
     __metadata("design:type", String)
 ], CreateCoachDto.prototype, "email", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '性别', example: 'male', enum: ['male', 'female'] }),
+    (0, swagger_1.ApiProperty)({
+        description: '性别',
+        example: 'male',
+        enum: ['male', 'female'],
+    }),
     (0, class_validator_1.IsIn)(['male', 'female']),
     __metadata("design:type", String)
 ], CreateCoachDto.prototype, "gender", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '门店ID', example: '123e4567-e89b-12d3-a456-426614174000' }),
+    (0, swagger_1.ApiProperty)({
+        description: '门店ID',
+        example: '123e4567-e89b-12d3-a456-426614174000',
+    }),
     (0, class_validator_1.IsUUID)(),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateCoachDto.prototype, "storeId", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '入职日期', example: '2023-01-01', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '入职日期',
+        example: '2023-01-01',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsDateString)(),
     __metadata("design:type", String)
@@ -78,7 +93,7 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         description: '专长',
         example: ['力量训练', '减脂塑形', '功能性训练'],
-        required: false
+        required: false,
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsArray)(),
@@ -94,7 +109,11 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateCoachDto.prototype, "experienceYears", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '个人简介', example: '5年健身教练经验，专业力量训练指导', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '个人简介',
+        example: '5年健身教练经验，专业力量训练指导',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(0, 500),
@@ -115,13 +134,21 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateCoachDto.prototype, "hourlyRate", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '教练头像URL', example: 'https://example.com/avatar.jpg', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '教练头像URL',
+        example: 'https://example.com/avatar.jpg',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateCoachDto.prototype, "avatar", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '认证资质', example: ['ACSM认证', 'NASM认证'], required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '认证资质',
+        example: ['ACSM认证', 'NASM认证'],
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.IsString)({ each: true }),

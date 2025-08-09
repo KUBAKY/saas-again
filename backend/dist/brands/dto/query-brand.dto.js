@@ -46,20 +46,33 @@ __decorate([
     __metadata("design:type", String)
 ], QueryBrandDto.prototype, "search", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '状态', example: 'active', enum: ['active', 'inactive'] }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '状态',
+        example: 'active',
+        enum: ['active', 'inactive'],
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsIn)(['active', 'inactive']),
     __metadata("design:type", String)
 ], QueryBrandDto.prototype, "status", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '排序字段', example: 'createdAt', default: 'createdAt' }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '排序字段',
+        example: 'createdAt',
+        default: 'createdAt',
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsIn)(['createdAt', 'updatedAt', 'name', 'code']),
     __metadata("design:type", String)
 ], QueryBrandDto.prototype, "sortBy", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '排序方向', example: 'DESC', default: 'DESC', enum: ['ASC', 'DESC'] }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '排序方向',
+        example: 'DESC',
+        default: 'DESC',
+        enum: ['ASC', 'DESC'],
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Transform)(({ value }) => value.toUpperCase()),
     (0, class_validator_1.IsIn)(['ASC', 'DESC']),

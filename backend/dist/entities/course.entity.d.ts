@@ -2,6 +2,7 @@ import { BaseEntity } from './base.entity';
 import { Store } from './store.entity';
 import { Coach } from './coach.entity';
 import { Booking } from './booking.entity';
+import { CourseSchedule } from './course-schedule.entity';
 export declare class Course extends BaseEntity {
     name: string;
     description?: string;
@@ -25,6 +26,7 @@ export declare class Course extends BaseEntity {
     store: Store;
     coach?: Coach;
     bookings: Booking[];
+    schedules: CourseSchedule[];
     isActive(): boolean;
     isPersonalTraining(): boolean;
     isGroupClass(): boolean;

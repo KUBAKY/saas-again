@@ -51,25 +51,40 @@ __decorate([
     __metadata("design:type", String)
 ], QueryMemberDto.prototype, "search", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '状态', example: 'active', enum: ['active', 'inactive', 'suspended'] }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '状态',
+        example: 'active',
+        enum: ['active', 'inactive', 'suspended'],
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsIn)(['active', 'inactive', 'suspended']),
     __metadata("design:type", String)
 ], QueryMemberDto.prototype, "status", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '门店ID', example: '123e4567-e89b-12d3-a456-426614174000' }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '门店ID',
+        example: '123e4567-e89b-12d3-a456-426614174000',
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
 ], QueryMemberDto.prototype, "storeId", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '会员等级', example: 'gold', enum: ['bronze', 'silver', 'gold', 'platinum'] }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '会员等级',
+        example: 'gold',
+        enum: ['bronze', 'silver', 'gold', 'platinum'],
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsIn)(['bronze', 'silver', 'gold', 'platinum']),
     __metadata("design:type", String)
 ], QueryMemberDto.prototype, "level", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '性别', example: 'male', enum: ['male', 'female'] }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '性别',
+        example: 'male',
+        enum: ['male', 'female'],
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsIn)(['male', 'female']),
     __metadata("design:type", String)
@@ -93,14 +108,30 @@ __decorate([
     __metadata("design:type", Number)
 ], QueryMemberDto.prototype, "maxAge", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '排序字段', example: 'createdAt', default: 'createdAt' }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '排序字段',
+        example: 'createdAt',
+        default: 'createdAt',
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsIn)(['createdAt', 'updatedAt', 'name', 'memberNumber', 'lastCheckInAt', 'points']),
+    (0, class_validator_1.IsIn)([
+        'createdAt',
+        'updatedAt',
+        'name',
+        'memberNumber',
+        'lastCheckInAt',
+        'points',
+    ]),
     __metadata("design:type", String)
 ], QueryMemberDto.prototype, "sortBy", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: '排序方向', example: 'DESC', default: 'DESC', enum: ['ASC', 'DESC'] }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: '排序方向',
+        example: 'DESC',
+        default: 'DESC',
+        enum: ['ASC', 'DESC'],
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Transform)(({ value }) => value.toUpperCase()),
     (0, class_validator_1.IsIn)(['ASC', 'DESC']),

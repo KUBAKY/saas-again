@@ -8,7 +8,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  
+
   const app = await NestFactory.create(AppModule, {
     cors: true,
   });
@@ -20,7 +20,9 @@ async function bootstrap() {
 
   // 启用CORS
   app.enableCors({
-    origin: configService.get<string>('CORS_ORIGIN')?.split(',') || ['http://localhost:3001'],
+    origin: configService.get<string>('CORS_ORIGIN')?.split(',') || [
+      'http://localhost:3001',
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -52,12 +54,14 @@ async function bootstrap() {
   app.getHttpServer().on('request', (req, res) => {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        environment: process.env.NODE_ENV || 'development',
-      }));
+      res.end(
+        JSON.stringify({
+          status: 'ok',
+          timestamp: new Date().toISOString(),
+          uptime: process.uptime(),
+          environment: process.env.NODE_ENV || 'development',
+        }),
+      );
     }
   });
 

@@ -19,12 +19,12 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { 
-  CreateUserDto, 
-  UpdateUserDto, 
+import {
+  CreateUserDto,
+  UpdateUserDto,
   QueryUserDto,
   UpdateUserStatusDto,
-  UpdateUserRolesDto
+  UpdateUserRolesDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';

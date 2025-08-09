@@ -1,5 +1,7 @@
 import { BaseEntity } from './base.entity';
 import { Member } from './member.entity';
+import { GroupClassCard } from './group-class-card.entity';
+import { PersonalTrainingCard } from './personal-training-card.entity';
 export declare class MembershipCard extends BaseEntity {
     cardNumber: string;
     type: string;
@@ -16,6 +18,8 @@ export declare class MembershipCard extends BaseEntity {
     settings?: Record<string, any>;
     memberId: string;
     member: Member;
+    groupClassCards: GroupClassCard[];
+    personalTrainingCards: PersonalTrainingCard[];
     isActive(): boolean;
     isExpired(): boolean;
     getRemainingDays(): number | null;

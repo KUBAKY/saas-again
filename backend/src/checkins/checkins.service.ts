@@ -1,12 +1,12 @@
-import { 
-  Injectable, 
-  NotFoundException, 
+import {
+  Injectable,
+  NotFoundException,
   ForbiddenException,
   ConflictException,
-  BadRequestException 
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder, Between } from 'typeorm';
+import { Repository, SelectQueryBuilder, Between, IsNull } from 'typeorm';
 import { CheckIn } from '../entities/check-in.entity';
 import { User } from '../entities/user.entity';
 import { CreateCheckInDto, UpdateCheckInDto, QueryCheckInDto } from './dto';
@@ -18,7 +18,10 @@ export class CheckInsService {
     private readonly checkInRepository: Repository<CheckIn>,
   ) {}
 
-  async create(createCheckInDto: CreateCheckInDto, user: User): Promise<CheckIn> {
+  async create(
+    createCheckInDto: CreateCheckInDto,
+    user: User,
+  ): Promise<CheckIn> {
     // 数据隔离：根据用户角色确定门店ID
     let storeId = createCheckInDto.storeId;
     if (user.roles?.[0]?.name === 'STORE_MANAGER' && user.storeId) {
@@ -28,30 +31,41 @@ export class CheckInsService {
     // 检查今日是否已签到（防重复）
     await this.checkDuplicateCheckIn(createCheckInDto.memberId, storeId);
 
+    // 映射checkInMethod到method
+    let method: 'manual' | 'qr_code' | 'nfc' | 'app' = 'app';
+    if (createCheckInDto.checkInMethod === 'manual') {
+      method = 'manual';
+    } else if (createCheckInDto.checkInMethod === 'qr_code') {
+      method = 'qr_code';
+    } else if (createCheckInDto.checkInMethod === 'facial_recognition') {
+      method = 'app'; // 面部识别映射为app
+    }
+
     const checkIn = this.checkInRepository.create({
-      ...createCheckInDto,
+      memberId: createCheckInDto.memberId,
       storeId,
+      method,
+      deviceInfo: createCheckInDto.deviceInfo,
+      notes: createCheckInDto.notes,
       checkInTime: new Date(),
-      checkInMethod: createCheckInDto.checkInMethod || 'manual',
     });
 
     return await this.checkInRepository.save(checkIn);
   }
 
-  async checkInByQRCode(qrCode: string, memberId: string, user: User): Promise<CheckIn> {
+  async checkInByQRCode(
+    qrCode: string,
+    memberId: string,
+    user: User,
+  ): Promise<CheckIn> {
     // 验证二维码（这里简化处理，实际应该验证二维码的有效性和时效性）
     const qrData = this.parseQRCode(qrCode);
     if (!qrData.valid) {
       throw new BadRequestException('二维码无效或已过期');
     }
 
-    // 获取位置信息（如果有）
-    let location = null;
-    if (createCheckInDto.latitude && createCheckInDto.longitude) {
-      location = {
-        type: 'Point',
-        coordinates: [createCheckInDto.longitude, createCheckInDto.latitude],
-      };
+    if (!qrData.storeId) {
+      throw new BadRequestException('二维码中缺少门店信息');
     }
 
     const createCheckInDto = {
@@ -59,7 +73,6 @@ export class CheckInsService {
       storeId: qrData.storeId,
       checkInMethod: 'qr_code' as const,
       deviceInfo: qrData.deviceInfo,
-      location,
       notes: '二维码签到',
     };
 
@@ -100,9 +113,12 @@ export class CheckInsService {
     }
 
     // 排序
-    const validSortFields = ['checkInTime', 'checkInMethod', 'createdAt'];
+    const validSortFields = ['checkInTime', 'method', 'createdAt'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'checkInTime';
-    queryBuilder.orderBy(`checkin.${sortField}`, sortOrder === 'ASC' ? 'ASC' : 'DESC');
+    queryBuilder.orderBy(
+      `checkin.${sortField}`,
+      sortOrder === 'ASC' ? 'ASC' : 'DESC',
+    );
 
     // 分页
     const offset = (page - 1) * limit;
@@ -126,7 +142,7 @@ export class CheckInsService {
     queryBuilder.andWhere('checkin.id = :id', { id });
 
     const checkIn = await queryBuilder.getOne();
-    
+
     if (!checkIn) {
       throw new NotFoundException('签到记录不存在');
     }
@@ -134,11 +150,18 @@ export class CheckInsService {
     return checkIn;
   }
 
-  async update(id: string, updateCheckInDto: UpdateCheckInDto, user: User): Promise<CheckIn> {
+  async update(
+    id: string,
+    updateCheckInDto: UpdateCheckInDto,
+    user: User,
+  ): Promise<CheckIn> {
     const checkIn = await this.findOne(id, user);
 
     // 权限检查
-    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(user.roles?.[0]?.name)) {
+    const userRole = user.roles?.[0]?.name || '';
+    if (
+      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
+    ) {
       throw new ForbiddenException('权限不足，无法修改签到记录');
     }
 
@@ -152,7 +175,10 @@ export class CheckInsService {
     const checkIn = await this.findOne(id, user);
 
     // 权限检查
-    if (!['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(user.roles?.[0]?.name)) {
+    const userRole = user.roles?.[0]?.name || '';
+    if (
+      !['ADMIN', 'BRAND_MANAGER', 'STORE_MANAGER'].includes(userRole)
+    ) {
       throw new ForbiddenException('权限不足，无法删除签到记录');
     }
 
@@ -204,9 +230,20 @@ export class CheckInsService {
 
     // 签到方式统计
     const [manual, qrCode, facial] = await Promise.all([
-      queryBuilder.clone().andWhere('checkin.checkInMethod = :method', { method: 'manual' }).getCount(),
-      queryBuilder.clone().andWhere('checkin.checkInMethod = :method', { method: 'qr_code' }).getCount(),
-      queryBuilder.clone().andWhere('checkin.checkInMethod = :method', { method: 'facial_recognition' }).getCount(),
+      queryBuilder
+        .clone()
+        .andWhere('checkin.method = :method', { method: 'manual' })
+        .getCount(),
+      queryBuilder
+        .clone()
+        .andWhere('checkin.method = :method', { method: 'qr_code' })
+        .getCount(),
+      queryBuilder
+        .clone()
+        .andWhere('checkin.method = :method', {
+          method: 'facial_recognition',
+        })
+        .getCount(),
     ]);
 
     return {
@@ -243,7 +280,10 @@ export class CheckInsService {
     return await queryBuilder.getMany();
   }
 
-  private createBaseQuery(user: User, withRelations: boolean = true): SelectQueryBuilder<CheckIn> {
+  private createBaseQuery(
+    user: User,
+    withRelations: boolean = true,
+  ): SelectQueryBuilder<CheckIn> {
     const queryBuilder = this.checkInRepository.createQueryBuilder('checkin');
 
     if (withRelations) {
@@ -254,7 +294,9 @@ export class CheckInsService {
 
     // 数据隔离
     if (user.roles?.[0]?.name === 'STORE_MANAGER' && user.storeId) {
-      queryBuilder.andWhere('checkin.storeId = :storeId', { storeId: user.storeId });
+      queryBuilder.andWhere('checkin.storeId = :storeId', {
+        storeId: user.storeId,
+      });
     } else if (user.roles?.[0]?.name === 'BRAND_MANAGER' && user.brandId) {
       queryBuilder
         .leftJoin('checkin.store', 'filterStore')
@@ -278,7 +320,7 @@ export class CheckInsService {
         memberId,
         storeId,
         checkInTime: Between(today, tomorrow),
-        deletedAt: null,
+        deletedAt: IsNull(),
       },
     });
 
@@ -287,12 +329,16 @@ export class CheckInsService {
     }
   }
 
-  private parseQRCode(qrCode: string): { valid: boolean; storeId?: string; deviceInfo?: string } {
+  private parseQRCode(qrCode: string): {
+    valid: boolean;
+    storeId?: string;
+    deviceInfo?: string;
+  } {
     try {
       // 这里应该实现真正的二维码解析逻辑
       // 简化处理，假设二维码包含门店ID和设备信息
       const data = JSON.parse(Buffer.from(qrCode, 'base64').toString());
-      
+
       // 检查时效性（例如：5分钟内有效）
       const now = new Date().getTime();
       const qrTime = new Date(data.timestamp).getTime();

@@ -18,12 +18,20 @@ class UpdateUserStatusDto {
 }
 exports.UpdateUserStatusDto = UpdateUserStatusDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '用户状态', example: 'active', enum: ['active', 'inactive'] }),
+    (0, swagger_1.ApiProperty)({
+        description: '用户状态',
+        example: 'active',
+        enum: ['active', 'inactive'],
+    }),
     (0, class_validator_1.IsIn)(['active', 'inactive']),
     __metadata("design:type", String)
 ], UpdateUserStatusDto.prototype, "status", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '状态变更原因', example: '违规操作', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '状态变更原因',
+        example: '违规操作',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)

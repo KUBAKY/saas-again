@@ -10,6 +10,8 @@ import { BaseEntity } from './base.entity';
 import { Store } from './store.entity';
 import { Course } from './course.entity';
 import { Booking } from './booking.entity';
+import { CourseSchedule } from './course-schedule.entity';
+import { PersonalTrainingCard } from './personal-training-card.entity';
 
 @Entity('coaches')
 @Index(['employeeNumber'], { unique: true })
@@ -159,11 +161,14 @@ export class Coach extends BaseEntity {
     nullable: true,
     comment: '工作时间安排',
   })
-  workSchedule?: Record<string, {
-    start: string;
-    end: string;
-    available: boolean;
-  }>;
+  workSchedule?: Record<
+    string,
+    {
+      start: string;
+      end: string;
+      available: boolean;
+    }
+  >;
 
   @Column({
     type: 'enum',
@@ -201,6 +206,12 @@ export class Coach extends BaseEntity {
   @OneToMany(() => Booking, (booking) => booking.coach)
   bookings: Booking[];
 
+  @OneToMany(() => CourseSchedule, (schedule) => schedule.coach)
+  schedules: CourseSchedule[];
+
+  @OneToMany(() => PersonalTrainingCard, (card) => card.coach)
+  personalTrainingCards: PersonalTrainingCard[];
+
   // 业务方法
   isActive(): boolean {
     return this.status === 'active' && !this.deletedAt;
@@ -212,16 +223,19 @@ export class Coach extends BaseEntity {
 
   getAge(): number | null {
     if (!this.birthday) return null;
-    
+
     const today = new Date();
     const birthDate = new Date(this.birthday);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
-    
+
     return age;
   }
 
@@ -266,6 +280,6 @@ export class Coach extends BaseEntity {
   }
 
   getActiveCourses(): Course[] {
-    return this.courses?.filter(course => course.isActive()) || [];
+    return this.courses?.filter((course) => course.isActive()) || [];
   }
 }

@@ -23,6 +23,7 @@ export declare class Store extends BaseEntity {
     members: any[];
     coaches: any[];
     courses: any[];
+    schedules: any[];
     isActive(): boolean;
     isOpen(time?: Date): boolean;
     getDistance(lat: number, lng: number): number;

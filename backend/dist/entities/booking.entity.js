@@ -16,6 +16,7 @@ const member_entity_1 = require("./member.entity");
 const coach_entity_1 = require("./coach.entity");
 const course_entity_1 = require("./course.entity");
 const store_entity_1 = require("./store.entity");
+const course_schedule_entity_1 = require("./course-schedule.entity");
 let Booking = class Booking extends base_entity_1.BaseEntity {
     bookingNumber;
     startTime;
@@ -29,22 +30,26 @@ let Booking = class Booking extends base_entity_1.BaseEntity {
     rating;
     review;
     reviewedAt;
+    chargedAt;
+    checkedInAt;
     memberId;
     coachId;
     courseId;
     storeId;
+    courseScheduleId;
     member;
     coach;
     course;
     store;
+    courseSchedule;
     isConfirmed() {
         return this.status === 'confirmed';
     }
     isCancellable() {
-        if (this.status !== 'confirmed')
+        if (this.status !== 'confirmed' && this.status !== 'charged')
             return false;
-        const twoHoursFromNow = new Date(Date.now() + 2 * 60 * 60 * 1000);
-        return new Date(this.startTime) > twoHoursFromNow;
+        const threeHoursFromNow = new Date(Date.now() + 3 * 60 * 60 * 1000);
+        return new Date(this.startTime) > threeHoursFromNow;
     }
     isCompleted() {
         return this.status === 'completed';
@@ -68,6 +73,50 @@ let Booking = class Booking extends base_entity_1.BaseEntity {
             this.status = 'confirmed';
         }
     }
+    isCharged() {
+        return this.status === 'charged' || this.status === 'checked_in' || this.status === 'completed';
+    }
+    isCheckedIn() {
+        return this.status === 'checked_in' || this.status === 'completed';
+    }
+    needsCharging() {
+        if (this.status !== 'confirmed')
+            return false;
+        const threeHoursFromNow = new Date(Date.now() + 3 * 60 * 60 * 1000);
+        return new Date(this.startTime) <= threeHoursFromNow;
+    }
+    charge() {
+        if (this.status !== 'confirmed')
+            return false;
+        this.status = 'charged';
+        this.chargedAt = new Date();
+        return true;
+    }
+    checkIn() {
+        if (this.status !== 'charged')
+            return false;
+        this.status = 'checked_in';
+        this.checkedInAt = new Date();
+        return true;
+    }
+    complete() {
+        if (this.status !== 'checked_in')
+            return false;
+        this.status = 'completed';
+        return true;
+    }
+    markNoShow() {
+        if (this.status !== 'charged')
+            return false;
+        this.status = 'no_show';
+        return true;
+    }
+    isGroupClass() {
+        return this.courseScheduleId !== null && this.courseScheduleId !== undefined;
+    }
+    isPersonalTraining() {
+        return !this.isGroupClass();
+    }
     cancel(reason) {
         if (!this.isCancellable())
             return false;
@@ -75,16 +124,6 @@ let Booking = class Booking extends base_entity_1.BaseEntity {
         this.cancelledAt = new Date();
         this.cancellationReason = reason;
         return true;
-    }
-    complete() {
-        if (this.status === 'confirmed' && this.isPast()) {
-            this.status = 'completed';
-        }
-    }
-    markNoShow() {
-        if (this.status === 'confirmed' && this.isPast()) {
-            this.status = 'no_show';
-        }
     }
     addReview(rating, review) {
         if (this.status === 'completed' && !this.rating) {
@@ -133,7 +172,7 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
-        enum: ['pending', 'confirmed', 'cancelled', 'completed', 'no_show'],
+        enum: ['pending', 'confirmed', 'charged', 'checked_in', 'completed', 'cancelled', 'no_show'],
         default: 'pending',
         comment: '预约状态',
     }),
@@ -208,6 +247,22 @@ __decorate([
 ], Booking.prototype, "reviewedAt", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        type: 'timestamp with time zone',
+        nullable: true,
+        comment: '扣费时间',
+    }),
+    __metadata("design:type", Date)
+], Booking.prototype, "chargedAt", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'timestamp with time zone',
+        nullable: true,
+        comment: '签到时间',
+    }),
+    __metadata("design:type", Date)
+], Booking.prototype, "checkedInAt", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
         name: 'member_id',
         type: 'uuid',
         nullable: false,
@@ -239,6 +294,15 @@ __decorate([
     __metadata("design:type", String)
 ], Booking.prototype, "storeId", void 0);
 __decorate([
+    (0, typeorm_1.Column)({
+        name: 'course_schedule_id',
+        type: 'uuid',
+        nullable: true,
+        comment: '课程排课ID（团课使用）',
+    }),
+    __metadata("design:type", String)
+], Booking.prototype, "courseScheduleId", void 0);
+__decorate([
     (0, typeorm_1.ManyToOne)(() => member_entity_1.Member, (member) => member.bookings, {
         onDelete: 'CASCADE',
     }),
@@ -266,6 +330,13 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: 'store_id' }),
     __metadata("design:type", store_entity_1.Store)
 ], Booking.prototype, "store", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => course_schedule_entity_1.CourseSchedule, (schedule) => schedule.bookings, {
+        onDelete: 'SET NULL',
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'course_schedule_id' }),
+    __metadata("design:type", course_schedule_entity_1.CourseSchedule)
+], Booking.prototype, "courseSchedule", void 0);
 exports.Booking = Booking = __decorate([
     (0, typeorm_1.Entity)('bookings'),
     (0, typeorm_1.Index)(['memberId', 'startTime']),

@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { 
-  IsString, 
-  IsNotEmpty, 
-  IsOptional, 
-  IsEmail, 
-  IsUUID, 
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEmail,
+  IsUUID,
   IsArray,
-  Length, 
+  Length,
   MinLength,
-  IsIn 
+  IsIn,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -35,47 +35,58 @@ export class CreateUserDto {
   @Length(1, 50)
   realName: string;
 
-  @ApiProperty({ description: '手机号', example: '13800138000', required: false })
+  @ApiProperty({
+    description: '手机号',
+    example: '13800138000',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   @Length(11, 11)
   phone?: string;
 
-  @ApiProperty({ description: '品牌ID', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiProperty({
+    description: '品牌ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   @IsUUID()
   @IsNotEmpty()
   brandId: string;
 
-  @ApiProperty({ 
-    description: '门店ID', 
-    example: '123e4567-e89b-12d3-a456-426614174001', 
-    required: false 
+  @ApiProperty({
+    description: '门店ID',
+    example: '123e4567-e89b-12d3-a456-426614174001',
+    required: false,
   })
   @IsOptional()
   @IsUUID()
   storeId?: string;
 
-  @ApiProperty({ 
-    description: '用户状态', 
-    example: 'active', 
-    enum: ['active', 'inactive'], 
-    default: 'active' 
+  @ApiProperty({
+    description: '用户状态',
+    example: 'active',
+    enum: ['active', 'inactive'],
+    default: 'active',
   })
   @IsOptional()
   @IsIn(['active', 'inactive'])
   status?: 'active' | 'inactive' = 'active';
 
-  @ApiProperty({ 
-    description: '角色ID列表', 
+  @ApiProperty({
+    description: '角色ID列表',
     example: ['123e4567-e89b-12d3-a456-426614174002'],
-    required: false 
+    required: false,
   })
   @IsOptional()
   @IsArray()
   @IsUUID(undefined, { each: true })
   roleIds?: string[];
 
-  @ApiProperty({ description: '头像URL', example: 'https://example.com/avatar.jpg', required: false })
+  @ApiProperty({
+    description: '头像URL',
+    example: 'https://example.com/avatar.jpg',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   avatar?: string;

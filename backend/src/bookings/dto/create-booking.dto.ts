@@ -27,10 +27,10 @@ export class CreateBookingDto {
   @Min(0)
   cost?: number;
 
-  @ApiProperty({ 
-    description: '支付方式', 
+  @ApiProperty({
+    description: '支付方式',
     enum: ['membership_card', 'cash', 'online_payment'],
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsEnum(['membership_card', 'cash', 'online_payment'])

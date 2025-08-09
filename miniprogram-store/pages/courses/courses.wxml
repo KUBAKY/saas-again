@@ -1,0 +1,220 @@
+<!--课程管理页面-->
+<view class="container">
+  <!-- 角色切换标签 -->
+  <view class="role-tabs">
+    <view class="tab-item {{activeRole === 'personal' ? 'active' : ''}}" bind:tap="switchRole" data-role="personal">
+      私教课程
+    </view>
+    <view class="tab-item {{activeRole === 'group' ? 'active' : ''}}" bind:tap="switchRole" data-role="group">
+      团课管理
+    </view>
+  </view>
+
+  <!-- 时间选择器 -->
+  <view class="time-selector">
+    <view class="time-tabs">
+      <view class="time-tab {{activeTimeTab === 'today' ? 'active' : ''}}" bind:tap="switchTimeTab" data-tab="today">
+        今日
+      </view>
+      <view class="time-tab {{activeTimeTab === 'week' ? 'active' : ''}}" bind:tap="switchTimeTab" data-tab="week">
+        本周
+      </view>
+      <view class="time-tab {{activeTimeTab === 'month' ? 'active' : ''}}" bind:tap="switchTimeTab" data-tab="month">
+        本月
+      </view>
+    </view>
+    <view class="date-picker" bind:tap="showDatePicker">
+      <text class="current-date">{{currentDate}}</text>
+      <van-icon name="arrow-down" size="16px" color="rgba(255,255,255,0.8)" />
+    </view>
+  </view>
+
+  <!-- 课程统计卡片 -->
+  <view class="stats-section">
+    <view class="stats-card">
+      <view class="stats-item">
+        <text class="stats-number">{{courseStats.total}}</text>
+        <text class="stats-label">总课程</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-number">{{courseStats.completed}}</text>
+        <text class="stats-label">已完成</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-number">{{courseStats.upcoming}}</text>
+        <text class="stats-label">待上课</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-number">{{courseStats.cancelled}}</text>
+        <text class="stats-label">已取消</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 私教课程列表 -->
+  <view wx:if="{{activeRole === 'personal'}}" class="course-list">
+    <view wx:for="{{personalCourses}}" wx:key="id" class="course-item" bind:tap="showCourseDetail" data-course="{{item}}">
+      <view class="course-time">
+        <text class="time">{{item.startTime}} - {{item.endTime}}</text>
+        <view class="status-badge status-{{item.status}}">{{item.statusText}}</view>
+      </view>
+      
+      <view class="course-info">
+        <view class="member-info">
+          <image class="member-avatar" src="{{item.member.avatar || '/images/default-avatar.png'}}" />
+          <view class="member-details">
+            <text class="member-name">{{item.member.name}}</text>
+            <text class="member-phone">{{item.member.phone}}</text>
+          </view>
+        </view>
+        
+        <view class="course-details">
+          <text class="course-type">{{item.courseType}}</text>
+          <text class="course-duration">{{item.duration}}分钟</text>
+          <text class="course-location">{{item.location}}</text>
+        </view>
+      </view>
+      
+      <view class="course-actions">
+        <van-button wx:if="{{item.status === 'upcoming'}}" size="small" type="primary" bind:click="startCourse" data-id="{{item.id}}">
+          开始上课
+        </van-button>
+        <van-button wx:if="{{item.status === 'ongoing'}}" size="small" type="warning" bind:click="endCourse" data-id="{{item.id}}">
+          结束课程
+        </van-button>
+        <van-button wx:if="{{item.status === 'upcoming'}}" size="small" plain bind:click="reschedule" data-id="{{item.id}}">
+          调课
+        </van-button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 团课管理列表 -->
+  <view wx:if="{{activeRole === 'group'}}" class="course-list">
+    <view wx:for="{{groupCourses}}" wx:key="id" class="group-course-item" bind:tap="showGroupCourseDetail" data-course="{{item}}">
+      <view class="course-header">
+        <view class="course-time">
+          <text class="time">{{item.startTime}} - {{item.endTime}}</text>
+          <view class="status-badge status-{{item.status}}">{{item.statusText}}</view>
+        </view>
+        <view class="course-capacity">
+          <text class="capacity-text">{{item.currentCount}}/{{item.maxCapacity}}人</text>
+          <van-progress percentage="{{item.capacityPercentage}}" stroke-width="4" color="#667eea" />
+        </view>
+      </view>
+      
+      <view class="course-info">
+        <text class="course-name">{{item.courseName}}</text>
+        <text class="course-location">{{item.location}}</text>
+        <text class="course-instructor">教练：{{item.instructor}}</text>
+      </view>
+      
+      <view class="course-actions">
+        <van-button wx:if="{{item.status === 'upcoming'}}" size="small" type="primary" bind:click="startGroupCourse" data-id="{{item.id}}">
+          开始签到
+        </van-button>
+        <van-button wx:if="{{item.status === 'ongoing'}}" size="small" type="warning" bind:click="endGroupCourse" data-id="{{item.id}}">
+          结束课程
+        </van-button>
+        <van-button size="small" plain bind:click="viewMembers" data-id="{{item.id}}">
+          查看学员
+        </van-button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{(activeRole === 'personal' && personalCourses.length === 0) || (activeRole === 'group' && groupCourses.length === 0)}}" class="empty-state">
+    <van-empty description="暂无课程安排" />
+  </view>
+
+  <!-- 浮动添加按钮 -->
+  <view class="fab-container">
+    <van-button round type="primary" icon="plus" bind:click="addCourse">
+      添加课程
+    </van-button>
+  </view>
+</view>
+
+<!-- 课程详情弹窗 -->
+<van-popup show="{{showCourseDetailPopup}}" position="bottom" custom-style="height: 70%;" bind:close="closeCourseDetail">
+  <view class="course-detail-popup">
+    <view class="popup-header">
+      <text class="popup-title">课程详情</text>
+      <van-icon name="cross" size="20px" bind:click="closeCourseDetail" />
+    </view>
+    
+    <view class="course-detail-content" wx:if="{{selectedCourse}}">
+      <view class="detail-section">
+        <text class="section-title">基本信息</text>
+        <view class="detail-item">
+          <text class="detail-label">课程时间</text>
+          <text class="detail-value">{{selectedCourse.startTime}} - {{selectedCourse.endTime}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">课程类型</text>
+          <text class="detail-value">{{selectedCourse.courseType}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">上课地点</text>
+          <text class="detail-value">{{selectedCourse.location}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">课程时长</text>
+          <text class="detail-value">{{selectedCourse.duration}}分钟</text>
+        </view>
+      </view>
+      
+      <view wx:if="{{activeRole === 'personal'}}" class="detail-section">
+        <text class="section-title">会员信息</text>
+        <view class="member-detail">
+          <image class="detail-avatar" src="{{selectedCourse.member.avatar || '/images/default-avatar.png'}}" />
+          <view class="member-info">
+            <text class="detail-name">{{selectedCourse.member.name}}</text>
+            <text class="detail-phone">{{selectedCourse.member.phone}}</text>
+            <text class="detail-goal">训练目标：{{selectedCourse.member.goal}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <view class="detail-actions">
+        <van-button wx:if="{{selectedCourse.status === 'upcoming'}}" type="primary" block bind:click="startCourseFromDetail">
+          开始上课
+        </van-button>
+        <van-button wx:if="{{selectedCourse.status === 'ongoing'}}" type="warning" block bind:click="endCourseFromDetail">
+          结束课程
+        </van-button>
+        <van-button wx:if="{{selectedCourse.status === 'upcoming'}}" plain block bind:click="rescheduleFromDetail" custom-style="margin-top: 16rpx;">
+          申请调课
+        </van-button>
+      </view>
+    </view>
+  </view>
+</van-popup>
+
+<!-- 日期选择器 -->
+<van-calendar show="{{showCalendar}}" bind:close="closeCalendar" bind:confirm="onDateConfirm" />
+
+<!-- 学员列表弹窗 -->
+<van-popup show="{{showMembersPopup}}" position="bottom" custom-style="height: 60%;" bind:close="closeMembersPopup">
+  <view class="members-popup">
+    <view class="popup-header">
+      <text class="popup-title">课程学员</text>
+      <van-icon name="cross" size="20px" bind:click="closeMembersPopup" />
+    </view>
+    
+    <view class="members-list">
+      <view wx:for="{{courseMembers}}" wx:key="id" class="member-item">
+        <image class="member-avatar" src="{{item.avatar || '/images/default-avatar.png'}}" />
+        <view class="member-info">
+          <text class="member-name">{{item.name}}</text>
+          <text class="member-phone">{{item.phone}}</text>
+        </view>
+        <view class="member-status">
+          <van-tag wx:if="{{item.checkedIn}}" type="success">已签到</van-tag>
+          <van-tag wx:else type="default">未签到</van-tag>
+        </view>
+      </view>
+    </view>
+  </view>
+</van-popup>

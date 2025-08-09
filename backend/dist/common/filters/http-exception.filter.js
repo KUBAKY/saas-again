@@ -43,7 +43,7 @@ let HttpExceptionFilter = HttpExceptionFilter_1 = class HttpExceptionFilter {
             timestamp: new Date().toISOString(),
             path: request.url,
         };
-        Object.keys(errorResponse).forEach(key => {
+        Object.keys(errorResponse).forEach((key) => {
             if (errorResponse[key] === undefined) {
                 delete errorResponse[key];
             }

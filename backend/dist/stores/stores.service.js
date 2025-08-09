@@ -33,7 +33,7 @@ let StoresService = class StoresService {
         if (!brand) {
             throw new common_1.BadRequestException('品牌不存在');
         }
-        const canCreate = user.roles?.some(role => role.name === 'ADMIN' ||
+        const canCreate = user.roles?.some((role) => role.name === 'ADMIN' ||
             (role.name === 'BRAND_MANAGER' && user.brandId === brandId));
         if (!canCreate) {
             throw new common_1.ForbiddenException('无权限为此品牌创建门店');
@@ -51,7 +51,7 @@ let StoresService = class StoresService {
         return await this.storeRepository.save(store);
     }
     async findAll(queryDto, user) {
-        const { page = 1, limit = 20, search, status, brandId, city, sortBy = 'createdAt', sortOrder = 'DESC' } = queryDto;
+        const { page = 1, limit = 20, search, status, brandId, city, sortBy = 'createdAt', sortOrder = 'DESC', } = queryDto;
         const where = {};
         if (search) {
             where.name = (0, typeorm_2.Like)(`%${search}%`);
@@ -62,12 +62,12 @@ let StoresService = class StoresService {
         if (city) {
             where.address = (0, typeorm_2.Like)(`%${city}%`);
         }
-        if (user.roles?.some(role => role.name === 'ADMIN')) {
+        if (user.roles?.some((role) => role.name === 'ADMIN')) {
             if (brandId) {
                 where.brandId = brandId;
             }
         }
-        else if (user.roles?.some(role => role.name === 'BRAND_MANAGER')) {
+        else if (user.roles?.some((role) => role.name === 'BRAND_MANAGER')) {
             where.brandId = user.brandId;
         }
         else {
@@ -100,9 +100,10 @@ let StoresService = class StoresService {
         if (!store) {
             throw new common_1.NotFoundException('门店不存在');
         }
-        const canView = user.roles?.some(role => role.name === 'ADMIN' ||
+        const canView = user.roles?.some((role) => role.name === 'ADMIN' ||
             (role.name === 'BRAND_MANAGER' && user.brandId === store.brandId) ||
-            (user.brandId === store.brandId && (!user.storeId || user.storeId === store.id)));
+            (user.brandId === store.brandId &&
+                (!user.storeId || user.storeId === store.id)));
         if (!canView) {
             throw new common_1.ForbiddenException('无权限查看此门店');
         }
@@ -110,7 +111,7 @@ let StoresService = class StoresService {
     }
     async update(id, updateStoreDto, user) {
         const store = await this.findOne(id, user);
-        const canUpdate = user.roles?.some(role => role.name === 'ADMIN' ||
+        const canUpdate = user.roles?.some((role) => role.name === 'ADMIN' ||
             (role.name === 'BRAND_MANAGER' && user.brandId === store.brandId) ||
             (role.name === 'STORE_MANAGER' && user.storeId === store.id));
         if (!canUpdate) {
@@ -122,7 +123,7 @@ let StoresService = class StoresService {
     }
     async remove(id, user) {
         const store = await this.findOne(id, user);
-        const canDelete = user.roles?.some(role => role.name === 'ADMIN' ||
+        const canDelete = user.roles?.some((role) => role.name === 'ADMIN' ||
             (role.name === 'BRAND_MANAGER' && user.brandId === store.brandId));
         if (!canDelete) {
             throw new common_1.ForbiddenException('无权限删除此门店');
@@ -149,8 +150,7 @@ let StoresService = class StoresService {
         };
     }
     async findByBrand(brandId, user) {
-        const canView = user.roles?.some(role => role.name === 'ADMIN' ||
-            (user.brandId === brandId));
+        const canView = user.roles?.some((role) => role.name === 'ADMIN' || user.brandId === brandId);
         if (!canView) {
             throw new common_1.ForbiddenException('无权限查看此品牌的门店');
         }

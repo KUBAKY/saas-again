@@ -27,20 +27,32 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateProfileDto.prototype, "realName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '手机号', example: '13800138000', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '手机号',
+        example: '13800138000',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(11, 11),
     __metadata("design:type", String)
 ], UpdateProfileDto.prototype, "phone", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '邮箱', example: 'user@example.com', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '邮箱',
+        example: 'user@example.com',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEmail)(),
     __metadata("design:type", String)
 ], UpdateProfileDto.prototype, "email", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '头像URL', example: 'https://example.com/avatar.jpg', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '头像URL',
+        example: 'https://example.com/avatar.jpg',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)

@@ -34,7 +34,7 @@ let AuthController = class AuthController {
     async refreshToken(refreshToken) {
         return this.authService.refreshToken(refreshToken);
     }
-    async getProfile(user) {
+    getProfile(user) {
         return {
             id: user.id,
             username: user.username,
@@ -43,7 +43,7 @@ let AuthController = class AuthController {
             phone: user.phone,
             brandId: user.brandId,
             storeId: user.storeId,
-            roles: user.roles?.map(role => role.name) || [],
+            roles: user.roles?.map((role) => role.name) || [],
             permissions: user.getPermissions(),
             lastLoginAt: user.lastLoginAt,
         };
@@ -183,7 +183,7 @@ __decorate([
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [user_entity_1.User]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], AuthController.prototype, "getProfile", null);
 __decorate([
     (0, common_1.Put)('profile'),

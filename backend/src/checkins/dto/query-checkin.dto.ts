@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsUUID, IsNumberString, IsDateString, IsEnum } from 'class-validator';
+import {
+  IsOptional,
+  IsUUID,
+  IsNumberString,
+  IsDateString,
+  IsEnum,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class QueryCheckInDto {
@@ -35,21 +41,21 @@ export class QueryCheckInDto {
   @IsDateString()
   endDate?: string;
 
-  @ApiProperty({ 
-    required: false, 
-    description: '排序字段', 
+  @ApiProperty({
+    required: false,
+    description: '排序字段',
     enum: ['checkInTime', 'checkInMethod', 'createdAt'],
-    default: 'checkInTime'
+    default: 'checkInTime',
   })
   @IsOptional()
   @IsEnum(['checkInTime', 'checkInMethod', 'createdAt'])
   sortBy?: string;
 
-  @ApiProperty({ 
-    required: false, 
-    description: '排序方向', 
+  @ApiProperty({
+    required: false,
+    description: '排序方向',
     enum: ['ASC', 'DESC'],
-    default: 'DESC'
+    default: 'DESC',
   })
   @IsOptional()
   @IsEnum(['ASC', 'DESC'])

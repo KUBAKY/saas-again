@@ -37,7 +37,10 @@ export class BookingsController {
   @ApiResponse({ status: 400, description: '请求参数错误或时间冲突' })
   @ApiResponse({ status: 403, description: '权限不足' })
   @ApiResponse({ status: 409, description: '预约时间冲突' })
-  create(@Body() createBookingDto: CreateBookingDto, @CurrentUser() user: User) {
+  create(
+    @Body() createBookingDto: CreateBookingDto,
+    @CurrentUser() user: User,
+  ) {
     return this.bookingsService.create(createBookingDto, user);
   }
 
@@ -47,7 +50,11 @@ export class BookingsController {
   @ApiResponse({ status: 200, description: '获取成功' })
   @ApiQuery({ name: 'page', required: false, description: '页码' })
   @ApiQuery({ name: 'limit', required: false, description: '每页数量' })
-  @ApiQuery({ name: 'search', required: false, description: '搜索关键字(预约编号/会员姓名)' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: '搜索关键字(预约编号/会员姓名)',
+  })
   @ApiQuery({ name: 'status', required: false, description: '预约状态' })
   @ApiQuery({ name: 'memberId', required: false, description: '会员ID' })
   @ApiQuery({ name: 'coachId', required: false, description: '教练ID' })
@@ -88,7 +95,11 @@ export class BookingsController {
   @ApiQuery({ name: 'endTime', required: true, description: '结束时间' })
   @ApiQuery({ name: 'coachId', required: false, description: '教练ID' })
   @ApiQuery({ name: 'memberId', required: false, description: '会员ID' })
-  @ApiQuery({ name: 'excludeBookingId', required: false, description: '排除的预约ID' })
+  @ApiQuery({
+    name: 'excludeBookingId',
+    required: false,
+    description: '排除的预约ID',
+  })
   checkConflicts(@Query() query: any, @CurrentUser() user: User) {
     return this.bookingsService.checkConflicts(query, user);
   }
@@ -125,9 +136,10 @@ export class BookingsController {
   @ApiResponse({ status: 403, description: '权限不足' })
   updateStatus(
     @Param('id') id: string,
-    @Body('status') status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show',
-    @Body('reason') reason?: string,
+    @Body('status')
+    status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show',
     @CurrentUser() user: User,
+    @Body('reason') reason?: string,
   ) {
     return this.bookingsService.updateStatus(id, status, reason, user);
   }
@@ -148,8 +160,8 @@ export class BookingsController {
   @ApiResponse({ status: 400, description: '预约无法取消' })
   cancel(
     @Param('id') id: string,
-    @Body('reason') reason?: string,
     @CurrentUser() user: User,
+    @Body('reason') reason?: string,
   ) {
     return this.bookingsService.cancel(id, reason, user);
   }
@@ -171,8 +183,8 @@ export class BookingsController {
   addReview(
     @Param('id') id: string,
     @Body('rating') rating: number,
-    @Body('review') review?: string,
     @CurrentUser() user: User,
+    @Body('review') review?: string,
   ) {
     return this.bookingsService.addReview(id, rating, review, user);
   }
@@ -184,5 +196,84 @@ export class BookingsController {
   @ApiResponse({ status: 403, description: '权限不足' })
   remove(@Param('id') id: string, @CurrentUser() user: User) {
     return this.bookingsService.remove(id, user);
+  }
+
+  @Post('auto-charge')
+  @ApiOperation({ summary: '执行自动扣费' })
+  @ApiResponse({ status: 200, description: '自动扣费执行成功' })
+  @ApiResponse({ status: 403, description: '权限不足' })
+  processAutoCharging(@CurrentUser() user: User) {
+    return this.bookingsService.processAutoCharging();
+  }
+
+  @Patch(':id/check-in')
+  @ApiOperation({ summary: '会员签到' })
+  @ApiResponse({ status: 200, description: '签到成功' })
+  @ApiResponse({ status: 404, description: '预约不存在' })
+  @ApiResponse({ status: 400, description: '签到条件不满足' })
+  checkIn(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.bookingsService.checkIn(id, user);
+  }
+
+  @Patch(':id/mark-completed')
+  @ApiOperation({ summary: '标记课程完成' })
+  @ApiResponse({ status: 200, description: '标记成功' })
+  @ApiResponse({ status: 404, description: '预约不存在' })
+  @ApiResponse({ status: 400, description: '状态无效' })
+  markCompleted(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.bookingsService.markCompleted(id, user);
+  }
+
+  @Patch(':id/mark-no-show')
+  @ApiOperation({ summary: '标记未到课' })
+  @ApiResponse({ status: 200, description: '标记成功' })
+  @ApiResponse({ status: 404, description: '预约不存在' })
+  @ApiResponse({ status: 400, description: '状态无效' })
+  markNoShow(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.bookingsService.markNoShow(id, user);
+  }
+
+  @Post('group-class/:scheduleId')
+  @ApiOperation({ summary: '创建团课预约' })
+  @ApiResponse({ status: 201, description: '团课预约创建成功' })
+  @ApiResponse({ status: 404, description: '排课不存在' })
+  @ApiResponse({ status: 400, description: '预约条件不满足' })
+  @ApiResponse({ status: 409, description: '已预约该课程' })
+  createGroupClassBooking(
+    @Param('scheduleId') scheduleId: string,
+    @Body('memberId') memberId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.bookingsService.createGroupClassBooking(scheduleId, memberId, user);
+  }
+
+  @Patch(':id/cancel-group-class')
+  @ApiOperation({ summary: '取消团课预约' })
+  @ApiResponse({ status: 200, description: '团课预约取消成功' })
+  @ApiResponse({ status: 404, description: '预约不存在' })
+  @ApiResponse({ status: 400, description: '预约无法取消' })
+  cancelGroupClassBooking(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body('reason') reason?: string,
+  ) {
+    return this.bookingsService.cancelGroupClassBooking(id, reason, user);
+  }
+
+  @Get('member/:memberId/history')
+  @UseInterceptors(CacheInterceptor)
+  @ApiOperation({ summary: '获取会员预约历史' })
+  @ApiResponse({ status: 200, description: '获取成功' })
+  @ApiQuery({ name: 'status', required: false, description: '预约状态' })
+  @ApiQuery({ name: 'startDate', required: false, description: '开始日期' })
+  @ApiQuery({ name: 'endDate', required: false, description: '结束日期' })
+  @ApiQuery({ name: 'sortBy', required: false, description: '排序字段' })
+  @ApiQuery({ name: 'sortOrder', required: false, description: '排序方向' })
+  getMemberBookings(
+    @Param('memberId') memberId: string,
+    @Query() queryDto: QueryBookingDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.bookingsService.getMemberBookings(memberId, queryDto, user);
   }
 }

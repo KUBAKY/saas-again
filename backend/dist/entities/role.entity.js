@@ -28,10 +28,10 @@ let Role = class Role extends base_entity_1.BaseEntity {
         return this.status === 'active' && !this.deletedAt;
     }
     hasPermission(permissionName) {
-        return this.permissions?.some(permission => permission.name === permissionName && permission.isActive()) || false;
+        return (this.permissions?.some((permission) => permission.name === permissionName && permission.isActive()) || false);
     }
     getPermissionNames() {
-        return this.permissions?.map(permission => permission.name) || [];
+        return this.permissions?.map((permission) => permission.name) || [];
     }
     isSystemRole() {
         return this.type === 'system';

@@ -20,10 +20,10 @@ export class CreateCheckInDto {
   @IsNotEmpty()
   storeId: string;
 
-  @ApiProperty({ 
-    description: '签到方式', 
+  @ApiProperty({
+    description: '签到方式',
     enum: ['manual', 'qr_code', 'facial_recognition'],
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsEnum(['manual', 'qr_code', 'facial_recognition'])

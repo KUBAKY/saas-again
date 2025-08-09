@@ -21,6 +21,12 @@ const stores_module_1 = require("./stores/stores.module");
 const users_module_1 = require("./users/users.module");
 const members_module_1 = require("./members/members.module");
 const coaches_module_1 = require("./coaches/coaches.module");
+const courses_module_1 = require("./courses/courses.module");
+const course_schedules_module_1 = require("./course-schedules/course-schedules.module");
+const bookings_module_1 = require("./bookings/bookings.module");
+const checkins_module_1 = require("./checkins/checkins.module");
+const group_class_cards_module_1 = require("./group-class-cards/group-class-cards.module");
+const personal_training_cards_module_1 = require("./personal-training-cards/personal-training-cards.module");
 const seed_module_1 = require("./database/seeds/seed.module");
 const database_config_1 = __importDefault(require("./config/database.config"));
 const redis_config_1 = __importDefault(require("./config/redis.config"));
@@ -46,6 +52,12 @@ exports.AppModule = AppModule = __decorate([
             users_module_1.UsersModule,
             members_module_1.MembersModule,
             coaches_module_1.CoachesModule,
+            courses_module_1.CoursesModule,
+            course_schedules_module_1.CourseSchedulesModule,
+            bookings_module_1.BookingsModule,
+            checkins_module_1.CheckInsModule,
+            group_class_cards_module_1.GroupClassCardsModule,
+            personal_training_cards_module_1.PersonalTrainingCardsModule,
             seed_module_1.SeedModule,
         ],
         controllers: [app_controller_1.AppController],

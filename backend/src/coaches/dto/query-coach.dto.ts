@@ -1,6 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsOptional, IsNumber, Min, Max, IsIn, IsString, IsUUID } from 'class-validator';
+import {
+  IsOptional,
+  IsNumber,
+  Min,
+  Max,
+  IsIn,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class QueryCoachDto {
   @ApiPropertyOptional({ description: '页码', example: 1, default: 1 })
@@ -23,17 +31,28 @@ export class QueryCoachDto {
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ description: '状态', example: 'active', enum: ['active', 'inactive', 'on_leave'] })
+  @ApiPropertyOptional({
+    description: '状态',
+    example: 'active',
+    enum: ['active', 'inactive', 'on_leave'],
+  })
   @IsOptional()
   @IsIn(['active', 'inactive', 'on_leave'])
   status?: 'active' | 'inactive' | 'on_leave';
 
-  @ApiPropertyOptional({ description: '门店ID', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiPropertyOptional({
+    description: '门店ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   @IsOptional()
   @IsUUID()
   storeId?: string;
 
-  @ApiPropertyOptional({ description: '性别', example: 'male', enum: ['male', 'female'] })
+  @ApiPropertyOptional({
+    description: '性别',
+    example: 'male',
+    enum: ['male', 'female'],
+  })
   @IsOptional()
   @IsIn(['male', 'female'])
   gender?: 'male' | 'female';
@@ -50,13 +69,29 @@ export class QueryCoachDto {
   @Min(0)
   minExperience?: number;
 
-  @ApiPropertyOptional({ description: '排序字段', example: 'createdAt', default: 'createdAt' })
+  @ApiPropertyOptional({
+    description: '排序字段',
+    example: 'createdAt',
+    default: 'createdAt',
+  })
   @IsOptional()
   @IsString()
-  @IsIn(['createdAt', 'updatedAt', 'name', 'employeeNumber', 'hireDate', 'experienceYears'])
+  @IsIn([
+    'createdAt',
+    'updatedAt',
+    'name',
+    'employeeNumber',
+    'hireDate',
+    'experienceYears',
+  ])
   sortBy?: string = 'createdAt';
 
-  @ApiPropertyOptional({ description: '排序方向', example: 'DESC', default: 'DESC', enum: ['ASC', 'DESC'] })
+  @ApiPropertyOptional({
+    description: '排序方向',
+    example: 'DESC',
+    default: 'DESC',
+    enum: ['ASC', 'DESC'],
+  })
   @IsOptional()
   @Transform(({ value }) => value.toUpperCase())
   @IsIn(['ASC', 'DESC'])

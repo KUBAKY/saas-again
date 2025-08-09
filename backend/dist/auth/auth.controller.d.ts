@@ -7,7 +7,7 @@ export declare class AuthController {
     login(loginDto: LoginDto): Promise<AuthResponse>;
     register(registerDto: RegisterDto): Promise<AuthResponse>;
     refreshToken(refreshToken: string): Promise<Pick<AuthResponse, 'access_token'>>;
-    getProfile(user: User): Promise<{
+    getProfile(user: User): {
         id: string;
         username: string;
         email: string;
@@ -15,10 +15,10 @@ export declare class AuthController {
         phone: string | undefined;
         brandId: string;
         storeId: string | undefined;
-        roles: any[];
+        roles: string[];
         permissions: string[];
         lastLoginAt: Date | undefined;
-    }>;
+    };
     updateProfile(user: User, updateProfileDto: UpdateProfileDto): Promise<User>;
     changePassword(user: User, changePasswordDto: ChangePasswordDto): Promise<{
         message: string;

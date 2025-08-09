@@ -54,14 +54,21 @@ __decorate([
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "realName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '手机号', example: '13800138000', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '手机号',
+        example: '13800138000',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Length)(11, 11),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "phone", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '品牌ID', example: '123e4567-e89b-12d3-a456-426614174000' }),
+    (0, swagger_1.ApiProperty)({
+        description: '品牌ID',
+        example: '123e4567-e89b-12d3-a456-426614174000',
+    }),
     (0, class_validator_1.IsUUID)(),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
@@ -70,7 +77,7 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         description: '门店ID',
         example: '123e4567-e89b-12d3-a456-426614174001',
-        required: false
+        required: false,
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsUUID)(),
@@ -81,7 +88,7 @@ __decorate([
         description: '用户状态',
         example: 'active',
         enum: ['active', 'inactive'],
-        default: 'active'
+        default: 'active',
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsIn)(['active', 'inactive']),
@@ -91,7 +98,7 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         description: '角色ID列表',
         example: ['123e4567-e89b-12d3-a456-426614174002'],
-        required: false
+        required: false,
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsArray)(),
@@ -99,7 +106,11 @@ __decorate([
     __metadata("design:type", Array)
 ], CreateUserDto.prototype, "roleIds", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '头像URL', example: 'https://example.com/avatar.jpg', required: false }),
+    (0, swagger_1.ApiProperty)({
+        description: '头像URL',
+        example: 'https://example.com/avatar.jpg',
+        required: false,
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)

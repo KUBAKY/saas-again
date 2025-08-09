@@ -33,7 +33,7 @@ let UsersService = class UsersService {
     }
     async create(createUserDto, currentUser) {
         const { brandId, storeId, roleIds, email, username, phone } = createUserDto;
-        const canCreate = currentUser.roles?.some(role => role.name === 'ADMIN' ||
+        const canCreate = currentUser.roles?.some((role) => role.name === 'ADMIN' ||
             (role.name === 'BRAND_MANAGER' && currentUser.brandId === brandId));
         if (!canCreate) {
             throw new common_1.ForbiddenException('无权限创建用户');
@@ -53,11 +53,7 @@ let UsersService = class UsersService {
             }
         }
         const existingUser = await this.userRepository.findOne({
-            where: [
-                { email },
-                { username },
-                ...(phone ? [{ phone, brandId }] : []),
-            ],
+            where: [{ email }, { username }, ...(phone ? [{ phone, brandId }] : [])],
         });
         if (existingUser) {
             if (existingUser.email === email) {
@@ -86,7 +82,7 @@ let UsersService = class UsersService {
         return await this.userRepository.save(user);
     }
     async findAll(queryDto, currentUser) {
-        const { page = 1, limit = 20, search, status, brandId, storeId, roleName, sortBy = 'createdAt', sortOrder = 'DESC' } = queryDto;
+        const { page = 1, limit = 20, search, status, brandId, storeId, roleName, sortBy = 'createdAt', sortOrder = 'DESC', } = queryDto;
         const where = {};
         if (search) {
             where.username = (0, typeorm_2.Like)(`%${search}%`);
@@ -94,7 +90,7 @@ let UsersService = class UsersService {
         if (status) {
             where.status = status;
         }
-        if (currentUser.roles?.some(role => role.name === 'ADMIN')) {
+        if (currentUser.roles?.some((role) => role.name === 'ADMIN')) {
             if (brandId) {
                 where.brandId = brandId;
             }
@@ -102,7 +98,7 @@ let UsersService = class UsersService {
                 where.storeId = storeId;
             }
         }
-        else if (currentUser.roles?.some(role => role.name === 'BRAND_MANAGER')) {
+        else if (currentUser.roles?.some((role) => role.name === 'BRAND_MANAGER')) {
             where.brandId = currentUser.brandId;
             if (storeId) {
                 where.storeId = storeId;
@@ -123,7 +119,7 @@ let UsersService = class UsersService {
         };
         let [data, total] = await this.userRepository.findAndCount(findOptions);
         if (roleName) {
-            data = data.filter(user => user.roles?.some(role => role.name === roleName));
+            data = data.filter((user) => user.roles?.some((role) => role.name === roleName));
             total = data.length;
         }
         return {
@@ -142,8 +138,9 @@ let UsersService = class UsersService {
         if (!user) {
             throw new common_1.NotFoundException('用户不存在');
         }
-        const canView = currentUser.roles?.some(role => role.name === 'ADMIN' ||
-            (role.name === 'BRAND_MANAGER' && currentUser.brandId === user.brandId) ||
+        const canView = currentUser.roles?.some((role) => role.name === 'ADMIN' ||
+            (role.name === 'BRAND_MANAGER' &&
+                currentUser.brandId === user.brandId) ||
             (currentUser.brandId === user.brandId &&
                 (!currentUser.storeId || currentUser.storeId === user.storeId)) ||
             currentUser.id === user.id);
@@ -154,8 +151,9 @@ let UsersService = class UsersService {
     }
     async update(id, updateUserDto, currentUser) {
         const user = await this.findOne(id, currentUser);
-        const canUpdate = currentUser.roles?.some(role => role.name === 'ADMIN' ||
-            (role.name === 'BRAND_MANAGER' && currentUser.brandId === user.brandId) ||
+        const canUpdate = currentUser.roles?.some((role) => role.name === 'ADMIN' ||
+            (role.name === 'BRAND_MANAGER' &&
+                currentUser.brandId === user.brandId) ||
             currentUser.id === user.id);
         if (!canUpdate) {
             throw new common_1.ForbiddenException('无权限更新此用户');
@@ -191,7 +189,7 @@ let UsersService = class UsersService {
     }
     async updateStatus(id, updateStatusDto, currentUser) {
         const user = await this.findOne(id, currentUser);
-        const canUpdateStatus = currentUser.roles?.some(role => role.name === 'ADMIN' ||
+        const canUpdateStatus = currentUser.roles?.some((role) => role.name === 'ADMIN' ||
             (role.name === 'BRAND_MANAGER' && currentUser.brandId === user.brandId));
         if (!canUpdateStatus) {
             throw new common_1.ForbiddenException('无权限更新用户状态');
@@ -202,7 +200,7 @@ let UsersService = class UsersService {
     }
     async updateRoles(id, updateRolesDto, currentUser) {
         const user = await this.findOne(id, currentUser);
-        const canUpdateRoles = currentUser.roles?.some(role => role.name === 'ADMIN' ||
+        const canUpdateRoles = currentUser.roles?.some((role) => role.name === 'ADMIN' ||
             (role.name === 'BRAND_MANAGER' && currentUser.brandId === user.brandId));
         if (!canUpdateRoles) {
             throw new common_1.ForbiddenException('无权限更新用户角色');
@@ -219,7 +217,7 @@ let UsersService = class UsersService {
     }
     async remove(id, currentUser) {
         const user = await this.findOne(id, currentUser);
-        if (!currentUser.roles?.some(role => role.name === 'ADMIN')) {
+        if (!currentUser.roles?.some((role) => role.name === 'ADMIN')) {
             throw new common_1.ForbiddenException('只有系统管理员可以删除用户');
         }
         if (currentUser.id === user.id) {

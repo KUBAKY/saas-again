@@ -1,0 +1,16 @@
+{
+  "name": "miniprogram-store",
+  "version": "1.0.0",
+  "description": "门店管理小程序",
+  "main": "app.js",
+  "dependencies": {
+    "@vant/weapp": "^1.11.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["miniprogram", "store", "management"],
+  "author": "",
+  "license": "ISC"
+}

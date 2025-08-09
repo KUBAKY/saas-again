@@ -36,7 +36,10 @@ export class CheckInsController {
   @ApiResponse({ status: 201, description: '签到成功' })
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 409, description: '重复签到' })
-  create(@Body() createCheckInDto: CreateCheckInDto, @CurrentUser() user: User) {
+  create(
+    @Body() createCheckInDto: CreateCheckInDto,
+    @CurrentUser() user: User,
+  ) {
     return this.checkInsService.create(createCheckInDto, user);
   }
 
@@ -81,7 +84,10 @@ export class CheckInsController {
   @ApiOperation({ summary: '获取今日签到记录' })
   @ApiResponse({ status: 200, description: '获取成功' })
   @ApiQuery({ name: 'storeId', required: false, description: '门店ID' })
-  getTodayCheckIns(@Query('storeId') storeId: string, @CurrentUser() user: User) {
+  getTodayCheckIns(
+    @Query('storeId') storeId: string,
+    @CurrentUser() user: User,
+  ) {
     return this.checkInsService.getTodayCheckIns(storeId, user);
   }
 

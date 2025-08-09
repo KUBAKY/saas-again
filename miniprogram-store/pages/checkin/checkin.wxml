@@ -1,0 +1,162 @@
+<!-- 会员签到页面 -->
+<view class="container">
+  <!-- 扫码签到区域 -->
+  <view class="scan-section glass-card">
+    <view class="scan-header">
+      <van-icon name="scan" size="48px" />
+      <text class="scan-title">扫码签到</text>
+      <text class="scan-desc">扫描会员二维码完成签到</text>
+    </view>
+    
+    <view class="scan-area" bindtap="startScan">
+      <view class="scan-frame">
+        <view class="scan-corners">
+          <view class="corner top-left"></view>
+          <view class="corner top-right"></view>
+          <view class="corner bottom-left"></view>
+          <view class="corner bottom-right"></view>
+        </view>
+        <text class="scan-hint">点击扫描会员二维码</text>
+      </view>
+    </view>
+    
+    <van-button 
+      type="primary" 
+      size="large" 
+      icon="scan"
+      bind:click="startScan"
+      class="scan-button"
+    >
+      开始扫码
+    </van-button>
+  </view>
+
+  <!-- 手动签到 -->
+  <view class="manual-checkin glass-card">
+    <view class="manual-header">
+      <van-icon name="edit" size="24px" />
+      <text class="manual-title">手动签到</text>
+    </view>
+    
+    <view class="search-section">
+      <van-field
+        value="{{searchKeyword}}"
+        placeholder="输入手机号或会员号"
+        border="{{false}}"
+        bind:change="onSearchChange"
+        bind:confirm="searchMember"
+      >
+        <van-button slot="button" size="small" type="primary" bind:click="searchMember">
+          搜索
+        </van-button>
+      </van-field>
+    </view>
+    
+    <view class="search-results" wx:if="{{searchResults.length > 0}}">
+      <view 
+        class="member-item"
+        wx:for="{{searchResults}}" 
+        wx:key="id"
+        bindtap="selectMember"
+        data-member="{{item}}"
+      >
+        <image src="{{item.avatar || '/images/default-avatar.png'}}" class="member-avatar" />
+        <view class="member-info">
+          <text class="member-name">{{item.name}}</text>
+          <text class="member-number">{{item.memberNumber}}</text>
+          <text class="member-phone">{{item.phone}}</text>
+        </view>
+        <view class="member-status {{item.status}}">
+          <text>{{item.statusText}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="empty-result" wx:elif="{{searched && searchResults.length === 0}}">
+      <van-empty description="未找到相关会员" />
+    </view>
+  </view>
+
+  <!-- 今日签到记录 -->
+  <view class="checkin-records">
+    <view class="section-header">
+      <text class="section-title">今日签到记录 ({{todayCheckins.length}})</text>
+      <text class="view-all" bindtap="viewAllRecords">查看全部</text>
+    </view>
+    
+    <view class="records-list" wx:if="{{todayCheckins.length > 0}}">
+      <view class="record-item glass-card" wx:for="{{todayCheckins}}" wx:key="id">
+        <image src="{{item.avatar || '/images/default-avatar.png'}}" class="record-avatar" />
+        <view class="record-info">
+          <text class="record-name">{{item.memberName}}</text>
+          <text class="record-time">{{item.checkInTime}}</text>
+          <text class="record-type">{{item.type}}</text>
+        </view>
+        <view class="record-status success">
+          <van-icon name="success" size="16px" />
+        </view>
+      </view>
+    </view>
+    
+    <view class="empty-records" wx:else>
+      <van-empty description="今日暂无签到记录" />
+    </view>
+  </view>
+</view>
+
+<!-- 签到确认弹窗 -->
+<van-popup 
+  show="{{showCheckinConfirm}}" 
+  bind:close="closeCheckinConfirm" 
+  position="center" 
+  round
+>
+  <view class="checkin-confirm-popup" wx:if="{{selectedMember}}">
+    <view class="confirm-header">
+      <image src="{{selectedMember.avatar || '/images/default-avatar.png'}}" class="confirm-avatar" />
+      <text class="confirm-name">{{selectedMember.name}}</text>
+      <text class="confirm-number">{{selectedMember.memberNumber}}</text>
+    </view>
+    
+    <view class="confirm-details">
+      <view class="detail-row">
+        <text class="detail-label">会员状态</text>
+        <text class="detail-value {{selectedMember.status}}">{{selectedMember.statusText}}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">签到时间</text>
+        <text class="detail-value">{{currentTime}}</text>
+      </view>
+      <view class="detail-row" wx:if="{{selectedMember.lastCheckin}}">
+        <text class="detail-label">上次签到</text>
+        <text class="detail-value">{{selectedMember.lastCheckin}}</text>
+      </view>
+    </view>
+    
+    <view class="confirm-actions">
+      <van-button size="large" bind:click="closeCheckinConfirm">取消</van-button>
+      <van-button 
+        size="large" 
+        type="primary" 
+        bind:click="confirmCheckin"
+        loading="{{checkinLoading}}"
+        disabled="{{selectedMember.status !== 'active'}}"
+      >
+        确认签到
+      </van-button>
+    </view>
+  </view>
+</van-popup>
+
+<!-- 签到成功弹窗 -->
+<van-popup show="{{showCheckinSuccess}}" bind:close="closeCheckinSuccess" position="center" round>
+  <view class="checkin-success-popup">
+    <van-icon name="success" size="64px" color="#07c160" />
+    <text class="success-title">签到成功！</text>
+    <text class="success-member" wx:if="{{checkedMember}}">{{checkedMember.name}}</text>
+    <text class="success-time">{{successTime}}</text>
+    <van-button type="primary" size="large" bind:click="closeCheckinSuccess">
+      继续签到
+    </van-button>
+  </view>
+</van-popup>

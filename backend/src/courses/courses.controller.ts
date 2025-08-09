@@ -46,7 +46,11 @@ export class CoursesController {
   @ApiResponse({ status: 200, description: '获取成功' })
   @ApiQuery({ name: 'page', required: false, description: '页码' })
   @ApiQuery({ name: 'limit', required: false, description: '每页数量' })
-  @ApiQuery({ name: 'search', required: false, description: '搜索关键字(课程名称)' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: '搜索关键字(课程名称)',
+  })
   @ApiQuery({ name: 'type', required: false, description: '课程类型' })
   @ApiQuery({ name: 'level', required: false, description: '适合级别' })
   @ApiQuery({ name: 'storeId', required: false, description: '门店ID' })

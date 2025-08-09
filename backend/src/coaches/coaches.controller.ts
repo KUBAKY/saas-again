@@ -47,12 +47,20 @@ export class CoachesController {
   @ApiResponse({ status: 200, description: '获取成功' })
   @ApiQuery({ name: 'page', required: false, description: '页码' })
   @ApiQuery({ name: 'limit', required: false, description: '每页数量' })
-  @ApiQuery({ name: 'search', required: false, description: '搜索关键字(姓名/员工号)' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: '搜索关键字(姓名/员工号)',
+  })
   @ApiQuery({ name: 'status', required: false, description: '状态过滤' })
   @ApiQuery({ name: 'storeId', required: false, description: '门店ID' })
   @ApiQuery({ name: 'gender', required: false, description: '性别' })
   @ApiQuery({ name: 'specialty', required: false, description: '专长' })
-  @ApiQuery({ name: 'minExperience', required: false, description: '最少从业年限' })
+  @ApiQuery({
+    name: 'minExperience',
+    required: false,
+    description: '最少从业年限',
+  })
   @ApiQuery({ name: 'sortBy', required: false, description: '排序字段' })
   @ApiQuery({ name: 'sortOrder', required: false, description: '排序方向' })
   findAll(@Query() queryDto: QueryCoachDto, @CurrentUser() user: User) {

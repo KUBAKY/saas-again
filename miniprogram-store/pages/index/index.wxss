@@ -1,0 +1,449 @@
+/* 门店端小程序首页样式 */
+.container {
+  padding: 20rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+/* 磨砂玻璃效果 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.18);
+  border-radius: 32rpx;
+  box-shadow: 0 16rpx 64rpx 0 rgba(31, 38, 135, 0.37);
+}
+
+/* 门店信息头部 */
+.store-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx;
+  margin-bottom: 32rpx;
+}
+
+.store-info {
+  flex: 1;
+}
+
+.store-name {
+  color: white;
+  font-size: 36rpx;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.store-address {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 26rpx;
+  display: block;
+}
+
+.store-status {
+  padding: 12rpx 24rpx;
+  border-radius: 40rpx;
+}
+
+.store-status.open {
+  background: rgba(76, 175, 80, 0.2);
+  border: 1rpx solid rgba(76, 175, 80, 0.3);
+}
+
+.store-status.closed {
+  background: rgba(244, 67, 54, 0.2);
+  border: 1rpx solid rgba(244, 67, 54, 0.3);
+}
+
+.status-text {
+  color: #4CAF50;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.store-status.closed .status-text {
+  color: #f44336;
+}
+
+/* 章节标题 */
+.section-title {
+  color: white;
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.more-link {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 26rpx;
+}
+
+/* 统计数据概览 */
+.stats-overview {
+  margin-bottom: 40rpx;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20rpx;
+}
+
+.stats-item {
+  padding: 32rpx 24rpx;
+  text-align: center;
+  position: relative;
+}
+
+.stats-number {
+  color: white;
+  font-size: 40rpx;
+  font-weight: 700;
+  display: block;
+  line-height: 1.2;
+}
+
+.stats-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
+  margin-top: 8rpx;
+  display: block;
+}
+
+.stats-change {
+  position: absolute;
+  top: 24rpx;
+  right: 24rpx;
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+}
+
+.stats-change.positive {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+}
+
+/* 快捷操作 */
+.quick-actions {
+  margin-bottom: 40rpx;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20rpx;
+}
+
+.action-item {
+  padding: 32rpx 20rpx;
+  text-align: center;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.action-title {
+  font-size: 24rpx;
+  font-weight: 600;
+  margin: 12rpx 0 6rpx;
+}
+
+.action-desc {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+}
+
+/* 今日课程 */
+.today-courses {
+  margin-bottom: 40rpx;
+}
+
+.courses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.course-item {
+  display: flex;
+  align-items: center;
+  padding: 32rpx;
+}
+
+.course-time-info {
+  width: 120rpx;
+  text-align: center;
+  margin-right: 24rpx;
+}
+
+.course-time {
+  color: white;
+  font-size: 32rpx;
+  font-weight: 600;
+  display: block;
+  line-height: 1.2;
+}
+
+.course-duration {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20rpx;
+  margin-top: 4rpx;
+  display: block;
+}
+
+.course-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.course-name {
+  color: white;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 6rpx;
+}
+
+.course-coach {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
+  margin-bottom: 4rpx;
+}
+
+.course-members {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 22rpx;
+}
+
+.course-status {
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+}
+
+.course-status.ongoing {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+}
+
+.course-status.upcoming {
+  background: rgba(255, 193, 7, 0.2);
+  color: #FFC107;
+}
+
+.course-status.scheduled {
+  background: rgba(33, 150, 243, 0.2);
+  color: #2196F3;
+}
+
+/* 会员动态 */
+.member-activities {
+  margin-bottom: 40rpx;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 32rpx;
+}
+
+.activity-avatar {
+  margin-right: 24rpx;
+}
+
+.avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+}
+
+.activity-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-member {
+  color: white;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 4rpx;
+}
+
+.activity-action {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
+  margin-bottom: 4rpx;
+}
+
+.activity-time {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 22rpx;
+}
+
+.activity-type {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.activity-type.checkin {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+}
+
+.activity-type.purchase {
+  background: rgba(255, 193, 7, 0.2);
+  color: #FFC107;
+}
+
+.activity-type.booking {
+  background: rgba(33, 150, 243, 0.2);
+  color: #2196F3;
+}
+
+.activity-type.workout {
+  background: rgba(156, 39, 176, 0.2);
+  color: #9C27B0;
+}
+
+/* 待办事项 */
+.todo-reminders {
+  margin-bottom: 40rpx;
+}
+
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 32rpx;
+}
+
+.todo-icon {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+}
+
+.todo-icon.high {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
+.todo-icon.medium {
+  background: rgba(255, 193, 7, 0.2);
+  color: #FFC107;
+}
+
+.todo-icon.low {
+  background: rgba(158, 158, 158, 0.2);
+  color: #9e9e9e;
+}
+
+.todo-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.todo-title {
+  color: white;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 4rpx;
+}
+
+.todo-desc {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 24rpx;
+  line-height: 1.4;
+}
+
+.todo-action {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* 课程详情弹窗 */
+.course-detail-popup {
+  background: white;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 40rpx 32rpx 60rpx;
+}
+
+.popup-header {
+  text-align: center;
+  margin-bottom: 32rpx;
+}
+
+.popup-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.course-info {
+  margin-bottom: 40rpx;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  color: #666;
+  font-size: 28rpx;
+}
+
+.info-value {
+  color: #333;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 24rpx;
+}
+
+.popup-actions .van-button {
+  flex: 1;
+}

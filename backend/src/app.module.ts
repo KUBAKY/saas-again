@@ -10,8 +10,11 @@ import { UsersModule } from './users/users.module';
 import { MembersModule } from './members/members.module';
 import { CoachesModule } from './coaches/coaches.module';
 import { CoursesModule } from './courses/courses.module';
+import { CourseSchedulesModule } from './course-schedules/course-schedules.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { CheckInsModule } from './checkins/checkins.module';
+import { GroupClassCardsModule } from './group-class-cards/group-class-cards.module';
+import { PersonalTrainingCardsModule } from './personal-training-cards/personal-training-cards.module';
 import { SeedModule } from './database/seeds/seed.module';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
@@ -36,8 +39,11 @@ import jwtConfig from './config/jwt.config';
     MembersModule,
     CoachesModule,
     CoursesModule,
+    CourseSchedulesModule,
     BookingsModule,
     CheckInsModule,
+    GroupClassCardsModule,
+    PersonalTrainingCardsModule,
     SeedModule,
   ],
   controllers: [AppController],

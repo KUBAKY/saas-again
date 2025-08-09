@@ -3,6 +3,8 @@ import { Store } from './store.entity';
 import { MembershipCard } from './membership-card.entity';
 import { CheckIn } from './check-in.entity';
 import { Booking } from './booking.entity';
+import { GroupClassCard } from './group-class-card.entity';
+import { PersonalTrainingCard } from './personal-training-card.entity';
 export declare class Member extends BaseEntity {
     memberNumber: string;
     name: string;
@@ -40,6 +42,8 @@ export declare class Member extends BaseEntity {
     membershipCards: MembershipCard[];
     checkIns: CheckIn[];
     bookings: Booking[];
+    groupClassCards: GroupClassCard[];
+    personalTrainingCards: PersonalTrainingCard[];
     isActive(): boolean;
     getAge(): number | null;
     getBMI(): number | null;
