@@ -129,8 +129,8 @@
           
           <el-dropdown @command="handleUserCommand">
             <span class="user-dropdown">
-              <el-avatar :size="32" :src="user.avatar" />
-              <span class="username">{{ user.realName || user.username }}</span>
+              <el-avatar :size="32" :src="user?.avatar" />
+              <span class="username">{{ user?.realName || user?.username }}</span>
               <el-icon class="el-icon--right"><ArrowDown /></el-icon>
             </span>
             <template #dropdown>
@@ -182,14 +182,16 @@ const breadcrumbs = computed(() => {
   const matched = route.matched.filter(item => item.meta && item.meta.title)
   const first = matched[0]
   
+  const breadcrumbItems = matched.map(item => ({
+    path: item.path,
+    title: item.meta?.title as string
+  }))
+  
   if (first && first.name !== 'Dashboard') {
-    matched.unshift({ path: '/dashboard', meta: { title: '首页' } })
+    breadcrumbItems.unshift({ path: '/dashboard', title: '首页' })
   }
   
-  return matched.map(item => ({
-    path: item.path,
-    title: item.meta.title
-  }))
+  return breadcrumbItems
 })
 
 // Methods

@@ -2,7 +2,7 @@
   <div class="bookings-view">
     <div class="page-header">
       <h1>预约管理</h1>
-      <el-button type="primary" @click="$message.info('功能开发中')">
+      <el-button type="primary" @click="ElMessage.info('功能开发中')">
         <el-icon><Plus /></el-icon>
         新增预约
       </el-button>
@@ -16,6 +16,7 @@
 
 <script setup lang="ts">
 import { Plus } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 </script>
 
 <style scoped lang="scss">

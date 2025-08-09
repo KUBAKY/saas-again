@@ -1,18 +1,18 @@
-import axios, { 
+import axios, { AxiosError } from 'axios'
+import type { 
   AxiosInstance, 
   AxiosRequestConfig, 
   AxiosResponse, 
-  InternalAxiosRequestConfig,
-  AxiosError 
+  InternalAxiosRequestConfig
 } from 'axios'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
 
 // API Base URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1'
 
 // Response interface
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   success: boolean
   code: number
   message: string
@@ -54,15 +54,15 @@ instance.interceptors.response.use(
     // If the response has the standard format, return the data field
     if (data && typeof data === 'object' && 'success' in data) {
       if (data.success) {
-        return data.data
+        return { ...response, data: data.data }
       } else {
         ElMessage.error(data.message || '请求失败')
         return Promise.reject(new Error(data.message || '请求失败'))
       }
     }
     
-    // For other responses, return the data directly
-    return data
+    // For other responses, return the response directly
+    return response
   },
   async (error: AxiosError<ApiResponse>) => {
     console.error('Response error:', error)
@@ -149,23 +149,23 @@ instance.interceptors.response.use(
 
 // Request methods
 export const request = {
-  get: <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+  get: <T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T> => {
     return instance.get(url, config)
   },
   
-  post: <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+  post: <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
     return instance.post(url, data, config)
   },
   
-  put: <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+  put: <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
     return instance.put(url, data, config)
   },
   
-  patch: <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+  patch: <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
     return instance.patch(url, data, config)
   },
   
-  delete: <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+  delete: <T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T> => {
     return instance.delete(url, config)
   },
 }

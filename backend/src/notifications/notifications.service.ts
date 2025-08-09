@@ -568,7 +568,7 @@ export class NotificationsService {
       // 全体用户
       switch (notification.targetType) {
         case 'all':
-        case 'member':
+        case 'member': {
           const members = await this.memberRepository.find({
             where: { storeId: currentUser.storeId },
           });
@@ -581,8 +581,9 @@ export class NotificationsService {
             })),
           );
           break;
+        }
         case 'coach':
-        case 'staff':
+        case 'staff': {
           const users = await this.userRepository.find({
             where: { storeId: currentUser.storeId },
             relations: ['roles'],
@@ -602,6 +603,7 @@ export class NotificationsService {
             })),
           );
           break;
+        }
       }
     }
 

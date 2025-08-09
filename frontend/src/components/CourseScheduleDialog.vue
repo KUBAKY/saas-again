@@ -153,9 +153,10 @@ import { ArrowLeft, ArrowRight, Plus } from '@element-plus/icons-vue'
 interface Course {
   id: string
   name: string
-  type: 'group' | 'personal'
+  type: 'group' | 'personal' | 'workshop'
   duration: number
   maxParticipants: number
+  status: 'active' | 'inactive' | 'suspended'
 }
 
 interface Props {

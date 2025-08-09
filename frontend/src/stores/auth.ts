@@ -117,7 +117,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (!token.value) return
       
       const userProfile = await authApi.getProfile()
-      user.value = userProfile
+      user.value = userProfile as User
       return userProfile
     } catch (error: any) {
       console.error('Failed to fetch user profile:', error)
@@ -133,7 +133,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       loading.value = true
       const updatedUser = await authApi.updateProfile(profileData)
-      user.value = { ...user.value, ...updatedUser }
+      user.value = { ...(user.value || {}), ...(updatedUser as User) }
       
       ElMessage.success('个人信息更新成功')
       return updatedUser

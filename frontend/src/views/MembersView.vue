@@ -204,7 +204,7 @@
           <template #default="{ row }">
             <el-button size="small" @click="viewMember(row)">详情</el-button>
             <el-button size="small" type="primary" @click="editMember(row)">编辑</el-button>
-            <el-dropdown @command="(command) => handleMemberAction(command, row)">
+            <el-dropdown @command="(command: string) => handleMemberAction(command, row)">
               <el-button size="small">
                 更多<el-icon><ArrowDown /></el-icon>
               </el-button>
@@ -317,7 +317,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus'
+import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   Plus,
   User,

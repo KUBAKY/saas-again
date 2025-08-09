@@ -4,7 +4,7 @@ export declare class PersonalTrainingController {
         message: string;
         coachId: string;
         coachName: string;
-        specializationType: "group" | "personal" | "both";
+        specializationType: "personal" | "group" | "both";
     }>;
     getMySessions(user: User, req: any, status?: string): Promise<{
         message: string;

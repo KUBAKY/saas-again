@@ -483,9 +483,8 @@ export class PaymentsService {
         },
       });
 
-      const savedPayment = await this.paymentRepository.save(
-        installmentPayment,
-      );
+      const savedPayment =
+        await this.paymentRepository.save(installmentPayment);
       payments.push(savedPayment);
     }
 

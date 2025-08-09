@@ -304,7 +304,7 @@ const formatDateTime = (date: Date) => {
 }
 
 const getBookingStatusType = (status: string) => {
-  const types = {
+  const types: Record<string, string> = {
     pending: 'warning',
     confirmed: 'success',
     cancelled: 'danger',
@@ -314,7 +314,7 @@ const getBookingStatusType = (status: string) => {
 }
 
 const getBookingStatusText = (status: string) => {
-  const texts = {
+  const texts: Record<string, string> = {
     pending: '待确认',
     confirmed: '已确认',
     cancelled: '已取消',
@@ -324,7 +324,7 @@ const getBookingStatusText = (status: string) => {
 }
 
 const getCheckinMethodType = (method: string) => {
-  const types = {
+  const types: Record<string, string> = {
     manual: 'info',
     qr_code: 'success',
     facial_recognition: 'warning',
@@ -333,7 +333,7 @@ const getCheckinMethodType = (method: string) => {
 }
 
 const getCheckinMethodText = (method: string) => {
-  const texts = {
+  const texts: Record<string, string> = {
     manual: '手动',
     qr_code: '扫码',
     facial_recognition: '人脸',

@@ -6,6 +6,7 @@ export interface Course {
   description?: string
   type: 'personal' | 'group' | 'workshop'
   level: 'beginner' | 'intermediate' | 'advanced'
+  difficultyLevel: number
   category?: string
   duration: number // 分钟
   maxParticipants: number

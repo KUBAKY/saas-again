@@ -4,7 +4,7 @@ export declare class GroupClassController {
         message: string;
         coachId: string;
         coachName: string;
-        specializationType: "group" | "personal" | "both";
+        specializationType: "personal" | "group" | "both";
         maxStudents: number;
     }>;
     getMyClasses(user: User, req: any, date?: string): Promise<{

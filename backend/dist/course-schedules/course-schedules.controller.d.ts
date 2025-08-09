@@ -24,7 +24,7 @@ export declare class CourseSchedulesController {
         title: string;
         start: Date;
         end: Date;
-        status: "scheduled" | "ongoing" | "completed" | "cancelled";
+        status: "cancelled" | "completed" | "scheduled" | "ongoing";
         coach: string;
         store: string;
         participants: string;

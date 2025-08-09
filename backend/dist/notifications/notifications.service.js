@@ -342,7 +342,7 @@ let NotificationsService = class NotificationsService {
         else {
             switch (notification.targetType) {
                 case 'all':
-                case 'member':
+                case 'member': {
                     const members = await this.memberRepository.find({
                         where: { storeId: currentUser.storeId },
                     });
@@ -353,8 +353,9 @@ let NotificationsService = class NotificationsService {
                         wechatOpenId: member.wechatOpenId,
                     })));
                     break;
+                }
                 case 'coach':
-                case 'staff':
+                case 'staff': {
                     const users = await this.userRepository.find({
                         where: { storeId: currentUser.storeId },
                         relations: ['roles'],
@@ -372,6 +373,7 @@ let NotificationsService = class NotificationsService {
                         wechatOpenId: undefined,
                     })));
                     break;
+                }
             }
         }
         return targets;

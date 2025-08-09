@@ -192,7 +192,7 @@ export class AuthService {
     refreshToken: string,
   ): Promise<Pick<AuthResponse, 'access_token'>> {
     try {
-      const payload = this.jwtService.verify(refreshToken, {
+      const payload = this.jwtService.verify<JwtPayload>(refreshToken, {
         secret: this.configService.get<string>('jwt.refreshSecret'),
       });
 

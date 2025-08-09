@@ -26,5 +26,5 @@ import { MembershipCard } from './membership-card.entity';
 import { GroupClassCard } from './group-class-card.entity';
 import { CheckIn } from './check-in.entity';
 import { Booking } from './booking.entity';
-export declare const entities: (typeof Store | typeof Brand | typeof User | typeof Permission | typeof Role | typeof GroupClassCard | typeof Member | typeof MembershipCard | typeof CourseSchedule | typeof Course | typeof Coach | typeof Booking | typeof CheckIn)[];
+export declare const entities: (typeof User | typeof Brand | typeof Store | typeof Role | typeof Permission | typeof Member | typeof Coach | typeof Course | typeof CourseSchedule | typeof MembershipCard | typeof GroupClassCard | typeof CheckIn | typeof Booking)[];
 export default entities;

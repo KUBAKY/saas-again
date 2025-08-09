@@ -2,7 +2,7 @@
   <div class="stores-view">
     <div class="page-header">
       <h1>门店管理</h1>
-      <el-button type="primary" @click="$message.info('功能开发中')">
+      <el-button type="primary" @click="ElMessage.info('功能开发中')">
         <el-icon><Plus /></el-icon>
         新增门店
       </el-button>
@@ -15,6 +15,7 @@
 </template>
 
 <script setup lang="ts">
+import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 </script>
 

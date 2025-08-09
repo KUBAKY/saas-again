@@ -32,7 +32,7 @@ export interface Member {
   lastCheckInAt?: string
   status: 'active' | 'inactive' | 'suspended' | 'expired'
   notes?: string
-  preferences?: Record<string, any>
+  preferences?: Record<string, unknown>
   storeId: string
   createdAt: string
   updatedAt: string
@@ -60,7 +60,7 @@ export interface UpdateMemberRequest extends Partial<CreateMemberRequest> {
   level?: 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond'
   points?: number
   status?: 'active' | 'inactive' | 'suspended' | 'expired'
-  preferences?: Record<string, any>
+  preferences?: Record<string, unknown>
 }
 
 export interface QueryMemberRequest {

@@ -212,7 +212,9 @@ const loading = ref(false)
 const scheduleData = ref<any[]>([])
 
 // 周几配置
-const weekDays = [
+type WeekDayKey = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
+
+const weekDays: { key: WeekDayKey; name: string }[] = [
   { key: 'monday', name: '周一' },
   { key: 'tuesday', name: '周二' },
   { key: 'wednesday', name: '周三' },
@@ -226,7 +228,7 @@ const weekDays = [
 const timeSlots = Array.from({ length: 14 }, (_, i) => i + 8) // 8:00 - 21:00
 
 // 工作时间
-const workingHours = reactive({
+const workingHours = reactive<Record<WeekDayKey, { enabled: boolean; start: string; end: string }>>({
   monday: { enabled: true, start: '09:00', end: '18:00' },
   tuesday: { enabled: true, start: '09:00', end: '18:00' },
   wednesday: { enabled: true, start: '09:00', end: '18:00' },
@@ -253,7 +255,7 @@ const weekDates = computed(() => {
 
 const weekStats = computed(() => {
   const totalSlots = weekDates.value.reduce((total, date, dayIndex) => {
-    const dayKey = weekDays[dayIndex].key as keyof typeof workingHours
+    const dayKey = weekDays[dayIndex].key
     if (!workingHours[dayKey].enabled) return total
     
     const startHour = parseInt(workingHours[dayKey].start.split(':')[0])
@@ -332,8 +334,8 @@ const formatWeekRange = (mondayStr: string) => {
   return `${monday.getFullYear()}.${(monday.getMonth() + 1).toString().padStart(2, '0')}.${monday.getDate().toString().padStart(2, '0')} - ${sunday.getFullYear()}.${(sunday.getMonth() + 1).toString().padStart(2, '0')}.${sunday.getDate().toString().padStart(2, '0')}`
 }
 
-const isWorkingTime = (dayKey: string, hour: number) => {
-  const daySchedule = workingHours[dayKey as keyof typeof workingHours]
+const isWorkingTime = (dayKey: WeekDayKey, hour: number) => {
+  const daySchedule = workingHours[dayKey]
   if (!daySchedule.enabled) return false
   
   const startHour = parseInt(daySchedule.start.split(':')[0])

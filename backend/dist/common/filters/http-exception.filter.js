@@ -34,7 +34,7 @@ let HttpExceptionFilter = HttpExceptionFilter_1 = class HttpExceptionFilter {
             }
         }
         else {
-            this.logger.error(`Unexpected exception: ${exception}`, exception instanceof Error ? exception.stack : undefined);
+            this.logger.error(`Unexpected exception: ${String(exception)}`, exception instanceof Error ? exception.stack : undefined);
         }
         const errorResponse = {
             code: status,

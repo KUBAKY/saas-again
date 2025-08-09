@@ -49,7 +49,7 @@ export declare class BookingsService {
         title: string;
         start: Date;
         end: Date;
-        status: "pending" | "completed" | "cancelled" | "confirmed" | "charged" | "checked_in" | "no_show";
+        status: "pending" | "confirmed" | "cancelled" | "completed" | "no_show" | "charged" | "checked_in";
         member: string;
         coach: string | undefined;
         course: string;

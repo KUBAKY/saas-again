@@ -139,10 +139,11 @@ import { ElMessage, type FormInstance } from 'element-plus'
 interface Course {
   id: string
   name: string
-  type: 'group' | 'personal'
+  type: 'group' | 'personal' | 'workshop'
   duration: number
   price: number
   maxParticipants: number
+  status: 'active' | 'inactive' | 'suspended'
 }
 
 interface Coach {

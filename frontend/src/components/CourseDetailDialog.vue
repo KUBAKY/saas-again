@@ -80,12 +80,12 @@ import { computed } from 'vue'
 interface Course {
   id: string
   name: string
-  type: 'group' | 'personal'
+  type: 'group' | 'personal' | 'workshop'
   duration: number
   difficultyLevel: number
   maxParticipants: number
   price: number
-  status: 'active' | 'inactive' | 'draft'
+  status: 'active' | 'inactive' | 'suspended'
   description?: string
   requirements?: string
   equipment?: string[]
