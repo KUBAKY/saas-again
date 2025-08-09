@@ -1,0 +1,480 @@
+# AI开发配置文件 - 健身房SaaS系统
+# 此文件定义了AI开发过程中的核心配置和指导原则
+
+# ==================== 项目基本信息 ====================
+project:
+  name: "健身房多品牌管理SaaS系统"
+  version: "1.0.0"
+  description: "支持多品牌、多门店的健身房管理系统，包含总部管理、门店管理、会员服务等功能"
+  domain: "fitness-management"
+  
+# ==================== AI模型配置 ====================
+ai_models:
+  primary:
+    name: "claude-3.5-sonnet"
+    provider: "anthropic"
+    use_cases: ["architecture-design", "complex-logic", "code-review"]
+    
+  secondary:
+    name: "gpt-4"
+    provider: "openai"
+    use_cases: ["documentation", "testing", "refactoring"]
+    
+  code_completion:
+    name: "github-copilot"
+    provider: "github"
+    use_cases: ["real-time-completion", "code-suggestions"]
+
+# ==================== 技术栈配置 ====================
+technology_stack:
+  backend:
+    framework: "NestJS"
+    language: "TypeScript"
+    orm: "TypeORM"
+    database:
+      primary: "PostgreSQL"
+      cache: "Redis"
+      search: "Elasticsearch"
+    testing: "Jest"
+    documentation: "Swagger/OpenAPI"
+    
+  frontend:
+    web:
+      framework: "Vue 3"
+      language: "TypeScript"
+      ui_library: "Element Plus"
+      state_management: "Pinia"
+      build_tool: "Vite"
+      testing: "Vitest + Vue Test Utils"
+      
+    miniprogram:
+      platform: "WeChat Mini Program"
+      language: "JavaScript/TypeScript"
+      ui_style: "frosted-glass-minimalist"
+      
+  deployment:
+    containerization: "Docker"
+    orchestration: "Kubernetes"
+    cloud_provider: "Alibaba Cloud"
+    ci_cd: "GitHub Actions"
+    monitoring: "Prometheus + Grafana"
+
+# ==================== 业务领域模型 ====================
+business_domain:
+  core_entities:
+    Brand:
+      description: "品牌实体，支持多品牌管理"
+      key_attributes: ["name", "logo", "settings", "stores"]
+      
+    Store:
+      description: "门店实体，隶属于品牌"
+      key_attributes: ["name", "address", "brandId", "managers", "coaches"]
+      
+    User:
+      description: "系统用户，包含多种角色"
+      key_attributes: ["username", "email", "roles", "profile"]
+      
+    Member:
+      description: "健身房会员"
+      key_attributes: ["name", "phone", "membershipCards", "storeId"]
+      
+    Coach:
+      description: "健身教练"
+      key_attributes: ["name", "specialties", "storeId", "courses"]
+      
+    Course:
+      description: "健身课程"
+      key_attributes: ["name", "type", "duration", "capacity", "coachId"]
+      
+    MembershipCard:
+      description: "会员卡"
+      key_attributes: ["type", "validPeriod", "remainingSessions", "memberId"]
+      
+  business_rules:
+    - "每个门店隶属于一个品牌"
+    - "会员只能在所属门店消费"
+    - "教练可以跨门店授课（同品牌内）"
+    - "会员卡有有效期和次数限制"
+    - "课程需要预约，有人数限制"
+    - "支持多种会员卡类型和计费方式"
+
+# ==================== 权限角色系统 ====================
+role_system:
+  roles:
+    ADMIN:
+      name: "总部管理员"
+      permissions: ["全系统管理权限"]
+      access_scope: "全部品牌和门店"
+      
+    BRAND_MANAGER:
+      name: "品牌管理者"
+      permissions: ["品牌管理", "门店管理", "数据分析"]
+      access_scope: "所管理的品牌及其门店"
+      
+    STORE_MANAGER:
+      name: "门店管理者"
+      permissions: ["门店运营", "员工管理", "会员管理"]
+      access_scope: "所管理的门店"
+      
+    COACH:
+      name: "健身教练"
+      permissions: ["课程管理", "会员服务", "个人数据"]
+      access_scope: "所属门店和授课课程"
+      
+    RECEPTIONIST:
+      name: "前台接待"
+      permissions: ["会员服务", "预约管理", "收银"]
+      access_scope: "所属门店"
+      
+    MEMBER:
+      name: "健身会员"
+      permissions: ["个人信息", "课程预约", "消费记录"]
+      access_scope: "个人数据和所属门店服务"
+
+# ==================== 开发规范 ====================
+coding_standards:
+  naming_conventions:
+    variables: "camelCase"
+    functions: "camelCase"
+    classes: "PascalCase"
+    constants: "UPPER_SNAKE_CASE"
+    files: "kebab-case"
+    directories: "kebab-case"
+    
+  code_style:
+    indentation: "2 spaces"
+    line_length: 100
+    quotes: "single"
+    semicolons: true
+    trailing_commas: true
+    
+  documentation:
+    format: "JSDoc"
+    required_for: ["public methods", "classes", "interfaces"]
+    include_examples: true
+    
+  testing:
+    unit_test_coverage: 80
+    integration_test_coverage: 70
+    e2e_test_coverage: 50
+    test_naming: "describe-it pattern"
+    
+  git_workflow:
+    branch_naming: "feature/task-description"
+    commit_message: "conventional commits"
+    pr_template: true
+    code_review_required: true
+
+# ==================== API设计规范 ====================
+api_standards:
+  rest_conventions:
+    base_url: "/api/v1"
+    resource_naming: "plural nouns"
+    http_methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+    
+  response_format:
+    success:
+      structure: |
+        {
+          "code": 200,
+          "message": "Success",
+          "data": {},
+          "timestamp": "2024-01-01T00:00:00Z"
+        }
+    error:
+      structure: |
+        {
+          "code": 400,
+          "message": "Error description",
+          "errors": [],
+          "timestamp": "2024-01-01T00:00:00Z"
+        }
+        
+  pagination:
+    default_page_size: 20
+    max_page_size: 100
+    response_format: |
+      {
+        "items": [],
+        "total": 100,
+        "page": 1,
+        "pageSize": 20,
+        "totalPages": 5
+      }
+      
+  authentication:
+    method: "JWT"
+    header: "Authorization: Bearer <token>"
+    expiration: "24 hours"
+    refresh_token: true
+
+# ==================== 数据库设计规范 ====================
+database_standards:
+  naming_conventions:
+    tables: "snake_case"
+    columns: "snake_case"
+    indexes: "idx_table_column"
+    foreign_keys: "fk_table_column"
+    
+  design_principles:
+    - "使用UUID作为主键"
+    - "实现软删除机制"
+    - "添加审计字段（created_at, updated_at, created_by, updated_by）"
+    - "合理使用索引优化查询性能"
+    - "实现数据版本控制"
+    
+  data_types:
+    id: "UUID"
+    timestamps: "TIMESTAMP WITH TIME ZONE"
+    text: "VARCHAR with appropriate length"
+    boolean: "BOOLEAN"
+    numbers: "INTEGER, DECIMAL as needed"
+    json: "JSONB for PostgreSQL"
+
+# ==================== 前端UI设计规范 ====================
+ui_design_standards:
+  web_platform:
+    design_system: "Material Design inspired"
+    color_scheme:
+      primary: "#1976d2"
+      secondary: "#424242"
+      success: "#4caf50"
+      warning: "#ff9800"
+      error: "#f44336"
+      
+    typography:
+      font_family: "Roboto, sans-serif"
+      font_sizes: ["12px", "14px", "16px", "18px", "24px", "32px"]
+      
+    spacing:
+      base_unit: "8px"
+      scale: ["4px", "8px", "16px", "24px", "32px", "48px"]
+      
+  miniprogram_platform:
+    design_style: "frosted-glass-minimalist"
+    color_scheme:
+      primary: "#667eea"
+      secondary: "#764ba2"
+      background: "rgba(255, 255, 255, 0.9)"
+      glass_effect: "backdrop-filter: blur(10px)"
+      
+    effects:
+      border_radius: "12px"
+      shadow: "0 8px 32px rgba(31, 38, 135, 0.37)"
+      backdrop_filter: "blur(4px)"
+      border: "1px solid rgba(255, 255, 255, 0.18)"
+
+# ==================== 性能优化指标 ====================
+performance_standards:
+  backend:
+    api_response_time: "< 200ms (95th percentile)"
+    database_query_time: "< 100ms"
+    concurrent_users: "> 1000"
+    uptime: "> 99.9%"
+    
+  frontend:
+    first_contentful_paint: "< 1.5s"
+    largest_contentful_paint: "< 2.5s"
+    cumulative_layout_shift: "< 0.1"
+    first_input_delay: "< 100ms"
+    
+  miniprogram:
+    startup_time: "< 2s"
+    page_load_time: "< 1s"
+    memory_usage: "< 50MB"
+    package_size: "< 2MB"
+
+# ==================== 安全要求 ====================
+security_requirements:
+  authentication:
+    - "实现多因素认证"
+    - "密码强度要求"
+    - "账户锁定机制"
+    - "会话管理"
+    
+  authorization:
+    - "基于角色的访问控制（RBAC）"
+    - "最小权限原则"
+    - "数据行级权限控制"
+    
+  data_protection:
+    - "敏感数据加密存储"
+    - "传输层安全（TLS）"
+    - "个人信息脱敏"
+    - "数据备份和恢复"
+    
+  input_validation:
+    - "所有用户输入验证"
+    - "SQL注入防护"
+    - "XSS攻击防护"
+    - "CSRF保护"
+    
+  monitoring:
+    - "安全事件日志"
+    - "异常行为检测"
+    - "漏洞扫描"
+    - "安全审计"
+
+# ==================== AI开发指导原则 ====================
+ai_development_guidelines:
+  code_generation:
+    principles:
+      - "生成的代码必须符合项目技术栈和规范"
+      - "优先考虑代码的可读性和可维护性"
+      - "实现完整的错误处理和边界条件检查"
+      - "生成相应的测试用例"
+      - "添加详细的文档注释"
+      
+    quality_checks:
+      - "代码风格一致性检查"
+      - "安全漏洞扫描"
+      - "性能优化建议"
+      - "最佳实践遵循"
+      
+  context_management:
+    required_context:
+      - "项目技术栈信息"
+      - "业务领域模型"
+      - "现有代码结构"
+      - "相关的接口定义"
+      
+    context_files:
+      - "docs/prd.md"
+      - "docs/architecture.md"
+      - "src/types/index.ts"
+      - ".ai/config/ai-development-config.yml"
+      
+  prompt_optimization:
+    structure:
+      - "明确的角色定义"
+      - "详细的项目背景"
+      - "具体的技术约束"
+      - "清晰的任务描述"
+      - "明确的输出要求"
+      
+    best_practices:
+      - "使用分层提示策略"
+      - "提供充分的上下文信息"
+      - "指定具体的代码规范"
+      - "要求生成测试用例"
+      - "强调安全性考虑"
+
+# ==================== 质量控制 ====================
+quality_control:
+  code_review:
+    automated_checks:
+      - "代码风格检查（ESLint/Prettier）"
+      - "类型检查（TypeScript）"
+      - "安全漏洞扫描（Snyk）"
+      - "测试覆盖率检查"
+      
+    manual_review:
+      - "业务逻辑正确性"
+      - "架构设计合理性"
+      - "性能优化机会"
+      - "用户体验考虑"
+      
+  testing_strategy:
+    unit_testing:
+      - "所有业务逻辑方法"
+      - "边界条件测试"
+      - "异常情况处理"
+      
+    integration_testing:
+      - "API接口测试"
+      - "数据库操作测试"
+      - "第三方服务集成测试"
+      
+    e2e_testing:
+      - "关键业务流程"
+      - "用户操作路径"
+      - "跨平台兼容性"
+      
+  deployment_gates:
+    requirements:
+      - "所有测试通过"
+      - "代码覆盖率达标"
+      - "安全扫描通过"
+      - "性能指标满足要求"
+      - "文档更新完成"
+
+# ==================== 监控和日志 ====================
+monitoring_and_logging:
+  application_monitoring:
+    metrics:
+      - "响应时间"
+      - "错误率"
+      - "吞吐量"
+      - "资源使用率"
+      
+    alerts:
+      - "API响应时间超过阈值"
+      - "错误率异常增长"
+      - "系统资源不足"
+      - "安全事件发生"
+      
+  logging_standards:
+    levels: ["ERROR", "WARN", "INFO", "DEBUG"]
+    format: "JSON structured logging"
+    retention: "30 days for INFO, 90 days for ERROR"
+    
+    required_fields:
+      - "timestamp"
+      - "level"
+      - "message"
+      - "userId"
+      - "requestId"
+      - "service"
+      
+  business_metrics:
+    - "用户活跃度"
+    - "功能使用统计"
+    - "业务转化率"
+    - "系统稳定性指标"
+
+# ==================== 持续改进 ====================
+continuous_improvement:
+  feedback_collection:
+    sources:
+      - "开发团队反馈"
+      - "代码审查意见"
+      - "性能监控数据"
+      - "用户使用反馈"
+      
+  optimization_areas:
+    - "AI提示词模板优化"
+    - "代码生成质量提升"
+    - "开发流程改进"
+    - "工具链优化"
+    
+  update_frequency:
+    config_review: "每月"
+    template_update: "每两周"
+    best_practices: "持续更新"
+    
+# ==================== 版本控制 ====================
+version_info:
+  config_version: "1.0.0"
+  last_updated: "2024-01-01"
+  next_review_date: "2024-02-01"
+  
+# ==================== 扩展配置 ====================
+extensions:
+  custom_rules:
+    # 项目特定的自定义规则
+    - "会员数据处理必须遵循隐私保护规范"
+    - "支付相关功能必须通过安全审计"
+    - "多租户数据隔离必须严格执行"
+    
+  integration_points:
+    # 第三方服务集成点
+    wechat_api: "微信小程序API集成"
+    payment_gateway: "支付网关集成"
+    sms_service: "短信服务集成"
+    
+  future_considerations:
+    # 未来可能的扩展方向
+    - "AI智能推荐系统"
+    - "IoT设备集成"
+    - "区块链会员积分系统"
+    - "VR/AR健身体验"

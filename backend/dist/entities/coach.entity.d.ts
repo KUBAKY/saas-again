@@ -1,0 +1,50 @@
+import { BaseEntity } from './base.entity';
+import { Store } from './store.entity';
+import { Course } from './course.entity';
+import { Booking } from './booking.entity';
+export declare class Coach extends BaseEntity {
+    employeeNumber: string;
+    name: string;
+    phone: string;
+    email?: string;
+    gender: 'male' | 'female' | 'other';
+    birthday?: Date;
+    avatar?: string;
+    bio?: string;
+    specialties?: string[];
+    certifications?: Array<{
+        name: string;
+        issuer: string;
+        issueDate: string;
+        expiryDate?: string;
+        certificateUrl?: string;
+    }>;
+    experienceYears?: number;
+    rating: number;
+    reviewCount: number;
+    hireDate: Date;
+    baseSalary?: number;
+    hourlyRate?: number;
+    commissionRate?: number;
+    workSchedule?: Record<string, {
+        start: string;
+        end: string;
+        available: boolean;
+    }>;
+    status: 'active' | 'inactive' | 'on_leave' | 'resigned';
+    notes?: string;
+    storeId: string;
+    store: Store;
+    courses: Course[];
+    bookings: Booking[];
+    isActive(): boolean;
+    isAvailable(): boolean;
+    getAge(): number | null;
+    getWorkExperience(): number;
+    hasSpecialty(specialty: string): boolean;
+    isAvailableAt(dayOfWeek: string, time: string): boolean;
+    updateRating(newRating: number): void;
+    private timeToMinutes;
+    getTotalCourses(): number;
+    getActiveCourses(): Course[];
+}

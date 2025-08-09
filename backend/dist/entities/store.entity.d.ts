@@ -1,0 +1,30 @@
+import { BaseEntity } from './base.entity';
+import { Brand } from './brand.entity';
+import { User } from './user.entity';
+export declare class Store extends BaseEntity {
+    name: string;
+    code: string;
+    description?: string;
+    address: string;
+    phone: string;
+    email?: string;
+    latitude?: number;
+    longitude?: number;
+    openTime: string;
+    closeTime: string;
+    area?: number;
+    capacity?: number;
+    facilities?: string[];
+    settings?: Record<string, any>;
+    status: 'active' | 'inactive' | 'maintenance';
+    brandId: string;
+    brand: Brand;
+    employees: User[];
+    members: any[];
+    coaches: any[];
+    courses: any[];
+    isActive(): boolean;
+    isOpen(time?: Date): boolean;
+    getDistance(lat: number, lng: number): number;
+    private toRad;
+}

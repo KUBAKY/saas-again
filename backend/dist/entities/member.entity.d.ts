@@ -1,0 +1,65 @@
+import { BaseEntity } from './base.entity';
+import { Store } from './store.entity';
+import { MembershipCard } from './membership-card.entity';
+import { CheckIn } from './check-in.entity';
+import { Booking } from './booking.entity';
+export declare class Member extends BaseEntity {
+    memberNumber: string;
+    name: string;
+    phone: string;
+    email?: string;
+    gender?: 'male' | 'female' | 'other';
+    birthday?: Date;
+    idCard?: string;
+    avatar?: string;
+    address?: string;
+    emergencyContact?: string;
+    emergencyPhone?: string;
+    height?: number;
+    weight?: number;
+    healthNote?: string;
+    fitnessGoal?: string;
+    bodyMetrics?: Array<{
+        date: string;
+        weight: number;
+        bodyFat?: number;
+        muscleMass?: number;
+        bmi?: number;
+        notes?: string;
+    }>;
+    wechatOpenId?: string;
+    wechatUnionId?: string;
+    level: 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
+    points: number;
+    lastCheckInAt?: Date;
+    status: 'active' | 'inactive' | 'suspended' | 'expired';
+    notes?: string;
+    preferences?: Record<string, any>;
+    storeId: string;
+    store: Store;
+    membershipCards: MembershipCard[];
+    checkIns: CheckIn[];
+    bookings: Booking[];
+    isActive(): boolean;
+    getAge(): number | null;
+    getBMI(): number | null;
+    getActiveMembershipCards(): MembershipCard[];
+    hasActiveMembership(): boolean;
+    getTotalCheckIns(): number;
+    getCheckInStreak(): number;
+    addBodyMetric(metric: {
+        weight: number;
+        bodyFat?: number;
+        muscleMass?: number;
+        bmi?: number;
+        notes?: string;
+    }): void;
+    getLatestBodyMetric(): {
+        date: string;
+        weight: number;
+        bodyFat?: number;
+        muscleMass?: number;
+        bmi?: number;
+        notes?: string;
+    } | null;
+}

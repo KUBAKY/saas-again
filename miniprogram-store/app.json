@@ -1,0 +1,51 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/login/login",
+    "pages/members/members",
+    "pages/checkin/checkin",
+    "pages/sales/sales"
+  ],
+  "tabBar": {
+    "color": "#666666",
+    "selectedColor": "#667eea",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "images/home.png",
+        "selectedIconPath": "images/home-active.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/members/members",
+        "iconPath": "images/members.png",
+        "selectedIconPath": "images/members-active.png",
+        "text": "会员"
+      },
+      {
+        "pagePath": "pages/checkin/checkin",
+        "iconPath": "images/checkin.png",
+        "selectedIconPath": "images/checkin-active.png",
+        "text": "签到"
+      },
+      {
+        "pagePath": "pages/sales/sales",
+        "iconPath": "images/sales.png",
+        "selectedIconPath": "images/sales-active.png",
+        "text": "销售"
+      }
+    ]
+  },
+  "window": {
+    "navigationBarBackgroundColor": "#667eea",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "门店管理",
+    "backgroundColor": "#f8f9fa",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

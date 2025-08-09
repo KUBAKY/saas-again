@@ -1,0 +1,30 @@
+import { BaseEntity } from './base.entity';
+import { Member } from './member.entity';
+export declare class MembershipCard extends BaseEntity {
+    cardNumber: string;
+    type: string;
+    billingType: 'times' | 'period' | 'unlimited';
+    price: number;
+    totalSessions?: number;
+    usedSessions: number;
+    validityDays?: number;
+    issueDate: Date;
+    expiryDate?: Date;
+    activationDate?: Date;
+    status: 'active' | 'inactive' | 'expired' | 'frozen' | 'refunded';
+    notes?: string;
+    settings?: Record<string, any>;
+    memberId: string;
+    member: Member;
+    isActive(): boolean;
+    isExpired(): boolean;
+    getRemainingDays(): number | null;
+    getRemainingTimes(): number | null;
+    canUse(): boolean;
+    use(): boolean;
+    activate(): void;
+    freeze(): void;
+    unfreeze(): void;
+    refund(): void;
+    getUsagePercentage(): number;
+}

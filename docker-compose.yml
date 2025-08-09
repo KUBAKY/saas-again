@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:14-alpine
+    container_name: gym-saas-postgres
+    environment:
+      POSTGRES_DB: gym_saas_dev
+      POSTGRES_USER: gym_user
+      POSTGRES_PASSWORD: dev_password_123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: gym-saas-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # 后端服务
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gym-saas-backend
+    environment:
+      - NODE_ENV=development
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=gym_user
+      - DATABASE_PASSWORD=dev_password_123
+      - DATABASE_NAME=gym_saas_dev
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=gym-saas-jwt-secret-key-development
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    command: npm run start:dev
+
+  # 前端服务
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gym-saas-frontend
+    environment:
+      - NODE_ENV=development
+      - VITE_API_BASE_URL=http://localhost:3000/api/v1
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    command: npm run dev
+
+  # PGAdmin (数据库管理工具)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: gym-saas-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gym-saas.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: gym-saas-network
